@@ -3,29 +3,22 @@ import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
-
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-
-
-
-import MenuIcon from '@material-ui/icons/Menu';
+import MenuIcon from '@material-ui/icons/Menu'; 
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-
 import { mainListItems, secondaryListItems } from './Dashboard/listItems.js';
-
-
-
 import Button from '@material-ui/core/Button';
 import fire from './config/fire.js';
-
 import { BrowserRouter as Router, Switch as Switcher, Route } from 'react-router-dom';
+import {Container} from "@material-ui/core";
 import admin from './Admin/admin';
 import Main from './Dashboard/Main'
+import AdminPage from './Admin/admin';
 
 
 function logout(){
@@ -172,13 +165,26 @@ export default function Home() {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
+        <Switcher>
+          <Route exact path="/">
+            <Container>
+              <Typography variant="h1" gutterBottom>
+                Home
+              </Typography>
+              <Typography variant="body1" gutterBottom>
+                Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+              </Typography>
+            </Container>
+          </Route>
+          <Route exact path="/admin">
+            <AdminPage></AdminPage>
+          </Route>
+        </Switcher>
       </main>
     </div>
-    <Switcher>
-    <Route path = "/" exact  component = {Main}></Route>
-    <Route path = "/admin" exact component = {admin}></Route>
-
-    </Switcher>
+    
+    
+    
     </Router>
   );
 }
