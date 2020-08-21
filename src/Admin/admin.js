@@ -11,7 +11,9 @@ import fire from '../config/fire';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Modal from '@material-ui/core/Modal';
-
+import Paper from "@material-ui/core/Paper";
+import Grid from "@material-ui/core/Grid";
+import TextField from '@material-ui/core/TextField';
 
 
 
@@ -57,6 +59,7 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     maxWidth: '70ch',
     backgroundColor: theme.palette.background.paper,
+    
   },
   inline: {
     display: 'inline',
@@ -69,13 +72,17 @@ const useStyles = makeStyles((theme) => ({
     boxShadow: theme.shadows[5],
     padding: theme.spacing(2, 4, 3),
   },
+  '& .MuiTextField-root': {
+    margin: theme.spacing(1),
+    width: 200,
+  },
+  
+  
 }));
 
 
 
 export default function AdminPage() {
-
-  
     const times = useTimes();
     const classes = useStyles();
     const [modalStyle] = React.useState(getModalStyle);
@@ -87,24 +94,50 @@ export default function AdminPage() {
     const [confirmpassword, setconfirmPassword] = useState('')
     const [permissions, setPermissions] = useState('')
     const [UID, setUID] = useState('')
-
+    const [deleteID, setdelID] = useState('')
+    const [editData, seteditData] = useState([])
+    
   const handleOpen = () => {
-    setOpen(true);
+    setOpen(true); 
   };
 
   const handleClose = () => {
     setOpen(false);
   };
+
+  const selectItem = (i) => {
+    setdelID('i.UID')
+    //console.log(times)
+    
+    // editData.seteditData(times,{ id: i.id})
+  //   editData.seteditData(prevState => ({
+  //     times: {                   // object that we want to update
+  //         ...prevState.times,    // keep all other key-value pairs
+  //         id: i.id       // update the value of specific key
+  //     }
+  // }))
+  //   console.log(editData);
+ console.log(i.id);
+    
+  };
+  
+  const deleteUser = () => {
+    
+    
+  };
+
+
+
   function onSubmit(e) {
-
-
-    const { password, confirmPassword } = this.state;
-    // perform all neccassary validations
-    if (password !== confirmPassword) {
-        alert("Passwords don't match");
-    } else {
-        // make API call
-    }
+    // const { password, confirmpassword } = this.state;
+    
+    
+    // // perform all neccassary validations
+    // if (password !== confirmPassword) {
+    //     alert("Passwords don't match");
+    // } else {
+    //     // make API call
+    // }
 
     e.preventDefault();
     fire.auth().createUserWithEmailAndPassword(email,confirmpassword).then((u)=>{
@@ -114,10 +147,6 @@ export default function AdminPage() {
     }).catch((err)=>{
         console.log(err);
     })
-
-    
-    
-   
     fire
     .firestore()
     .collection('users')
@@ -126,7 +155,8 @@ export default function AdminPage() {
       fullname,
       UID,
       email,
-      permissions 
+      permissions,
+      status: '1'
     })
     .then(() => {
       setUser('')
@@ -177,11 +207,12 @@ handleClose();
 
   return (
     
-
-    <List className={classes.root}>
+    <Grid container spacing={3}>
+        <Grid item xs>
+        <List className={classes.root}>
       <ButtonGroup  aria-label="outlined primary button group">
     <Button color="primary" onClick={handleOpen}>NEW</Button>
-    <Button color= "secondary">DELETE</Button>
+    <Button color= "secondary" onClick={deleteUser}>DELETE</Button>
     </ButtonGroup>
     <Modal
         open={open}
@@ -192,7 +223,8 @@ handleClose();
         {body}
       </Modal>
       {times.map((time) => 
-        <ListItem alignItems="flex-start">
+      
+        <ListItem alignItems="flex-start" onClick={selectItem.bind(this, time)}>
         <ListItemAvatar>
           <Avatar alt="Remy Sharp" src={time.picture} />
         </ListItemAvatar>
@@ -213,15 +245,45 @@ handleClose();
             </React.Fragment>
           }
         />
-        
       </ListItem>
-
       )}
-      
       <Divider variant="inset" component="li" />
-      
-      
     </List>
+        </Grid>
+       
+        <Grid item xs>
+        {editData.map((time) => 
+        <form className={classes.root} noValidate autoComplete="off">
+      <div>
+        <TextField label="Username" id="standard-size-small" defaultValue="Small" size="small" />
+      </div>
+      <div>
+        <TextField label="Name:" id="standard-size-small" defaultValue="Small" size="small" />
+      </div>
+      <div>
+        <TextField label="E-mail" id="standard-size-small" defaultValue="Small" size="small" />
+      </div>
+      <div>
+        <TextField label="Password" id="standard-size-small" defaultValue="Small" size="small" />
+      </div>
+      <div>
+        <TextField label="Confirm Password" id="standard-size-small" defaultValue="Small" size="small" />
+      </div>
+      <div>
+        <TextField label="Permissions" id="standard-size-small" defaultValue="Small" size="small" />
+      </div>
+      <div>
+      <Button color="primary" onClick={handleOpen}>Save</Button>
+    <Button color= "secondary" onClick={deleteUser}>DELETE</Button>
+      </div>
+     
+     
+    </form>
+    )}
+        </Grid>
+      </Grid>
+
+    
   );
 
 
