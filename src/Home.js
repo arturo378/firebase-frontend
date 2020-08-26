@@ -16,9 +16,10 @@ import Button from '@material-ui/core/Button';
 import fire from './config/fire.js';
 import { BrowserRouter as Router, Switch as Switcher, Route } from 'react-router-dom';
 import {Container} from "@material-ui/core";
-import admin from './Admin/admin';
+import admin from './Admin/UserManagement';
 import Main from './Dashboard/Main'
-import AdminPage from './Admin/admin';
+import UserManagement from './Admin/UserManagement';
+import LocationManagement from './Admin/LocationManagement.js';
 
 
 function logout(){
@@ -176,8 +177,11 @@ export default function Home() {
               </Typography>
             </Container>
           </Route>
-          <Route exact path="/admin">
-            <AdminPage></AdminPage>
+          <Route exact path="/usermanagement">
+            <UserManagement></UserManagement>
+          </Route>
+          <Route exact path="/locationmanagment">
+            <LocationManagement></LocationManagement>
           </Route>
         </Switcher>
       </main>

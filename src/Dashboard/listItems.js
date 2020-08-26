@@ -11,6 +11,7 @@ import LayersIcon from '@material-ui/icons/Layers';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import { Link } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
+import LocationOnIcon from '@material-ui/icons/LocationOn';
 
 export const mainListItems = (
   <div>
@@ -22,12 +23,21 @@ export const mainListItems = (
       Dashboard
     </Button>
     </ListItem>
+    <ListSubheader inset>Admin</ListSubheader>
     <ListItem button>
       <ListItemIcon>
         <ShoppingCartIcon />
       </ListItemIcon>
-      <Button component={Link} to="/admin" color="primary">
-      Admin
+      <Button component={Link} to="/usermanagement" color="primary">
+      User Management
+    </Button>
+    </ListItem>
+    <ListItem button>
+      <ListItemIcon>
+        <LocationOnIcon />
+      </ListItemIcon>
+      <Button component={Link} to="/locationmanagment" color="primary">
+      Location Management
     </Button>
     </ListItem>
     <ListItem button>

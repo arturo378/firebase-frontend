@@ -82,7 +82,7 @@ const useStyles = makeStyles((theme) => ({
 
 
 
-export default function AdminPage() {
+export default function UserManagement() {
     const times = useTimes();
     const classes = useStyles();
     const [modalStyle] = React.useState(getModalStyle);
