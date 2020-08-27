@@ -1,6 +1,9 @@
 import React from 'react';
 import MaterialTable from 'material-table';
-import { tableIcons } from './Tableicons';
+import { AddBox, ArrowDownward } from "@material-ui/icons";
+
+
+
 
 
 
@@ -35,7 +38,12 @@ function LocationManagement(){
     
     
     return (
+      
+      
+      
+      
         <MaterialTable
+        
       title="Editable Example"
       columns={state.columns}
       data={state.data}
