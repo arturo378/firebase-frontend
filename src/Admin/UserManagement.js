@@ -106,7 +106,10 @@ export default function UserManagement() {
   };
 
   const selectItem = (i) => {
-    setdelID('i.UID')
+    setdelID('');
+    setdelID(i.id);
+    
+
     //console.log(times)
     
     // editData.seteditData(times,{ id: i.id})
@@ -117,12 +120,12 @@ export default function UserManagement() {
   //     }
   // }))
   //   console.log(editData);
- console.log(i.id);
+ //console.log(i.id);
     
   };
   
   const deleteUser = () => {
-    
+
     
   };
 
@@ -142,18 +145,14 @@ export default function UserManagement() {
     e.preventDefault();
     fire.auth().createUserWithEmailAndPassword(email,confirmpassword).then((u)=>{
       console.log(u.user.uid)
-      //setUID(u.user.uid)
-        //console.log(u)
-    }).catch((err)=>{
-        console.log(err);
-    })
-    fire
+
+      fire
     .firestore()
     .collection('users')
     .add({
       username,
       fullname,
-      UID,
+      UID: u.user.uid,
       email,
       permissions,
       status: '1'
@@ -166,7 +165,13 @@ export default function UserManagement() {
       setPermissions('')
       setUID('');
     })
-handleClose();
+    handleClose();
+      //setUID(u.user.uid)
+        //console.log(u)
+    }).catch((err)=>{
+        console.log(err);
+    })
+    
   };
 
   const body = (

@@ -9,7 +9,7 @@ import { AddBox, ArrowDownward } from "@material-ui/icons";
 
 
 
-function LocationManagement(){
+function LeaseManagement(){
 
     const [state, setState] = React.useState({
         columns: [
@@ -94,4 +94,4 @@ function LocationManagement(){
     );
 }
 
-export default LocationManagement;
+export default LeaseManagement;

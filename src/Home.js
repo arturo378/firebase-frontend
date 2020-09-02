@@ -20,6 +20,7 @@ import admin from './Admin/UserManagement';
 import Main from './Dashboard/Main'
 import UserManagement from './Admin/UserManagement';
 import LocationManagement from './Admin/LocationManagement.js';
+import LeaseManagement from './Admin/LeaseManagement.js';
 
 
 function logout(){
@@ -182,6 +183,9 @@ export default function Home() {
           </Route>
           <Route exact path="/locationmanagment">
             <LocationManagement></LocationManagement>
+          </Route>
+          <Route exact path="/locationmanagment/leasemanagment">
+            <LeaseManagement></LeaseManagement>
           </Route>
         </Switcher>
       </main>
