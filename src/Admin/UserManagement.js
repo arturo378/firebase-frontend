@@ -40,7 +40,7 @@ function useTimes(){
   useEffect(() => {
     fire
       .firestore()
-      .collection('users')
+      .collection('users').where('status', '==', '1')
       .onSnapshot((snapshot) => {
         const newTimes = snapshot.docs.map(((doc) => ({
           id: doc.id,
@@ -107,7 +107,10 @@ export default function UserManagement() {
 
   const selectItem = (i) => {
     setdelID('');
-    setdelID(i.id);
+    if(typeof i.id !== 'undefined'){
+      setdelID(i.id);
+      console.log(deleteID);
+    }
     
 
     //console.log(times)
@@ -125,6 +128,18 @@ export default function UserManagement() {
   };
   
   const deleteUser = () => {
+    fire
+      .firestore()
+      .collection('users').doc(deleteID).update({
+        status: 0
+      })
+      .then(function(){
+        console.log("Document successfully written!");
+      })
+      .catch(function(error){
+        console.error("Error writing document: ", error);
+      });
+    
 
     
   };
