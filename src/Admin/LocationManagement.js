@@ -1,16 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import MaterialTable from 'material-table';
-import { AddBox, ArrowDownward } from "@material-ui/icons";
+import { useHistory } from "react-router-dom";
 
 
 
+function loadinfo(){
+  const [data, setData] = useState([])
 
+  useEffect(() => {
+    fire
+      .firestore()
+      .collection('users').where('status', '==', '1')
+      .onSnapshot((snapshot) => {
+        const newTimes = snapshot.docs.map(((doc) => ({
+          id: doc.id,
+          ...doc.data()
+        })))
+        setData(newTimes)
+      })
+  }, [])
 
+  return data;
+
+}
 
 
 
 function LocationManagement(){
-
+  const times = loadinfo();
+    const history = useHistory(); 
+    function test(data, rowdata) {
+      history.push("/locationmanagment/leasemanagment");
+    }
+ 
+  
     const [state, setState] = React.useState({
         columns: [
           { title: 'Name', field: 'name' },
@@ -44,7 +67,7 @@ function LocationManagement(){
       
         <MaterialTable
         
-      title="Editable Example"
+      title="Company Management"
       columns={state.columns}
       data={state.data}
       editable={{
@@ -88,7 +111,9 @@ function LocationManagement(){
         {
           icon: 'sort',
           tooltip: 'Save User',
-          onClick: (event, rowData) => alert("You saved " + rowData.name)
+          onClick: (event, rowData) => test(event, rowData)
+            
+        
         }]}
     />
     );

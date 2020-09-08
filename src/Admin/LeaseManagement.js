@@ -1,6 +1,8 @@
 import React from 'react';
-import MaterialTable from 'material-table';
-import { AddBox, ArrowDownward } from "@material-ui/icons";
+import MaterialTable, {MTableToolbar} from 'material-table';
+import { useHistory } from "react-router-dom";
+import Button from '@material-ui/core/Button';
+
 
 
 
@@ -10,6 +12,13 @@ import { AddBox, ArrowDownward } from "@material-ui/icons";
 
 
 function LeaseManagement(){
+  const history = useHistory(); 
+    function test(data, rowdata) {
+      history.push("/locationmanagment/leasemanagment/wellmanagment");
+    }
+    function back() {
+      history.push("/locationmanagment/");
+    }
 
     const [state, setState] = React.useState({
         columns: [
@@ -44,9 +53,20 @@ function LeaseManagement(){
       
         <MaterialTable
         
-      title="Editable Example"
+      title="Lease Management"
       columns={state.columns}
       data={state.data}
+      components={{
+        Toolbar: props => (
+          <div>
+            <MTableToolbar {...props} />
+            <div style={{padding: '0px 10px'}}>
+            <Button variant="contained" onClick= {back}>Back</Button>
+              
+            </div>
+          </div>
+        ),
+      }}
       editable={{
         onRowAdd: (newData) =>
           new Promise((resolve) => {
@@ -88,7 +108,7 @@ function LeaseManagement(){
         {
           icon: 'sort',
           tooltip: 'Save User',
-          onClick: (event, rowData) => alert("You saved " + rowData.name)
+          onClick: (event, rowData) => test(event, rowData)
         }]}
     />
     );
