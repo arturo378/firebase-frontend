@@ -129,7 +129,7 @@ export default function UserManagement() {
   };
   
   const deleteUser = () => {
-    fire
+    fire 
       .firestore()
       .collection('users').doc(deleteID).update({
         status: 0
