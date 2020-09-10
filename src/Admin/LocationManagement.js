@@ -10,38 +10,32 @@ import fire from '../config/fire';
 
 function LocationManagement(){
   const [data, setData] = useState([])
-  const [city, setCity] = useState('')
-  const [county, setCounty] = useState('')
-  const [name, setName] = useState('')
-  const [phone, setPhone] = useState('')
-  
 
-  const item = (incoming, resolve) => {
 
-    console.log(incoming.name)
-    
-      setCity(incoming.city)
-      setCounty(incoming.county)
-      setName(incoming.name)
-      setPhone(incoming.setPHone)
-      
-      if(city){
-        resolve()
-        
-      }
-      
-      
-     
-    
-    
-     return;
-    fire 
+  const additem = (incoming, resolve) => {
+     //validation
+  let errorList = []
+  if(incoming.name === undefined){
+    errorList.push("Please enter first name")
+  }
+  if(incoming.city === undefined){
+    errorList.push("Please enter last name")
+  }
+  if(incoming.state === undefined){
+    errorList.push("Please enter a valid email")
+  }
+  if(errorList.length < 1){
+    let dataToAdd =[];
+    dataToAdd.push(incoming);
+    console.log(dataToAdd[0].city)
+          fire 
           .firestore()
           .collection('assets').add({
-            city: incoming.city,
-            county: incoming.county,
-            name: incoming.name,
-            phone: incoming.phone,
+            "city": dataToAdd[0].city,
+            "name": dataToAdd[0].name,
+            "phone": dataToAdd[0].phone,
+            "state": dataToAdd[0].state,
+            "zip": dataToAdd[0].zip,
             type: "company"
           })
           .then(function(){
@@ -50,11 +44,30 @@ function LocationManagement(){
           })
           .catch(function(error){
             console.error("Error writing document: ", error);
+            resolve()
           })
+  }
+};
 
 
+const removeitem = (incoming, resolve) => {
+  console.log(incoming)
+
+  fire 
+      .firestore()
+      .collection('assets').doc(incoming.id).delete()
+      .then(function(){
+        resolve()
+        console.log("Document successfully written!");
+      })
+      .catch(function(error){
+        resolve()
+        console.error("Error writing document: ", error);
+      });
+  
 
 };
+
   useEffect(() => {
     fire
       .firestore()
@@ -105,36 +118,8 @@ function LocationManagement(){
       editable={{
         onRowAdd: (newData) =>
         new Promise((resolve) => {
-         
-          
-        item(newData,resolve);
+        additem(newData,resolve);
     }),
-        
-          
-            
-            // setNewdata((newData) => {
-            //   fire 
-            // .firestore()
-            // .collection('assets').add({
-            //   city: newitem.city,
-            //   county: newitem.county,
-            //   name: newitem.name,
-            //   phone: newitem.phone,
-            //   type: "company"
-            // })
-            // .then(function(){
-            //   console.log("Document successfully written!");
-            // })
-            // .catch(function(error){
-            //   console.error("Error writing document: ", error);
-            // })
-              
-            // }),
-        
-
-          
-        
-      
         onRowUpdate: (newData, oldData) =>
           new Promise((resolve) => {
             setTimeout(() => {
@@ -149,15 +134,10 @@ function LocationManagement(){
             }, 600);
           }),
         onRowDelete: (oldData) =>
+          
           new Promise((resolve) => {
-            setTimeout(() => {
-              resolve();
-              setState((prevState) => {
-                const data = [...prevState.data];
-                data.splice(data.indexOf(oldData), 1);
-                return { ...prevState, data };
-              });
-            }, 600);
+            
+            removeitem(oldData,resolve);
           }),
       }}
       actions={[
