@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import MaterialTable, {MTableToolbar}  from 'material-table';
 import { useHistory } from "react-router-dom";
 
@@ -12,7 +12,10 @@ import Button from '@material-ui/core/Button';
 
 
 
-function WellManagement(){
+function WellManagement(props){
+  
+
+
   const history = useHistory(); 
     function back() {
       history.push("/locationmanagment/leasemanagment");

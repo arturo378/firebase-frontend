@@ -10,6 +10,7 @@ import fire from '../config/fire';
 
 function LocationManagement(){
   const [data, setData] = useState([])
+  const [companyID, setCompanyID] = useState([])
 
 
   const additem = (incoming, resolve) => {
@@ -48,10 +49,47 @@ function LocationManagement(){
           })
   }
 };
+const updateitem = (oldincoming, incoming, resolve) => {
+ 
+  //validation
+let errorList = []
+if(incoming.name === undefined){
+ errorList.push("Please enter first name")
+}
+if(incoming.city === undefined){
+ errorList.push("Please enter last name")
+}
+if(incoming.state === undefined){
+ errorList.push("Please enter a valid email")
+}
+if(errorList.length < 1){
+ let dataToAdd =[];
+ dataToAdd.push(incoming);
+ console.log(dataToAdd[0].city)
+       fire 
+       .firestore()
+       .collection('assets').doc(oldincoming.id).update({
+         "city": dataToAdd[0].city,
+         "name": dataToAdd[0].name,
+         "phone": dataToAdd[0].phone,
+         "state": dataToAdd[0].state,
+         "zip": dataToAdd[0].zip,
+         type: "company"
+       })
+       .then(function(){
+         resolve()
+         console.log("Document successfully written!");
+       })
+       .catch(function(error){
+         console.error("Error writing document: ", error);
+         resolve()
+       })
+}
+};
 
 
 const removeitem = (incoming, resolve) => {
-  console.log(incoming)
+  
 
   fire 
       .firestore()
@@ -85,7 +123,12 @@ const removeitem = (incoming, resolve) => {
   
     const history = useHistory(); 
     function test(data, rowdata) {
-      history.push("/locationmanagment/leasemanagment");
+      setCompanyID(rowdata.id)
+      history.push({
+        pathname: '/locationmanagment/leasemanagment',
+        state: { rowdata }
+      });
+      
     }
  
   
@@ -122,16 +165,9 @@ const removeitem = (incoming, resolve) => {
     }),
         onRowUpdate: (newData, oldData) =>
           new Promise((resolve) => {
-            setTimeout(() => {
-              resolve();
-              if (oldData) {
-                setState((prevState) => {
-                  const data = [...prevState.data];
-                  data[data.indexOf(oldData)] = newData;
-                  return { ...prevState, data };
-                });
-              }
-            }, 600);
+            
+            updateitem(oldData, newData,resolve);
+            
           }),
         onRowDelete: (oldData) =>
           

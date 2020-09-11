@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import MaterialTable, {MTableToolbar} from 'material-table';
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import Button from '@material-ui/core/Button';
+import fire from '../config/fire';
 
 
 
@@ -12,6 +13,29 @@ import Button from '@material-ui/core/Button';
 
 
 function LeaseManagement(){
+  const location = useLocation();
+  const [data, setData] = useState([])
+
+  useEffect(() => {
+    
+    const id = location.state.rowdata.id
+    
+    
+    fire
+      .firestore()
+      .collection('assets').where('type', '==', 'lease').where('company', '==', id)
+      .onSnapshot((snapshot) => {
+        const newTimes = snapshot.docs.map(((doc) => ({
+          id: doc.id,
+          ...doc.data()
+        })))
+        
+        setData(newTimes)
+      })
+    
+  }, [])
+  console.log(data)
+
   const history = useHistory(); 
     function test(data, rowdata) {
       history.push("/locationmanagment/leasemanagment/wellmanagment");
@@ -22,24 +46,11 @@ function LeaseManagement(){
 
     const [state, setState] = React.useState({
         columns: [
-          { title: 'Name', field: 'name' },
-          { title: 'Surname', field: 'surname' },
-          { title: 'Birth Year', field: 'birthYear', type: 'numeric' },
-          {
-            title: 'Birth Place',
-            field: 'birthCity',
-            lookup: { 34: 'İstanbul', 63: 'Şanlıurfa' },
-          },
+          {title: "id", field: "id", hidden: true},
+          {title: "Name", field: "name"},
+          
         ],
-        data: [
-          { name: 'Mehmet', surname: 'Baran', birthYear: 1987, birthCity: 63 },
-          {
-            name: 'Zerya Betül',
-            surname: 'Baran',
-            birthYear: 2017,
-            birthCity: 34,
-          },
-        ],
+        
       });
 
 
@@ -55,7 +66,7 @@ function LeaseManagement(){
         
       title="Lease Management"
       columns={state.columns}
-      data={state.data}
+      data={data}
       components={{
         Toolbar: props => (
           <div>
