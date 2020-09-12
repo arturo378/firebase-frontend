@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import MaterialTable, {MTableToolbar}  from 'material-table';
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 
 import Button from '@material-ui/core/Button';
+import fire from '../config/fire';
 
 
 
@@ -13,6 +14,115 @@ import Button from '@material-ui/core/Button';
 
 
 function WellManagement(props){
+  const location = useLocation();
+  const [data, setData] = useState([])
+  const [leaseid, setLeaseid]= useState('')
+
+
+
+  useEffect(() => {
+    
+    const id = location.state.rowdata.id
+    setLeaseid(location.state.rowdata.id)
+    console.log(id)
+    
+    
+    fire
+      .firestore()
+      .collection('assets').where('type', '==', 'well').where('lease', '==', id)
+      .onSnapshot((snapshot) => {
+        const newTimes = snapshot.docs.map(((doc) => ({
+          id: doc.id,
+          ...doc.data()
+        })))
+        
+        setData(newTimes)
+      })
+    
+  }, [])
+
+  const additem = (incoming, resolve) => {
+    //validation
+ let errorList = []
+ if(incoming.name === undefined){
+   errorList.push("Please enter first name")
+ }
+ if(errorList.length < 1){
+   let dataToAdd =[];
+   dataToAdd.push(incoming);
+   
+         fire 
+         .firestore()
+         .collection('assets').add({
+           
+           "name": dataToAdd[0].name,
+           "gps": dataToAdd[0].gps,
+          "description": dataToAdd[0].description,
+           type: "well",
+           lease: leaseid
+         })
+         .then(function(){
+           resolve()
+           console.log("Document successfully written!");
+         })
+         .catch(function(error){
+           console.error("Error writing document: ", error);
+           resolve()
+         })
+ }
+};
+const updateitem = (oldincoming, incoming, resolve) => {
+
+ //validation
+let errorList = []
+if(incoming.name === undefined){
+errorList.push("Please enter first name")
+}
+
+
+if(errorList.length < 1){
+let dataToAdd =[];
+dataToAdd.push(incoming);
+
+      fire 
+      .firestore()
+      .collection('assets').doc(oldincoming.id).update({
+       
+        "name": dataToAdd[0].name,
+        "gps": dataToAdd[0].gps,
+        "description": dataToAdd[0].description,
+        company: leaseid,
+        type: "well"
+      })
+      .then(function(){
+        resolve()
+        console.log("Document successfully written!");
+      })
+      .catch(function(error){
+        console.error("Error writing document: ", error);
+        resolve()
+      })
+}
+};
+
+
+const removeitem = (incoming, resolve) => {
+ 
+
+ fire 
+     .firestore()
+     .collection('assets').doc(incoming.id).delete()
+     .then(function(){
+       resolve()
+       console.log("Document successfully written!");
+     })
+     .catch(function(error){
+       resolve()
+       console.error("Error writing document: ", error);
+     });
+ 
+
+};
   
 
 
@@ -22,28 +132,14 @@ function WellManagement(props){
     }
 
     const [state, setState] = React.useState({
-        columns: [
-          { title: 'Name', field: 'name' },
-          { title: 'Surname', field: 'surname' },
-          { title: 'Birth Year', field: 'birthYear', type: 'numeric' },
-          {
-            title: 'Birth Place',
-            field: 'birthCity',
-            lookup: { 34: 'İstanbul', 63: 'Şanlıurfa' },
-          },
-        ],
-        data: [
-          { name: 'Mehmet', 
-            surname: 'Baran', 
-            birthYear: 1987, 
-            birthCity: 63 },
-          {
-            name: 'Zerya Betül',
-            surname: 'Baran',
-            birthYear: 2017,
-            birthCity: 34,
-          },
-        ],
+      columns: [
+        {title: "id", field: "id", hidden: true},
+        {title: "Name", field: "name"},
+        {title: "GPS Coordinates", field: "gps"},
+        {title: "Description", field: "description"},
+        
+      ],
+        
       });
 
 
@@ -59,7 +155,7 @@ function WellManagement(props){
         
       title="Well Management"
       columns={state.columns}
-      data={state.data}
+      data={data}
       components={{
         Toolbar: props => (
           <div>
@@ -74,38 +170,15 @@ function WellManagement(props){
       editable={{
         onRowAdd: (newData) =>
           new Promise((resolve) => {
-            setTimeout(() => {
-              resolve();
-              setState((prevState) => {
-                const data = [...prevState.data];
-                data.push(newData);
-                return { ...prevState, data };
-              });
-            }, 600);
+            additem(newData,resolve);
           }),
         onRowUpdate: (newData, oldData) =>
           new Promise((resolve) => {
-            setTimeout(() => {
-              resolve();
-              if (oldData) {
-                setState((prevState) => {
-                  const data = [...prevState.data];
-                  data[data.indexOf(oldData)] = newData;
-                  return { ...prevState, data };
-                });
-              }
-            }, 600);
+            updateitem(oldData, newData,resolve);
           }),
         onRowDelete: (oldData) =>
           new Promise((resolve) => {
-            setTimeout(() => {
-              resolve();
-              setState((prevState) => {
-                const data = [...prevState.data];
-                data.splice(data.indexOf(oldData), 1);
-                return { ...prevState, data };
-              });
-            }, 600);
+            removeitem(oldData,resolve);
           }),
       }}
       

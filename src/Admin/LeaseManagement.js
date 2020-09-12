@@ -15,10 +15,13 @@ import fire from '../config/fire';
 function LeaseManagement(){
   const location = useLocation();
   const [data, setData] = useState([])
+  const [companyid, setCompanyid]= useState('')
+  const [leaseID, setLeaseID] = useState([])
 
   useEffect(() => {
     
     const id = location.state.rowdata.id
+    setCompanyid(location.state.rowdata.id)
     
     
     fire
@@ -34,11 +37,104 @@ function LeaseManagement(){
       })
     
   }, [])
-  console.log(data)
+
+  const additem = (incoming, resolve) => {
+    
+    
+    //validation
+ let errorList = []
+ if(incoming.name === undefined){
+   errorList.push("Please enter first name")
+ }
+ 
+ if(errorList.length < 1){
+   let dataToAdd =[];
+   dataToAdd.push(incoming);
+   
+         fire 
+         .firestore()
+         .collection('assets').add({
+           
+           "name": dataToAdd[0].name,
+           
+           type: "lease",
+           company: companyid
+         })
+         .then(function(){
+           resolve()
+           console.log("Document successfully written!");
+         })
+         .catch(function(error){
+           console.error("Error writing document: ", error);
+           resolve()
+         })
+ }
+};
+const updateitem = (oldincoming, incoming, resolve) => {
+
+ //validation
+let errorList = []
+if(incoming.name === undefined){
+errorList.push("Please enter first name")
+}
+
+
+if(errorList.length < 1){
+let dataToAdd =[];
+dataToAdd.push(incoming);
+
+      fire 
+      .firestore()
+      .collection('assets').doc(oldincoming.id).update({
+       
+        "name": dataToAdd[0].name,
+        company: companyid,
+        type: "lease"
+      })
+      .then(function(){
+        resolve()
+        console.log("Document successfully written!");
+      })
+      .catch(function(error){
+        console.error("Error writing document: ", error);
+        resolve()
+      })
+}
+};
+
+
+const removeitem = (incoming, resolve) => {
+ 
+
+ fire 
+     .firestore()
+     .collection('assets').doc(incoming.id).delete()
+     .then(function(){
+       resolve()
+       console.log("Document successfully written!");
+     })
+     .catch(function(error){
+       resolve()
+       console.error("Error writing document: ", error);
+     });
+ 
+
+};
+
+
+
+
+  
 
   const history = useHistory(); 
     function test(data, rowdata) {
-      history.push("/locationmanagment/leasemanagment/wellmanagment");
+
+      setLeaseID(rowdata.id)
+      history.push({
+        pathname: '/locationmanagment/leasemanagment/wellmanagment',
+        state: { rowdata }
+      });
+      
     }
     function back() {
       history.push("/locationmanagment/");
@@ -81,38 +177,15 @@ function LeaseManagement(){
       editable={{
         onRowAdd: (newData) =>
           new Promise((resolve) => {
-            setTimeout(() => {
-              resolve();
-              setState((prevState) => {
-                const data = [...prevState.data];
-                data.push(newData);
-                return { ...prevState, data };
-              });
-            }, 600);
+            additem(newData,resolve);
           }),
         onRowUpdate: (newData, oldData) =>
           new Promise((resolve) => {
-            setTimeout(() => {
-              resolve();
-              if (oldData) {
-                setState((prevState) => {
-                  const data = [...prevState.data];
-                  data[data.indexOf(oldData)] = newData;
-                  return { ...prevState, data };
-                });
-              }
-            }, 600);
+            updateitem(oldData, newData,resolve);
           }),
         onRowDelete: (oldData) =>
           new Promise((resolve) => {
-            setTimeout(() => {
-              resolve();
-              setState((prevState) => {
-                const data = [...prevState.data];
-                data.splice(data.indexOf(oldData), 1);
-                return { ...prevState, data };
-              });
-            }, 600);
+            removeitem(oldData,resolve);
           }),
       }}
       actions={[

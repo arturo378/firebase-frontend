@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import MaterialTable from 'material-table';
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import fire from '../config/fire';
 
 
