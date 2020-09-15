@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import MaterialTable from 'material-table';
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import fire from '../config/fire';
 
 
@@ -8,36 +8,36 @@ import fire from '../config/fire';
 
 
 
-function LocationManagement(){
+function ChemicalManagement(){
   const [data, setData] = useState([])
   const [companyID, setCompanyID] = useState([])
 
 
   const additem = (incoming, resolve) => {
+      
      //validation
   let errorList = []
-  if(incoming.name === undefined){
+  if(incoming.tradename === undefined){
     errorList.push("Please enter first name")
   }
-  if(incoming.city === undefined){
+  if(incoming.dottag === undefined){
     errorList.push("Please enter last name")
   }
-  if(incoming.state === undefined){
+  if(incoming.weight === undefined){
     errorList.push("Please enter a valid email")
   }
   if(errorList.length < 1){
     let dataToAdd =[];
     dataToAdd.push(incoming);
-    console.log(dataToAdd[0].city)
+    console.log(dataToAdd);
+    
           fire 
           .firestore()
           .collection('assets').add({
-            "city": dataToAdd[0].city,
-            "name": dataToAdd[0].name,
-            "phone": dataToAdd[0].phone,
-            "state": dataToAdd[0].state,
-            "zip": dataToAdd[0].zip,
-            type: "company"
+            "tradename": dataToAdd[0].tradename,
+            "dottag": dataToAdd[0].dottag,
+            "weight": dataToAdd[0].weight,
+            type: "chemical"
           })
           .then(function(){
             resolve()
@@ -53,15 +53,15 @@ const updateitem = (oldincoming, incoming, resolve) => {
  
   //validation
 let errorList = []
-if(incoming.name === undefined){
- errorList.push("Please enter first name")
-}
-if(incoming.city === undefined){
- errorList.push("Please enter last name")
-}
-if(incoming.state === undefined){
- errorList.push("Please enter a valid email")
-}
+if(incoming.tradename === undefined){
+    errorList.push("Please enter first name")
+  }
+  if(incoming.dottag === undefined){
+    errorList.push("Please enter last name")
+  }
+  if(incoming.weight === undefined){
+    errorList.push("Please enter a valid email")
+  }
 if(errorList.length < 1){
  let dataToAdd =[];
  dataToAdd.push(incoming);
@@ -69,12 +69,10 @@ if(errorList.length < 1){
        fire 
        .firestore()
        .collection('assets').doc(oldincoming.id).update({
-         "city": dataToAdd[0].city,
-         "name": dataToAdd[0].name,
-         "phone": dataToAdd[0].phone,
-         "state": dataToAdd[0].state,
-         "zip": dataToAdd[0].zip,
-         type: "company"
+            "tradename": dataToAdd[0].tradename,
+            "dottag": dataToAdd[0].dottag,
+            "weight": dataToAdd[0].weight,
+            type: "chemical"
        })
        .then(function(){
          resolve()
@@ -109,7 +107,7 @@ const removeitem = (incoming, resolve) => {
   useEffect(() => {
     fire
       .firestore()
-      .collection('assets').where('type', '==', 'company')
+      .collection('assets').where('type', '==', 'chemical')
       .onSnapshot((snapshot) => {
         const newTimes = snapshot.docs.map(((doc) => ({
           id: doc.id,
@@ -136,11 +134,9 @@ const removeitem = (incoming, resolve) => {
     const [state, setState] = React.useState({
         columns: [
           {title: "id", field: "id", hidden: true},
-          {title: "Name", field: "name"},
-          {title: "City", field: "city"},
-          {title: "State", field: "state"},
-          {title: "Zip Code", field: "zip"},
-          {title: "Phone Number", field: "phone"}
+          {title: "Trade Name", field: "tradename"},
+          {title: "DOT Tag", field: "dottag"},
+          {title: "Weight", field: "weight"}
         ]
         
       });
@@ -156,7 +152,7 @@ const removeitem = (incoming, resolve) => {
       
         <MaterialTable
         
-      title="Company Management"
+      title="Product Management"
       columns={state.columns}
       data={data}
       editable={{
@@ -189,4 +185,4 @@ const removeitem = (incoming, resolve) => {
     );
 }
 
-export default LocationManagement;
+export default ChemicalManagement;

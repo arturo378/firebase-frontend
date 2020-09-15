@@ -12,6 +12,7 @@ import AssignmentIcon from '@material-ui/icons/Assignment';
 import { Link } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
 import LocationOnIcon from '@material-ui/icons/LocationOn';
+import HomeIcon from '@material-ui/icons/LocationOn';
 
 export const mainListItems = (
   <div>
@@ -37,20 +38,37 @@ export const mainListItems = (
         <LocationOnIcon />
       </ListItemIcon>
       <Button component={Link} to="/locationmanagment" color="primary">
-      Location Management
+      Manage Location
     </Button>
     </ListItem>
     <ListItem button>
       <ListItemIcon>
+        <HomeIcon />
+      </ListItemIcon>
+      <Button component={Link} to="/warehousemanagement" color="primary">
+      Manage Warehouse
+    </Button>
+    </ListItem>
+    <ListItem button>
+      <ListItemIcon>
+        <HomeIcon />
+      </ListItemIcon>
+      <Button component={Link} to="/chemicalmanagement" color="primary">
+      Manage Products
+    </Button>
+    </ListItem>
+    <ListSubheader inset>Work Orders</ListSubheader>
+    <ListItem button>
+      <ListItemIcon>
         <PeopleIcon />
       </ListItemIcon>
-      <ListItemText primary="Customers" />
+      <ListItemText primary="Shipping Papers" />
     </ListItem>
     <ListItem button>
       <ListItemIcon>
         <BarChartIcon />
       </ListItemIcon>
-      <ListItemText primary="Reports" />
+      <ListItemText primary="Deliveries" />
     </ListItem>
     <ListItem button>
       <ListItemIcon>

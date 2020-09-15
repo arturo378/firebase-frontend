@@ -22,6 +22,8 @@ import UserManagement from './Admin/UserManagement';
 import LocationManagement from './Admin/LocationManagement.js';
 import LeaseManagement from './Admin/LeaseManagement.js';
 import WellManagement from './Admin/WellManagement.js';
+import WarehouseManagement from './Admin/WarehouseManagement.js';
+import ChemicalManagement from './Admin/ChemicalManagement.js';
 
 
 function logout(){
@@ -190,6 +192,12 @@ export default function Home() {
           </Route>
           <Route exact path="/locationmanagment/leasemanagment/wellmanagment">
             <WellManagement></WellManagement>
+          </Route>
+          <Route exact path="/warehousemanagement">
+            <WarehouseManagement></WarehouseManagement>
+          </Route>
+          <Route exact path="/chemicalmanagement">
+            <ChemicalManagement></ChemicalManagement>
           </Route>
         </Switcher>
       </main>

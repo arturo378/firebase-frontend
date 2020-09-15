@@ -17,14 +17,16 @@ function WellManagement(props){
   const location = useLocation();
   const [data, setData] = useState([])
   const [leaseid, setLeaseid]= useState('')
+  const [companyid, seCompanyid]= useState('')
 
 
 
   useEffect(() => {
+    console.log(location.state)
+    const id = location.state.leaseid
+    setLeaseid(location.state.leaseid)
+    seCompanyid(location.state.companyid)
     
-    const id = location.state.rowdata.id
-    setLeaseid(location.state.rowdata.id)
-    console.log(id)
     
     
     fire
@@ -128,7 +130,13 @@ const removeitem = (incoming, resolve) => {
 
   const history = useHistory(); 
     function back() {
-      history.push("/locationmanagment/leasemanagment");
+      let rowdata = {'id': companyid}
+      
+      history.push({
+        pathname: '/locationmanagment/leasemanagment',
+        state: rowdata
+       
+      });
     }
 
     const [state, setState] = React.useState({

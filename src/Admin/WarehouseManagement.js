@@ -8,36 +8,36 @@ import fire from '../config/fire';
 
 
 
-function LocationManagement(){
+function WarehouseManagement(){
   const [data, setData] = useState([])
   const [companyID, setCompanyID] = useState([])
 
 
   const additem = (incoming, resolve) => {
+      
      //validation
   let errorList = []
   if(incoming.name === undefined){
     errorList.push("Please enter first name")
   }
-  if(incoming.city === undefined){
+  if(incoming.warehousenumber === undefined){
     errorList.push("Please enter last name")
   }
-  if(incoming.state === undefined){
+  if(incoming.areamanager === undefined){
     errorList.push("Please enter a valid email")
   }
   if(errorList.length < 1){
     let dataToAdd =[];
     dataToAdd.push(incoming);
-    console.log(dataToAdd[0].city)
+    console.log(dataToAdd);
+    
           fire 
           .firestore()
           .collection('assets').add({
-            "city": dataToAdd[0].city,
+            "warehousenumber": dataToAdd[0].warehousenumber,
             "name": dataToAdd[0].name,
-            "phone": dataToAdd[0].phone,
-            "state": dataToAdd[0].state,
-            "zip": dataToAdd[0].zip,
-            type: "company"
+            "areamanager": dataToAdd[0].areamanager,
+            type: "warehouse"
           })
           .then(function(){
             resolve()
@@ -69,12 +69,10 @@ if(errorList.length < 1){
        fire 
        .firestore()
        .collection('assets').doc(oldincoming.id).update({
-         "city": dataToAdd[0].city,
-         "name": dataToAdd[0].name,
-         "phone": dataToAdd[0].phone,
-         "state": dataToAdd[0].state,
-         "zip": dataToAdd[0].zip,
-         type: "company"
+        "warehousenumber": dataToAdd[0].warehousenumber,
+        "name": dataToAdd[0].name,
+        "areamanager": dataToAdd[0].areamanager,
+         type: "warehouse"
        })
        .then(function(){
          resolve()
@@ -109,7 +107,7 @@ const removeitem = (incoming, resolve) => {
   useEffect(() => {
     fire
       .firestore()
-      .collection('assets').where('type', '==', 'company')
+      .collection('assets').where('type', '==', 'warehouse')
       .onSnapshot((snapshot) => {
         const newTimes = snapshot.docs.map(((doc) => ({
           id: doc.id,
@@ -136,11 +134,9 @@ const removeitem = (incoming, resolve) => {
     const [state, setState] = React.useState({
         columns: [
           {title: "id", field: "id", hidden: true},
+          {title: "Warehouse Number", field: "warehousenumber"},
           {title: "Name", field: "name"},
-          {title: "City", field: "city"},
-          {title: "State", field: "state"},
-          {title: "Zip Code", field: "zip"},
-          {title: "Phone Number", field: "phone"}
+          {title: "Area Manager", field: "areamanager"}
         ]
         
       });
@@ -156,7 +152,7 @@ const removeitem = (incoming, resolve) => {
       
         <MaterialTable
         
-      title="Company Management"
+      title="Warehouses"
       columns={state.columns}
       data={data}
       editable={{
@@ -189,4 +185,4 @@ const removeitem = (incoming, resolve) => {
     );
 }
 
-export default LocationManagement;
+export default WarehouseManagement;

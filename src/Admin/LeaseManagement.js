@@ -19,9 +19,10 @@ function LeaseManagement(){
   const [leaseID, setLeaseID] = useState([])
 
   useEffect(() => {
+    console.log(location.state)
+    const id = location.state.id
+    setCompanyid(location.state.id)
     
-    const id = location.state.rowdata.id
-    setCompanyid(location.state.rowdata.id)
     
     
     fire
@@ -128,11 +129,12 @@ const removeitem = (incoming, resolve) => {
 
   const history = useHistory(); 
     function test(data, rowdata) {
-
+      let leaseid = rowdata.id
       setLeaseID(rowdata.id)
       history.push({
         pathname: '/locationmanagment/leasemanagment/wellmanagment',
-        state: { rowdata }
+        state: { leaseid, companyid }
+        
       });
       
     }
