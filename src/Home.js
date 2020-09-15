@@ -24,6 +24,7 @@ import LeaseManagement from './Admin/LeaseManagement.js';
 import WellManagement from './Admin/WellManagement.js';
 import WarehouseManagement from './Admin/WarehouseManagement.js';
 import ChemicalManagement from './Admin/ChemicalManagement.js';
+import Pricing from './Admin/Pricing.js';
 
 
 function logout(){
@@ -198,6 +199,9 @@ export default function Home() {
           </Route>
           <Route exact path="/chemicalmanagement">
             <ChemicalManagement></ChemicalManagement>
+          </Route>
+          <Route exact path="/pricing">
+            <Pricing></Pricing>
           </Route>
         </Switcher>
       </main>
