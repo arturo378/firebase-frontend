@@ -15,6 +15,7 @@ import fire from '../config/fire';
 function LeaseManagement(){
   const location = useLocation();
   const [data, setData] = useState([])
+  const [chemicallist, setChemicalList] = useState([])
   const [companyid, setCompanyid]= useState('')
   const [leaseID, setLeaseID] = useState([])
 
@@ -36,8 +37,12 @@ function LeaseManagement(){
         
         setData(newTimes)
       })
-    
+
+
+      
   }, [])
+
+  
 
   const additem = (incoming, resolve) => {
     

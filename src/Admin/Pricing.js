@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import MaterialTable from 'material-table';
+import MaterialTable, {MTableToolbar} from 'material-table';
 import { useHistory, useLocation } from "react-router-dom";
 import fire from '../config/fire';
-
+import Button from '@material-ui/core/Button';
+import { Select, MenuItem } from "@material-ui/core";
 
 
 
 
 
 function Pricing(){
+  const location = useLocation();
   const [data, setData] = useState([])
-  const [companyID, setCompanyID] = useState([])
+  const [companyid, setCompanyid]= useState('')
+  const [chemicallist, setChemicalList] = useState([])
+  
 
 
   const additem = (incoming, resolve) => {
@@ -19,12 +23,10 @@ function Pricing(){
   if(incoming.name === undefined){
     errorList.push("Please enter first name")
   }
-  if(incoming.city === undefined){
+  if(incoming.price === undefined){
     errorList.push("Please enter last name")
   }
-  if(incoming.state === undefined){
-    errorList.push("Please enter a valid email")
-  }
+  
   if(errorList.length < 1){
     let dataToAdd =[];
     dataToAdd.push(incoming);
@@ -32,12 +34,10 @@ function Pricing(){
           fire 
           .firestore()
           .collection('assets').add({
-            "city": dataToAdd[0].city,
+            "price": dataToAdd[0].price,
             "name": dataToAdd[0].name,
-            "phone": dataToAdd[0].phone,
-            "state": dataToAdd[0].state,
-            "zip": dataToAdd[0].zip,
-            type: "company"
+            company: companyid,
+            type: "pricing"
           })
           .then(function(){
             resolve()
@@ -49,18 +49,18 @@ function Pricing(){
           })
   }
 };
+
+
+
 const updateitem = (oldincoming, incoming, resolve) => {
  
   //validation
 let errorList = []
 if(incoming.name === undefined){
- errorList.push("Please enter first name")
+  errorList.push("Please enter first name")
 }
-if(incoming.city === undefined){
- errorList.push("Please enter last name")
-}
-if(incoming.state === undefined){
- errorList.push("Please enter a valid email")
+if(incoming.price === undefined){
+  errorList.push("Please enter last name")
 }
 if(errorList.length < 1){
  let dataToAdd =[];
@@ -69,12 +69,10 @@ if(errorList.length < 1){
        fire 
        .firestore()
        .collection('assets').doc(oldincoming.id).update({
-         "city": dataToAdd[0].city,
-         "name": dataToAdd[0].name,
-         "phone": dataToAdd[0].phone,
-         "state": dataToAdd[0].state,
-         "zip": dataToAdd[0].zip,
-         type: "company"
+        "price": dataToAdd[0].price,
+        "name": dataToAdd[0].name,
+        company: companyid,
+        type: "pricing"
        })
        .then(function(){
          resolve()
@@ -107,40 +105,83 @@ const removeitem = (incoming, resolve) => {
 };
 
   useEffect(() => {
+    
+    const id = location.state.id
+    setCompanyid(location.state.id)
+
+
+
+
+    fire
+    .firestore()
+    .collection('assets').where('type', '==', 'pricing').where('company', '==', id)
+    .onSnapshot((snapshot) => {
+      const newTimes = snapshot.docs.map(((doc) => ({
+        id: doc.id,
+        ...doc.data()
+      })))
+      
+      setData(newTimes)
+    })
+
     fire
       .firestore()
-      .collection('assets').where('type', '==', 'company')
+      .collection('assets').where('type', '==', 'chemical')
       .onSnapshot((snapshot) => {
-        const newTimes = snapshot.docs.map(((doc) => ({
+        const chemicals = snapshot.docs.map(((doc) => ({
           id: doc.id,
           ...doc.data()
         })))
-        setData(newTimes)
+        
+        setChemicalList(chemicals)
       })
+    
   }, [])
+
+ console.log(chemicallist)
 
     //console.log(data)
   
     const history = useHistory(); 
     function test(data, rowdata) {
       let id = rowdata;
-      setCompanyID(rowdata.id)
+      setCompanyid(rowdata.id)
       history.push({
         pathname: '/locationmanagment/leasemanagment',
         state: id
       });
       
     }
- 
+    function back() {
+      history.push("/locationmanagment/");
+    }
   
     const [state, setState] = React.useState({
         columns: [
           {title: "id", field: "id", hidden: true},
-          {title: "Name", field: "name"},
-          {title: "City", field: "city"},
-          {title: "State", field: "state"},
-          {title: "Zip Code", field: "zip"},
-          {title: "Phone Number", field: "phone"}
+          {
+            title: "Name",
+            field: "name",
+            editComponent: ({ value, onRowDataChange, rowData }) => (
+              <Select
+                value={value}
+                onChange={(event) => {
+                  onRowDataChange({
+                    ...rowData,
+                    country: ''
+                  });
+                }}
+              >
+                {data.map((chemical) => (
+                  console.log(chemical),
+                  <MenuItem key={chemical.id} value={chemical.tradename}>
+                    {chemical.tradename}
+                  </MenuItem>
+                ))}
+              </Select>
+            ),
+          },
+          {title: "Price", field: "price"}
         ]
         
       });
@@ -156,9 +197,20 @@ const removeitem = (incoming, resolve) => {
       
         <MaterialTable
         
-      title="Company Management"
+      title="Pricing"
       columns={state.columns}
       data={data}
+      components={{
+        Toolbar: props => (
+          <div>
+            <MTableToolbar {...props} />
+            <div style={{padding: '0px 10px'}}>
+            <Button variant="contained" onClick= {back}>Back</Button>
+              
+            </div>
+          </div>
+        ),
+      }}
       editable={{
         onRowAdd: (newData) =>
         new Promise((resolve) => {

@@ -57,14 +57,7 @@ export const mainListItems = (
       Manage Products
     </Button>
     </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <HomeIcon />
-      </ListItemIcon>
-      <Button component={Link} to="/pricing" color="primary">
-      Manage Pricing
-    </Button>
-    </ListItem>
+    
     <ListSubheader inset>Work Orders</ListSubheader>
     <ListItem button>
       <ListItemIcon>

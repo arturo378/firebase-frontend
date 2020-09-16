@@ -8,6 +8,7 @@ import fire from '../config/fire';
 
 
 
+
 function LocationManagement(){
   const [data, setData] = useState([])
   const [companyID, setCompanyID] = useState([])
@@ -129,6 +130,14 @@ const removeitem = (incoming, resolve) => {
         pathname: '/locationmanagment/leasemanagment',
         state: id
       });
+    }
+    function pricing(data, rowdata) {
+      let id = rowdata;
+      setCompanyID(rowdata.id)
+      history.push({
+        pathname: '/pricing',
+        state: id
+      });
       
     }
  
@@ -182,9 +191,14 @@ const removeitem = (incoming, resolve) => {
           icon: 'sort',
           tooltip: 'Save User',
           onClick: (event, rowData) => test(event, rowData)
-            
-        
-        }]}
+        },
+        {
+          icon: 'attach_money',
+          tooltip: 'Pricing',
+          onClick: (event, rowData) => pricing(event, rowData)
+        },
+
+      ]}
     />
     );
 }
