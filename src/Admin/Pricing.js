@@ -14,7 +14,12 @@ function Pricing(){
   const [data, setData] = useState([])
   const [companyid, setCompanyid]= useState('')
   const [chemicallist, setChemicalList] = useState([])
-  
+  const list = getChemicals();
+  const [times, setTimes] = useState([])
+
+  console.log(list)
+
+
 
 
   const additem = (incoming, resolve) => {
@@ -49,8 +54,6 @@ function Pricing(){
           })
   }
 };
-
-
 
 const updateitem = (oldincoming, incoming, resolve) => {
  
@@ -124,21 +127,11 @@ const removeitem = (incoming, resolve) => {
       setData(newTimes)
     })
 
-    fire
-      .firestore()
-      .collection('assets').where('type', '==', 'chemical')
-      .onSnapshot((snapshot) => {
-        const chemicals = snapshot.docs.map(((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        })))
-        
-        setChemicalList(chemicals)
-      })
+    
     
   }, [])
 
- console.log(chemicallist)
+ 
 
     //console.log(data)
   
@@ -155,6 +148,31 @@ const removeitem = (incoming, resolve) => {
     function back() {
       history.push("/locationmanagment/");
     }
+
+
+
+    function getChemicals(){
+      
+        var info = [];
+      
+        fire
+        .firestore()
+        .collection('assets').where('type', '==', 'chemical')
+        .onSnapshot((snapshot) => {
+          const chemicals = snapshot.docs.map(((doc) => ({
+            id: doc.id,
+            ...doc.data()
+          })))
+          
+           info.push(chemicals)
+        })
+      
+      
+    
+      return info;
+    
+    }
+    
   
     const [state, setState] = React.useState({
         columns: [
@@ -168,12 +186,13 @@ const removeitem = (incoming, resolve) => {
                 onChange={(event) => {
                   onRowDataChange({
                     ...rowData,
-                    country: ''
+                    name: (event.target.value)
+                    
                   });
                 }}
               >
-                {data.map((chemical) => (
-                  console.log(chemical),
+                {list[0].map((chemical) => (
+                  
                   <MenuItem key={chemical.id} value={chemical.tradename}>
                     {chemical.tradename}
                   </MenuItem>

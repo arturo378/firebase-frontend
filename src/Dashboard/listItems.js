@@ -61,9 +61,11 @@ export const mainListItems = (
     <ListSubheader inset>Work Orders</ListSubheader>
     <ListItem button>
       <ListItemIcon>
-        <PeopleIcon />
+        <HomeIcon />
       </ListItemIcon>
-      <ListItemText primary="Shipping Papers" />
+      <Button component={Link} to="/shippingpapers" color="primary">
+      Shipping Papers
+    </Button>
     </ListItem>
     <ListItem button>
       <ListItemIcon>
