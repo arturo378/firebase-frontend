@@ -26,7 +26,7 @@ import WarehouseManagement from './Admin/WarehouseManagement.js';
 import ChemicalManagement from './Admin/ChemicalManagement.js';
 import Pricing from './Admin/Pricing.js';
 import ShippingPaper from './WorkOrders/ShippingPapers.js';
-
+import ShippingChemicals from './WorkOrders/ShippingChemicals.js';
 
 function logout(){
 fire.auth().signOut();
@@ -206,6 +206,9 @@ export default function Home() {
           </Route>
           <Route exact path="/shippingpapers">
             <ShippingPaper></ShippingPaper>
+          </Route>
+          <Route exact path="/shippingchemicals">
+            <ShippingChemicals></ShippingChemicals>
           </Route>
         </Switcher>
       </main>

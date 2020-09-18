@@ -11,19 +11,29 @@ import fire from '../config/fire';
 function ShippingPaper(){
   const [data, setData] = useState([])
   const [companyID, setCompanyID] = useState([])
+  
 
 
   const additem = (incoming, resolve) => {
       
      //validation
   let errorList = []
-  if(incoming.name === undefined){
+  if(incoming.datanumber === undefined){
     errorList.push("Please enter first name")
   }
-  if(incoming.warehousenumber === undefined){
+  if(incoming.createdby === undefined){
+    errorList.push("Please enter first name")
+  }
+  if(incoming.originwarehousenumber === undefined){
     errorList.push("Please enter last name")
   }
-  if(incoming.areamanager === undefined){
+  if(incoming.destinationwarehousenumber === undefined){
+    errorList.push("Please enter a valid email")
+  }
+  if(incoming.trucknumber === undefined){
+    errorList.push("Please enter a valid email")
+  }
+  if(incoming.gps === undefined){
     errorList.push("Please enter a valid email")
   }
   if(errorList.length < 1){
@@ -33,11 +43,15 @@ function ShippingPaper(){
     
           fire 
           .firestore()
-          .collection('assets').add({
-            "warehousenumber": dataToAdd[0].warehousenumber,
-            "name": dataToAdd[0].name,
-            "areamanager": dataToAdd[0].areamanager,
-            type: "warehouse"
+          .collection('asset_data').add({
+            "datanumber": dataToAdd[0].datanumber,
+            "createdby": dataToAdd[0].createdby,
+            "originwarehousenumber": dataToAdd[0].originwarehousenumber,
+            "destinationwarehousenumber": dataToAdd[0].destinationwarehousenumber,
+            "trucknumber": dataToAdd[0].trucknumber,
+            "comments": dataToAdd[0].comments,
+            "gps": dataToAdd[0].gps,
+            type: "shipping_papers"
           })
           .then(function(){
             resolve()
@@ -53,14 +67,23 @@ const updateitem = (oldincoming, incoming, resolve) => {
  
   //validation
 let errorList = []
-if(incoming.name === undefined){
- errorList.push("Please enter first name")
+if(incoming.datanumber === undefined){
+  errorList.push("Please enter first name")
 }
-if(incoming.city === undefined){
- errorList.push("Please enter last name")
+if(incoming.createdby === undefined){
+  errorList.push("Please enter first name")
 }
-if(incoming.state === undefined){
- errorList.push("Please enter a valid email")
+if(incoming.originwarehousenumber === undefined){
+  errorList.push("Please enter last name")
+}
+if(incoming.destinationwarehousenumber === undefined){
+  errorList.push("Please enter a valid email")
+}
+if(incoming.trucknumber === undefined){
+  errorList.push("Please enter a valid email")
+}
+if(incoming.gps === undefined){
+  errorList.push("Please enter a valid email")
 }
 if(errorList.length < 1){
  let dataToAdd =[];
@@ -68,11 +91,15 @@ if(errorList.length < 1){
  console.log(dataToAdd[0].city)
        fire 
        .firestore()
-       .collection('assets').doc(oldincoming.id).update({
-        "warehousenumber": dataToAdd[0].warehousenumber,
-        "name": dataToAdd[0].name,
-        "areamanager": dataToAdd[0].areamanager,
-         type: "warehouse"
+       .collection('asset_data').doc(oldincoming.id).update({
+            "datanumber": dataToAdd[0].datanumber,
+            "createdby": dataToAdd[0].createdby,
+            "originwarehousenumber": dataToAdd[0].originwarehousenumber,
+            "destinationwarehousenumber": dataToAdd[0].destinationwarehousenumber,
+            "trucknumber": dataToAdd[0].trucknumber,
+            "comments": dataToAdd[0].comments,
+            "gps": dataToAdd[0].gps,
+            type: "shipping_papers"
        })
        .then(function(){
          resolve()
@@ -124,7 +151,7 @@ const removeitem = (incoming, resolve) => {
       let id = rowdata;
       setCompanyID(rowdata.id)
       history.push({
-        pathname: '/locationmanagment/leasemanagment',
+        pathname: '/shippingchemicals',
         state: id
       });
       
@@ -134,6 +161,7 @@ const removeitem = (incoming, resolve) => {
     const [state, setState] = React.useState({
         columns: [
           {title: "id", field: "id", hidden: true},
+          {title: "Data Number", field: "datanumber",},
           {title: "Created By", field: "createdby"},
           {title: "Origin Warehouse Number", field: "originwarehousenumber"},
           {title: "Destination Number", field: "destinationwarehousenumber"},
@@ -144,10 +172,6 @@ const removeitem = (incoming, resolve) => {
         
       });
 
-
-
-    
-    
     return (
       
       
@@ -155,7 +179,7 @@ const removeitem = (incoming, resolve) => {
       
         <MaterialTable
         
-      title="Warehouses"
+      title="Shipping Papers"
       columns={state.columns}
       data={data}
       editable={{
@@ -178,7 +202,7 @@ const removeitem = (incoming, resolve) => {
       }}
       actions={[
         {
-          icon: 'sort',
+          icon: 'science',
           tooltip: 'Save User',
           onClick: (event, rowData) => test(event, rowData)
             
