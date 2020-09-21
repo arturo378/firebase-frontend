@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import HomeIcon from '@material-ui/icons/LocationOn';
+import ReceiptIcon from '@material-ui/icons/Receipt';
 
 export const mainListItems = (
   <div>
@@ -61,7 +62,7 @@ export const mainListItems = (
     <ListSubheader inset>Work Orders</ListSubheader>
     <ListItem button>
       <ListItemIcon>
-        <HomeIcon />
+        <ReceiptIcon />
       </ListItemIcon>
       <Button component={Link} to="/shippingpapers" color="primary">
       Shipping Papers
@@ -82,26 +83,5 @@ export const mainListItems = (
   </div>
 );
 
-export const secondaryListItems = (
-  <div>
-    <ListSubheader inset>Saved reports</ListSubheader>
-    <ListItem button>
-      <ListItemIcon>
-        <AssignmentIcon />
-      </ListItemIcon>
-      <ListItemText primary="Current month" />
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <AssignmentIcon />
-      </ListItemIcon>
-      <ListItemText primary="Last quarter" />
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <AssignmentIcon />
-      </ListItemIcon>
-      <ListItemText primary="Year-end sale" />
-    </ListItem>
-  </div>
-);
+
+

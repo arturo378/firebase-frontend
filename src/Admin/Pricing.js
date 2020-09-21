@@ -17,7 +17,7 @@ function Pricing(){
   const list = getChemicals();
   const [times, setTimes] = useState([])
 
-  console.log(list)
+  
 
 
 

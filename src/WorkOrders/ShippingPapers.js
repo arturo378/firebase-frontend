@@ -2,18 +2,125 @@ import React, { useState, useEffect } from 'react';
 import MaterialTable from 'material-table';
 import { useHistory, useLocation } from "react-router-dom";
 import fire from '../config/fire';
+import { makeStyles } from '@material-ui/core/styles';
+import Modal from '@material-ui/core/Modal';
+
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 
 
 
+function getModalStyle() {
+  const top = 50 ;
+  const left = 50 ;
 
+  return {
+    top: `${top}%`,
+    left: `${left}%`,
+    transform: `translate(-${top}%, -${left}%)`,
+  };
+}
+
+const useStyles = makeStyles((theme) => ({
+  paper: {
+    position: 'absolute',
+    width: 1000,
+    backgroundColor: theme.palette.background.paper,
+    border: '2px solid #000',
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing(2, 4, 3),
+  },
+}));
 
 
 function ShippingPaper(){
   const [data, setData] = useState([])
   const [companyID, setCompanyID] = useState([])
+  const [modalStyle] = useState(getModalStyle);
+  const [open, setOpen] = useState(false);
+  const classes = useStyles();
+  const GoogleMapsKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+
+
+   
+  const locations = [
+    {
+      name: "Location 1",
+      location: { 
+        lat: 31.000000, lng: -100.000000
+      },
+    },
+    {
+      name: "Location 2",
+      location: { 
+        lat: 41.3917,
+        lng: 2.1649
+      },
+    },
+    {
+      name: "Location 3",
+      location: { 
+        lat: 41.3773,
+        lng: 2.1585
+      },
+    },
+    {
+      name: "Location 4",
+      location: { 
+        lat: 41.3797,
+        lng: 2.1682
+      },
+    },
+    {
+      name: "Location 5",
+      location: { 
+        lat: 41.4055,
+        lng: 2.1915
+      },
+    }
+  ];
+
+  const mapStyles = {        
+    height: "400px",
+    width: "100%"};
+  
+  const defaultCenter = {
+    lat: 31.000000, lng: -100.000000
+  }
+  
   
 
+  const handleOpen = () => {
+    setOpen(true);
+  };
 
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const body = (
+    <div style={modalStyle} className={classes.paper}>
+     <LoadScript
+       googleMapsApiKey={GoogleMapsKey}>
+        <GoogleMap
+          mapContainerStyle={mapStyles}
+          zoom={10}
+          center={defaultCenter}
+          
+        />
+        <Marker
+        key={center.id}
+        position={{
+            lat: 31.000000,
+            lng: -100.000000
+        }}
+        onClick={() => {
+            setSelectedCenter(center);
+        }}
+      />
+        
+     </LoadScript>
+    </div>
+  );
   const additem = (incoming, resolve) => {
       
      //validation
@@ -88,7 +195,6 @@ if(incoming.gps === undefined){
 if(errorList.length < 1){
  let dataToAdd =[];
  dataToAdd.push(incoming);
- console.log(dataToAdd[0].city)
        fire 
        .firestore()
        .collection('asset_data').doc(oldincoming.id).update({
@@ -114,8 +220,6 @@ if(errorList.length < 1){
 
 
 const removeitem = (incoming, resolve) => {
-  
-
   fire 
       .firestore()
       .collection('assets').doc(incoming.id).delete()
@@ -127,8 +231,13 @@ const removeitem = (incoming, resolve) => {
         resolve()
         console.error("Error writing document: ", error);
       });
-  
+};
 
+
+
+const openmap = (event, rowData) => {
+
+  setOpen(true);
 };
 
   useEffect(() => {
@@ -171,14 +280,19 @@ const removeitem = (incoming, resolve) => {
         ]
         
       });
+      
+
+
+
+
 
     return (
       
       
       
-      
+      <div>
         <MaterialTable
-        
+      onRowClick={openmap}
       title="Shipping Papers"
       columns={state.columns}
       data={data}
@@ -208,8 +322,19 @@ const removeitem = (incoming, resolve) => {
             
         
         }]}
+        
     />
+    <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+      >
+        {body}
+      </Modal>
+    </div>
     );
+    
 }
 
 export default ShippingPaper;

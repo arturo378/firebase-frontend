@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import MaterialTable, {MTableToolbar}  from 'material-table';
 import { useHistory, useLocation } from "react-router-dom";
-
+import { Select, MenuItem } from "@material-ui/core";
 import Button from '@material-ui/core/Button';
 import fire from '../config/fire';
+
 
 function ShippingChemicals(props){
   const location = useLocation();
   const [data, setData] = useState([])
   const list = getChemicals();
+
+ 
   
   function getChemicals(){
     var info = [];
@@ -148,7 +151,29 @@ const removeitem = (incoming, resolve) => {
     const [state, setState] = React.useState({
       columns: [
         {title: "id", field: "id", hidden: true},
-        {title: "Name", field: "name"},
+        {
+          title: "Name",
+          field: "name",
+          editComponent: ({ value, onRowDataChange, rowData }) => (
+            <Select
+              value={value}
+              onChange={(event) => {
+                onRowDataChange({
+                  ...rowData,
+                  name: (event.target.value)
+                  
+                });
+              }}
+            >
+              {list[0].map((chemical) => (
+                
+                <MenuItem key={chemical.id} value={chemical.tradename}>
+                  {chemical.tradename}
+                </MenuItem>
+              ))}
+            </Select>
+          ),
+        },
         {title: "Quantity", field: "quantity"}
         
       ],
