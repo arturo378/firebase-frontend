@@ -39,84 +39,53 @@ function ShippingPaper(){
   const [open, setOpen] = useState(false);
   const classes = useStyles();
   const GoogleMapsKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+  const [position, setPosition] = useState({})
 
-
-   
-  const locations = [
-    {
-      name: "Location 1",
-      location: { 
-        lat: 31.000000, lng: -100.000000
-      },
-    },
-    {
-      name: "Location 2",
-      location: { 
-        lat: 41.3917,
-        lng: 2.1649
-      },
-    },
-    {
-      name: "Location 3",
-      location: { 
-        lat: 41.3773,
-        lng: 2.1585
-      },
-    },
-    {
-      name: "Location 4",
-      location: { 
-        lat: 41.3797,
-        lng: 2.1682
-      },
-    },
-    {
-      name: "Location 5",
-      location: { 
-        lat: 41.4055,
-        lng: 2.1915
-      },
-    }
-  ];
-
-  const mapStyles = {        
-    height: "400px",
-    width: "100%"};
   
-  const defaultCenter = {
-    lat: 31.000000, lng: -100.000000
-  }
-  
-  
-
   const handleOpen = () => {
     setOpen(true);
   };
-
   const handleClose = () => {
     setOpen(false);
   };
 
+  const mapContainerStyle = {
+    height: "400px",
+    width: "800px"
+  }
+  const mapStyles = {        
+    height: "400px",
+    width: "100%"};
+  
+  const center = {
+    lat: 0,
+    lng: -180
+  }
+ 
+  
+  const onLoad = marker => {
+    console.log('marker: ', marker)
+  }
+
+  
+
   const body = (
     <div style={modalStyle} className={classes.paper}>
      <LoadScript
+     id= "Deliveries"
        googleMapsApiKey={GoogleMapsKey}>
         <GoogleMap
-          mapContainerStyle={mapStyles}
-          zoom={10}
-          center={defaultCenter}
-          
-        />
+        id="marker-example"
+        mapContainerStyle={mapStyles}
+        zoom={13}
+        center={position}
+      >
         <Marker
-        key={center.id}
-        position={{
-            lat: 31.000000,
-            lng: -100.000000
-        }}
-        onClick={() => {
-            setSelectedCenter(center);
-        }}
-      />
+          onLoad={onLoad}
+          position={position}
+        />
+      </GoogleMap>
+        
         
      </LoadScript>
     </div>
@@ -236,8 +205,22 @@ const removeitem = (incoming, resolve) => {
 
 
 const openmap = (event, rowData) => {
+  var gpsdat = (rowData.gps).split(',');
+setPosition({
+  lat: parseFloat(gpsdat[0]),
+  lng: parseFloat(gpsdat[1])
+})
 
+ 
+  console.log(position)
+
+ if(position != undefined){
   setOpen(true);
+
+ }
+  
+ 
+ 
 };
 
   useEffect(() => {
