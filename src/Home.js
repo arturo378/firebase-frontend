@@ -11,13 +11,11 @@ import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu'; 
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import { mainListItems, secondaryListItems } from './Dashboard/listItems.js';
+import { mainListItems} from './Dashboard/listItems.js';
 import Button from '@material-ui/core/Button';
 import fire from './config/fire.js';
 import { BrowserRouter as Router, Switch as Switcher, Route } from 'react-router-dom';
 import {Container} from "@material-ui/core";
-import admin from './Admin/UserManagement';
-import Main from './Dashboard/Main'
 import UserManagement from './Admin/UserManagement';
 import LocationManagement from './Admin/LocationManagement.js';
 import LeaseManagement from './Admin/LeaseManagement.js';
@@ -27,6 +25,8 @@ import ChemicalManagement from './Admin/ChemicalManagement.js';
 import Pricing from './Admin/Pricing.js';
 import ShippingPaper from './WorkOrders/ShippingPapers.js';
 import ShippingChemicals from './WorkOrders/ShippingChemicals.js';
+import Delivery from './WorkOrders/Delivery.js';
+import EditDelivery from './WorkOrders/EditDelivery.js';
 
 function logout(){
 fire.auth().signOut();
@@ -207,6 +207,12 @@ export default function Home() {
           </Route>
           <Route exact path="/shippingchemicals">
             <ShippingChemicals></ShippingChemicals>
+          </Route>
+          <Route exact path="/delivery">
+            <Delivery></Delivery>
+          </Route>
+          <Route exact path="/delivery/editdelivery">
+            <EditDelivery></EditDelivery>
           </Route>
         </Switcher>
       </main>

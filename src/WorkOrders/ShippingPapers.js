@@ -300,7 +300,7 @@ setPosition({
       actions={[
         {
           icon: 'science',
-          tooltip: 'Save User',
+          tooltip: 'Manage Chemicals',
           onClick: (event, rowData) => test(event, rowData)
             
         
