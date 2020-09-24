@@ -171,8 +171,8 @@ const removeitem = (incoming, resolve) => {
       let id = rowdata;
       setCompanyID(rowdata.id)
       history.push({
-        pathname: '/locationmanagment/leasemanagment',
-        state: id
+        pathname: '/delivery/editdelivery',
+        
       });
       
     }

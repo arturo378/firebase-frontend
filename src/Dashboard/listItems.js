@@ -73,22 +73,11 @@ export const mainListItems = (
       <ListItemIcon>
         <LocalShippingIcon />
       </ListItemIcon>
-      <Button component={Link} to="/delivery" color="primary">
+      <Button component={Link} to="/delivery/editdelivery" color="primary">
       Delivery
     </Button>
     </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <BarChartIcon />
-      </ListItemIcon>
-      <ListItemText primary="Deliveries" />
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <LayersIcon />
-      </ListItemIcon>
-      <ListItemText primary="Integrations" />
-    </ListItem>
+    
   </div>
 );
 
