@@ -4,43 +4,12 @@ import { useHistory, useLocation } from "react-router-dom";
 import { Select, MenuItem } from "@material-ui/core";
 import Button from '@material-ui/core/Button';
 import fire from '../config/fire';
-import { makeStyles } from '@material-ui/core/styles';
-import InputLabel from '@material-ui/core/InputLabel';
-import Paper from '@material-ui/core/Paper';
-import Grid from '@material-ui/core/Grid';
-
-
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-  },
-  paper: {
-    marginTop: '3em',
-    padding: theme.spacing(2),
-    textAlign: 'center',
-    color: theme.palette.text.secondary,
-  },
-}));
 
 
 function DeliveryEdit(props){
-  const [company, setCompany] = React.useState('');
-  const [open, setOpen] = React.useState(false);
-
-
-  const handleChange = (event) => {
-    setCompany(event.target.value);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
+  const location = useLocation();
+  const [data, setData] = useState([])
+  const list = getChemicals();
 
  
   
@@ -61,27 +30,113 @@ function DeliveryEdit(props){
 }
 
   useEffect(() => {
-    // console.log(location.state)
-    // const id = location.state.id
+    
+
+    const id = location.state.id
  
 
 
-    // fire
-    //   .firestore()
-    //   .collection('asset_data').where('type', '==', 'shipping_chemical').where('shippingid', '==', id)
-    //   .onSnapshot((snapshot) => {
-    //     const newTimes = snapshot.docs.map(((doc) => ({
-    //       id: doc.id,
-    //       ...doc.data(),
+    fire
+      .firestore()
+      .collection('asset_data').where('type', '==', 'delivery_chemical').where('deliveryid', '==', id)
+      .onSnapshot((snapshot) => {
+        const newTimes = snapshot.docs.map(((doc) => ({
+          id: doc.id,
+          ...doc.data(),
           
-    //     })))
-    //     setData(newTimes)
-    //   })
+        })))
+        setData(newTimes)
+      })
   }, [])
     //setData(newTimes)
     
     
+    
+ 
 
+  const additem = (incoming, resolve) => {
+    //validation
+ let errorList = []
+ if(incoming.name === undefined){
+   errorList.push("Please enter first name")
+ }
+ if(errorList.length < 1){
+   let dataToAdd =[];
+   dataToAdd.push(incoming);
+   console.log(location.state.id)
+         fire 
+         .firestore()
+         .collection('asset_data').add({
+           
+           "name": dataToAdd[0].name,
+           "quantity": dataToAdd[0].quantity,
+          "deliveryid": location.state.id,
+          "type": "delivery_chemical"
+           
+           
+         })
+         .then(function(){
+           resolve()
+           console.log("Document successfully written!");
+         })
+         .catch(function(error){
+           console.error("Error writing document: ", error);
+           resolve()
+         })
+ }
+};
+const updateitem = (oldincoming, incoming, resolve) => {
+
+ //validation
+let errorList = []
+if(incoming.name === undefined){
+errorList.push("Please enter first name")
+}
+
+
+if(errorList.length < 1){
+let dataToAdd =[];
+dataToAdd.push(incoming);
+
+      fire 
+      .firestore()
+      .collection('asset_data').doc(oldincoming.id).update({
+       
+        "name": dataToAdd[0].name,
+           "quantity": dataToAdd[0].quantity,
+          "shippingid": location.state.id,
+          "type": "shipping_chemical"
+      })
+      .then(function(){
+        resolve()
+        console.log("Document successfully written!");
+      })
+      .catch(function(error){
+        console.error("Error writing document: ", error);
+        resolve()
+      })
+}
+};
+
+
+const removeitem = (incoming, resolve) => {
+ 
+
+ fire 
+     .firestore()
+     .collection('asset_data').doc(incoming.id).delete()
+     .then(function(){
+       resolve()
+       console.log("Document successfully written!");
+     })
+     .catch(function(error){
+       resolve()
+       console.error("Error writing document: ", error);
+     });
+ 
+
+};
+  
 
 
   const history = useHistory(); 
@@ -89,64 +144,84 @@ function DeliveryEdit(props){
       
       
       history.push({
-        pathname: '/shippingpapers'
+        pathname: '/delivery'
        
       });
     }
 
-  
-    const classes = useStyles();
+    const [state, setState] = React.useState({
+      columns: [
+        {title: "id", field: "id", hidden: true},
+        {
+          title: "Name",
+          field: "name",
+          editComponent: ({ value, onRowDataChange, rowData }) => (
+            <Select
+              value={value}
+              onChange={(event) => {
+                onRowDataChange({
+                  ...rowData,
+                  name: (event.target.value)
+                  
+                });
+              }}
+            >
+              {list[0].map((chemical) => (
+                
+                <MenuItem key={chemical.id} value={chemical.tradename}>
+                  {chemical.tradename}
+                </MenuItem>
+              ))}
+            </Select>
+          ),
+        },
+        {title: "Quantity", field: "quantity"}
+        
+      ],
+        
+      });
+
+
 
     
     
     return (
-      <div className={classes.root}>
-
-        <Grid container spacing={3}>
-        <Grid item xs>
-        <InputLabel className={classes.paper} id="demo-controlled-open-select-label">Company</InputLabel>
-        <Select
-        
-          labelId="demo-controlled-open-select-label"
-          id="demo-controlled-open-select"
-          open={open}
-          onClose={handleClose}
-          onOpen={handleOpen}
-          value={company}
-          onChange={handleChange}
-        >
-          <MenuItem value="">
-            <em>None</em>
-          </MenuItem>
-          <MenuItem value={10}>Ten</MenuItem>
-          <MenuItem value={20}>Twenty</MenuItem>
-          <MenuItem value={30}>Thirty</MenuItem>
-        </Select>
-        </Grid>
-        <Grid item xs>
-          <Paper className={classes.paper}>xs</Paper>
-        </Grid>
-        <Grid item xs>
-          <Paper className={classes.paper}>xs</Paper>
-        </Grid>
-      </Grid>
-      <Grid container spacing={3}>
-        <Grid item xs>
-          <Paper className={classes.paper}>xs</Paper>
-        </Grid>
-        <Grid item xs={6}>
-          <Paper className={classes.paper}>xs=6</Paper>
-        </Grid>
-        <Grid item xs>
-          <Paper className={classes.paper}>xs</Paper>
-        </Grid>
-      </Grid>
-
-
-
-      </div>
       
-       
+      
+      
+      
+        <MaterialTable
+        
+      title="Delivery: Chemicals"
+      columns={state.columns}
+      data={data}
+      components={{
+        Toolbar: props => (
+          <div>
+            <MTableToolbar {...props} />
+            <div style={{padding: '0px 10px'}}>
+            <Button variant="contained" onClick= {back}>Back</Button>
+              
+            </div>
+          </div>
+        ),
+      }}
+      editable={{
+        onRowAdd: (newData) =>
+          new Promise((resolve) => {
+            additem(newData,resolve);
+          }),
+        onRowUpdate: (newData, oldData) =>
+          new Promise((resolve) => {
+            updateitem(oldData, newData,resolve);
+          }),
+        onRowDelete: (oldData) =>
+          new Promise((resolve) => {
+            removeitem(oldData,resolve);
+          }),
+      }}
+      
+    />
     );
 }
 

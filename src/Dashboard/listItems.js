@@ -73,7 +73,7 @@ export const mainListItems = (
       <ListItemIcon>
         <LocalShippingIcon />
       </ListItemIcon>
-      <Button component={Link} to="/delivery/editdelivery" color="primary">
+      <Button component={Link} to="/delivery" color="primary">
       Delivery
     </Button>
     </ListItem>
