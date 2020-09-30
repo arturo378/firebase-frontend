@@ -1,26 +1,81 @@
 import React, { useState, useEffect } from 'react';
 import MaterialTable from 'material-table';
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import fire from '../config/fire';
 import { Select, MenuItem } from "@material-ui/core";
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import Modal from '@material-ui/core/Modal';
+import { makeStyles } from '@material-ui/core/styles';
+import {
+  MuiPickersUtilsProvider,
+  KeyboardTimePicker,
+  KeyboardDatePicker,
+} from '@material-ui/pickers';
+import DateFnsUtils from '@date-io/date-fns';
+import moment  from 'moment';
 
 
 
 
 
+
+function getModalStyle() {
+  const top = 50 ;
+  const left = 50 ;
+
+  return {
+    top: `${top}%`,
+    left: `${left}%`,
+    transform: `translate(-${top}%, -${left}%)`,
+  };
+}
+
+
+const useStyles = makeStyles((theme) => ({
+  paper: {
+    position: 'absolute',
+    width: 1000,
+    backgroundColor: theme.palette.background.paper,
+    border: '2px solid #000',
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing(2, 4, 3),
+  },
+}));
 
 function Delivery(){
   const [data, setData] = useState([])
-  
+  const [open, setOpen] = useState(false);
   // const [leaselist, setLeaseList] = useState([''])
   const CLW = getCLW();
-
+  const classes = useStyles();
+  const [modalStyle] = useState(getModalStyle);
+  const GoogleMapsKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+  const [position, setPosition] = useState({})
   var companyid = '';
   var leaseid = '';
 
+  const [selectedDate, setSelectedDate] = useState(new Date('2014-08-18T21:11:54'));
+
+
+  const handleDateChange = (date) => {
+    console.log(date);
+    setSelectedDate(date);
+  };
+
   
+  const handleClose = () => {
+    setOpen(false);
+  };
   
-  
+
+  const mapStyles = {        
+    height: "400px",
+    width: "100%"};
+
+
+    const onLoad = marker => {
+      console.log('marker: ', marker)
+    }
 
 
   const additem = (incoming, resolve) => {
@@ -46,9 +101,6 @@ function Delivery(){
   if(incoming.createdBy === undefined){
     errorList.push("Please enter a valid email")
   }
-  if(incoming.date === undefined){
-    errorList.push("Please enter a valid email")
-  }
   if(incoming.invoicenum === undefined){
     errorList.push("Please enter a valid email")
   }
@@ -72,7 +124,7 @@ function Delivery(){
             "comments": dataToAdd[0].comments,
             "datanumber": dataToAdd[0].datanumber,
             "createdBy": dataToAdd[0].createdBy,
-            "date": dataToAdd[0].date,
+            "date": selectedDate,
             "invoicenum": dataToAdd[0].invoicenum,
             "warehouse": dataToAdd[0].warehouse,
             type: "delivery"
@@ -109,9 +161,7 @@ if(incoming.company.name === undefined){
   if(incoming.createdBy === undefined){
     errorList.push("Please enter a valid email")
   }
-  if(incoming.date === undefined){
-    errorList.push("Please enter a valid email")
-  }
+ 
   if(incoming.invoicenum === undefined){
     errorList.push("Please enter a valid email")
   }
@@ -132,7 +182,7 @@ if(errorList.length < 1){
         "comments": dataToAdd[0].comments,
         "datanumber": dataToAdd[0].datanumber,
         "createdBy": dataToAdd[0].createdBy,
-        "date": dataToAdd[0].date,
+        "date": selectedDate,
         "invoicenum": dataToAdd[0].invoicenum,
         "warehouse": dataToAdd[0].warehouse,
         type: "delivery"
@@ -187,6 +237,25 @@ const removeitem = (incoming, resolve) => {
 
   }
 
+  const openmap = (event, rowData) => {
+    var gpsdat = (rowData.gps).split(',');
+  setPosition({
+    lat: parseFloat(gpsdat[0]),
+    lng: parseFloat(gpsdat[1])
+  })
+  
+   
+    
+  
+   if(position != undefined){
+    setOpen(true);
+  
+   }
+    
+   
+   
+  };
+
   
 
   useEffect(() => {
@@ -195,11 +264,19 @@ const removeitem = (incoming, resolve) => {
       .firestore()
       .collection('asset_data').where('type', '==', 'delivery')
       .onSnapshot((snapshot) => {
-        const newTimes = snapshot.docs.map(((doc) => ({
+        var newTimes = snapshot.docs.map(((doc) => ({
           id: doc.id,
           ...doc.data()
         })))
-        console.log(newTimes)
+
+        for (var key in newTimes) {
+
+          
+          newTimes[key].date = moment(newTimes[key].date).format("MM/DD/YY");
+        }
+
+        // newTimes.date = moment(newTimes.date).format("MM/DD/YY"); 
+        console.log(newTimes);return;
         setData(newTimes)
       })
       
@@ -220,6 +297,28 @@ const removeitem = (incoming, resolve) => {
       });
       
     }
+
+    const body = (
+      <div style={modalStyle} className={classes.paper}>
+       <LoadScript
+       id= "Deliveries"
+         googleMapsApiKey={GoogleMapsKey}>
+          <GoogleMap
+          id="marker-example"
+          mapContainerStyle={mapStyles}
+          zoom={13}
+          center={position}
+        >
+          <Marker
+            onLoad={onLoad}
+            position={position}
+          />
+        </GoogleMap>
+          
+          
+       </LoadScript>
+      </div>
+    );
  
   
     const [state, setState] = React.useState({
@@ -317,7 +416,27 @@ const removeitem = (incoming, resolve) => {
           {title: "GPS", field: "gps"},
           {title: "Comments", field: "comments"},
           {title: "Created By", field: "createdBy"},
-          {title: "Date", field: "date"},
+          {
+            title: "Date",
+            field: "date",
+            editComponent: ({ value, onRowDataChange, rowData}) => (
+              <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <KeyboardDatePicker
+          disableToolbar
+          variant="inline"
+          format="MM/dd/yyyy"
+          margin="normal"
+          id="date-picker-inline"
+          label="Date picker inline"
+          value={selectedDate}
+          onChange={handleDateChange}
+          KeyboardButtonProps={{
+            'aria-label': 'change date',
+          }}
+        />
+        </MuiPickersUtilsProvider>
+            ),
+          },
           {title: "Invoice Number", field: "invoicenum"},
           {title: "Warehouse", field: "warehouse"},
 
@@ -327,9 +446,9 @@ const removeitem = (incoming, resolve) => {
 
 
     return (
-
+      <div>
         <MaterialTable
-        
+       onRowClick={openmap} 
       title="Delivery"
       columns={state.columns}
       data={data}
@@ -360,6 +479,17 @@ const removeitem = (incoming, resolve) => {
       
         }]}
     />
+      <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="simple-modal-title"
+          aria-describedby="simple-modal-description"
+            >
+        {body}
+      </Modal>
+    </div>
+
+
     );
 }
 
