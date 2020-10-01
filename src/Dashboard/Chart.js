@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '@material-ui/core/styles';
 import { LineChart, Line, XAxis, YAxis, Label, ResponsiveContainer } from 'recharts';
 import Title from './Title';
+import fire from '../config/fire';
 
 // Generate Sales Data
 function createData(time, amount) {
@@ -22,10 +23,37 @@ const data = [
 
 export default function Chart() {
   const theme = useTheme();
+  const [data, setData] = useState([])
+
+
+
+
+  useEffect(() => {
+    
+  
+
+
+
+
+    fire
+    .firestore()
+    .collection('asset_data').where('type', '==', 'delivery')
+    .onSnapshot((snapshot) => {
+      const newTimes = snapshot.docs.map(((doc) => ({
+        id: doc.id,
+        ...doc.data()
+      })))
+      console.log(newTimes)
+      setData(newTimes)
+    })
+
+    
+    
+  }, [])
 
   return (
     <React.Fragment>
-      <Title>Today</Title>
+      <Title>Weekly Delivery Count</Title>
       <ResponsiveContainer>
         <LineChart
           data={data}

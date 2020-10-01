@@ -269,14 +269,15 @@ const removeitem = (incoming, resolve) => {
           ...doc.data()
         })))
 
+        
         for (var key in newTimes) {
 
           
-          newTimes[key].date = moment(newTimes[key].date).format("MM/DD/YY");
+          newTimes[key].date = moment(newTimes[key].date.toDate()).format("MM/DD/YY");
         }
 
         // newTimes.date = moment(newTimes.date).format("MM/DD/YY"); 
-        console.log(newTimes);return;
+        // console.log(moment(newTimes[0].date.toDate()).format("MM/DD/YY"));return;
         setData(newTimes)
       })
       
@@ -325,6 +326,27 @@ const removeitem = (incoming, resolve) => {
         columns: [
           {title: "id", field: "id", hidden: true},
           {title: "Data Number", field: "datanumber"},
+          {
+            title: "Date",
+            field: "date",
+            editComponent: ({ value, onRowDataChange, rowData}) => (
+              <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <KeyboardDatePicker
+          disableToolbar
+          variant="inline"
+          format="MM/dd/yyyy"
+          margin="normal"
+          id="date-picker-inline"
+          label="Date picker inline"
+          value={selectedDate}
+          onChange={handleDateChange}
+          KeyboardButtonProps={{
+            'aria-label': 'change date',
+          }}
+        />
+        </MuiPickersUtilsProvider>
+            ),
+          },
          
           {
             title: "Company",
@@ -416,27 +438,6 @@ const removeitem = (incoming, resolve) => {
           {title: "GPS", field: "gps"},
           {title: "Comments", field: "comments"},
           {title: "Created By", field: "createdBy"},
-          {
-            title: "Date",
-            field: "date",
-            editComponent: ({ value, onRowDataChange, rowData}) => (
-              <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <KeyboardDatePicker
-          disableToolbar
-          variant="inline"
-          format="MM/dd/yyyy"
-          margin="normal"
-          id="date-picker-inline"
-          label="Date picker inline"
-          value={selectedDate}
-          onChange={handleDateChange}
-          KeyboardButtonProps={{
-            'aria-label': 'change date',
-          }}
-        />
-        </MuiPickersUtilsProvider>
-            ),
-          },
           {title: "Invoice Number", field: "invoicenum"},
           {title: "Warehouse", field: "warehouse"},
 
