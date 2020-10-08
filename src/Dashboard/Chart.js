@@ -53,20 +53,25 @@ export default function Chart() {
         id: doc.id,
         ...doc.data()
       })))
+     
       for (const [index, value] of deliveries.entries()) {
         var total = 0;
 
         for (const [index2, value2] of chem_data.entries()) {
           
           if(value.id == value2.deliveryid){
+            
             total =+value2.quantity
+            
           }
+
 
           
         }
+        console.log(total)
       deliveries[index].total= total
       }
-      console.log(deliveries)
+      
 
       var startdate = moment();
     startdate = startdate.subtract(7, "days");

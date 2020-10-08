@@ -11,7 +11,6 @@ import fire from '../config/fire';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Modal from '@material-ui/core/Modal';
-import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
 import TextField from '@material-ui/core/TextField';
 
@@ -94,12 +93,13 @@ export default function UserManagement() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [confirmpassword, setconfirmPassword] = useState('')
-    const [permissions, setPermissions] = useState('')
     const [UID, setUID] = useState('')
     const [deleteID, setdelID] = useState('')
     const [editData, seteditData] = useState([])
+    const [update, setUpdate] = useState(false)
     
   const handleOpen = () => {
+    setUpdate(false)
     setOpen(true); 
   };
 
@@ -108,6 +108,13 @@ export default function UserManagement() {
   };
 
   const selectItem = (i) => {
+    setUpdate(true);
+    console.log(i)
+
+    setUser(i.username)
+    setName(i.fullname)
+    setEmail(i.email)
+    setOpen(true); 
     setdelID('');
     if(typeof i.id !== 'undefined'){
       setdelID(i.id);
@@ -146,20 +153,31 @@ export default function UserManagement() {
     
   };
 
+  const passwordreset = () => {
+    fire.auth().sendPasswordResetEmail(email)
+    .then(function (user) {
+      alert('Please check your email...')
+      setOpen(false);
+    }).catch(function (e) {
+      console.log(e)
+    })
+
+
+    
+  };
+
+
 
 
   function onSubmit(e) {
-    // const { password, confirmpassword } = this.state;
-    
-    
-    // // perform all neccassary validations
-    // if (password !== confirmPassword) {
-    //     alert("Passwords don't match");
-    // } else {
-    //     // make API call
-    // }
-
     e.preventDefault();
+
+    
+    if(update){
+      
+        
+    }else{
+      
     fire.auth().createUserWithEmailAndPassword(email,confirmpassword).then((u)=>{
       console.log(u.user.uid)
 
@@ -171,7 +189,6 @@ export default function UserManagement() {
       fullname,
       UID: u.user.uid,
       email,
-      permissions,
       status: '1'
     })
     .then(() => {
@@ -179,7 +196,6 @@ export default function UserManagement() {
       setName('')
       setEmail('')
       setPassword('')
-      setPermissions('')
       setUID('');
     })
     handleClose();
@@ -188,6 +204,19 @@ export default function UserManagement() {
     }).catch((err)=>{
         console.log(err);
     })
+    
+
+    }
+    // const { password, confirmpassword } = this.state;
+    
+    
+    // // perform all neccassary validations
+    // if (password !== confirmPassword) {
+    //     alert("Passwords don't match");
+    // } else {
+    //     // make API call
+    // }
+
     
   };
 
@@ -203,7 +232,19 @@ export default function UserManagement() {
             <label>Name:</label>
             <input type="text" value = {fullname} onChange={e => setName(e.currentTarget.value)}></input>
         </div>
-        <div>
+        
+        {(function() {
+          if (update) {
+            return (
+              <div>
+            <button type="submit">Update</button>
+            <button type="button" onClick={passwordreset}>Send Password Reset link</button>
+            
+            </div>);
+          } else {
+            return (
+              <div>
+              <div>
             <label>E-mail:</label>
             <input type="text" value = {email} onChange={e => setEmail(e.currentTarget.value)}></input>
         </div>
@@ -215,11 +256,10 @@ export default function UserManagement() {
             <label>Confirm Password:</label>
             <input type="password" value = {confirmpassword} onChange={e => setconfirmPassword(e.currentTarget.value)}></input>
         </div>
-        <div>
-            <label>Permissions:</label>
-            <input type="text" value = {permissions} onChange={e => setPermissions(e.currentTarget.value)}></input>
-        </div>
-        <button >Submit</button>
+            <button>Create New User</button></div>);
+          }
+        })()}
+       
       </form>
       
     </div>
@@ -291,9 +331,7 @@ export default function UserManagement() {
       <div>
         <TextField label="Confirm Password" id="standard-size-small" defaultValue="Small" size="small" />
       </div>
-      <div>
-        <TextField label="Permissions" id="standard-size-small" defaultValue="Small" size="small" />
-      </div>
+      
       <div>
       <Button color="primary" onClick={handleOpen}>Save</Button>
     <Button color= "secondary" onClick={deleteUser}>DELETE</Button>
