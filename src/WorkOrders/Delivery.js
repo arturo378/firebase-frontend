@@ -54,7 +54,7 @@ function Delivery(){
   var companyid = '';
   var leaseid = '';
 
-  const [selectedDate, setSelectedDate] = useState(new Date('2014-08-18T21:11:54'));
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
 
   const handleDateChange = (date) => {

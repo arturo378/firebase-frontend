@@ -77,6 +77,33 @@ export const mainListItems = (
       Delivery
     </Button>
     </ListItem>
+
+
+    <ListSubheader inset>Reports</ListSubheader>
+    <ListItem button>
+      <ListItemIcon>
+        <ReceiptIcon />
+      </ListItemIcon>
+      <Button component={Link} to="/weeklyearnings" color="primary">
+      Weekly Earnings 
+    </Button>
+    </ListItem>
+    <ListItem button>
+      <ListItemIcon>
+        <LocalShippingIcon />
+      </ListItemIcon>
+      <Button component={Link} to="/delivery" color="primary">
+      User Report
+    </Button>
+    </ListItem>
+    <ListItem button>
+      <ListItemIcon>
+        <LocalShippingIcon />
+      </ListItemIcon>
+      <Button component={Link} to="/delivery" color="primary">
+      Inventory Levels
+    </Button>
+    </ListItem>
     
   </div>
 );

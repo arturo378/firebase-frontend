@@ -110,7 +110,7 @@ export default function UserManagement() {
   const selectItem = (i) => {
     setUpdate(true);
     console.log(i)
-
+    setUID(i.id)
     setUser(i.username)
     setName(i.fullname)
     setEmail(i.email)
@@ -139,13 +139,16 @@ export default function UserManagement() {
   const deleteUser = () => {
     fire 
       .firestore()
-      .collection('users').doc(deleteID).update({
-        status: 0
+      .collection('users').doc(UID).update({
+        status: '0'
       })
       .then(function(){
+        setOpen(false);
         console.log("Document successfully written!");
       })
       .catch(function(error){
+        setOpen(false);
+
         console.error("Error writing document: ", error);
       });
     
@@ -166,6 +169,33 @@ export default function UserManagement() {
     
   };
 
+  const updatedata = () => {
+    fire 
+      .firestore()
+      .collection('users').doc(UID).update({
+       
+        "username": username,
+        "fullname": fullname,
+        
+      })
+      .then(function(){
+        
+        setOpen(false);
+        console.log("Document successfully written!");
+      })
+      .catch(function(error){
+        setOpen(false);
+        console.error("Error writing document: ", error);
+        
+      })
+    
+  
+
+   
+
+    
+  };
+
 
 
 
@@ -173,10 +203,7 @@ export default function UserManagement() {
     e.preventDefault();
 
     
-    if(update){
-      
-        
-    }else{
+  
       
     fire.auth().createUserWithEmailAndPassword(email,confirmpassword).then((u)=>{
       console.log(u.user.uid)
@@ -206,7 +233,7 @@ export default function UserManagement() {
     })
     
 
-    }
+    
     // const { password, confirmpassword } = this.state;
     
     
@@ -237,8 +264,9 @@ export default function UserManagement() {
           if (update) {
             return (
               <div>
-            <button type="submit">Update</button>
+            <button type="button" onClick={updatedata}>Update Data</button>
             <button type="button" onClick={passwordreset}>Send Password Reset link</button>
+            <button type="button" onClick={deleteUser}>Delete User</button>
             
             </div>);
           } else {
@@ -274,7 +302,7 @@ export default function UserManagement() {
         <List className={classes.root}>
       <ButtonGroup  aria-label="outlined primary button group">
     <Button color="primary" onClick={handleOpen}>NEW</Button>
-    <Button color= "secondary" onClick={deleteUser}>DELETE</Button>
+    <Button color= "secondary" onClick={deleteUser}>SHOW DELETED</Button>
     </ButtonGroup>
     <Modal
         open={open}

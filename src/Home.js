@@ -28,6 +28,7 @@ import ShippingChemicals from './WorkOrders/ShippingChemicals.js';
 import Delivery from './WorkOrders/Delivery.js';
 import EditDelivery from './WorkOrders/EditDelivery.js';
 import Main from './Dashboard/Main'
+import WeeklyEarnings from './Reports/WeeklyEarnings.js';
 
 function logout(){
 fire.auth().signOut();
@@ -207,6 +208,9 @@ export default function Home() {
           </Route>
           <Route exact path="/delivery/editdelivery">
             <EditDelivery></EditDelivery>
+          </Route>
+          <Route exact path="/weeklyearnings">
+            <WeeklyEarnings></WeeklyEarnings>
           </Route>
         </Switcher>
       </main>

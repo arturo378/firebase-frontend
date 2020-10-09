@@ -16,6 +16,7 @@
     "material-ui-icons": "^1.0.0-beta.36",
     "moment": "^2.29.0",
     "react": "^16.12.0",
+    "react-date-range": "^1.0.3",
     "react-dom": "^16.12.0",
     "react-google-maps": "^9.4.5",
     "react-leaflet": "^2.7.0",
