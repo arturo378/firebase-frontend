@@ -122,9 +122,9 @@ const removeitem = (incoming, resolve) => {
     const history = useHistory(); 
     function test(data, rowdata) {
       let id = rowdata;
-      setCompanyID(rowdata.id)
+      setCompanyID(rowdata.id) 
       history.push({
-        pathname: '/locationmanagment/leasemanagment',
+        pathname: '/warehousechemical',
         state: id
       });
       
@@ -175,11 +175,9 @@ const removeitem = (incoming, resolve) => {
       }}
       actions={[
         {
-          icon: 'sort',
-          tooltip: 'Save User',
+          icon: 'science',
+          tooltip: 'Manage Inventory',
           onClick: (event, rowData) => test(event, rowData)
-            
-        
         }]}
     />
     );

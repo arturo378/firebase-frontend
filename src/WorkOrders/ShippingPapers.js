@@ -4,9 +4,14 @@ import { useHistory, useLocation } from "react-router-dom";
 import fire from '../config/fire';
 import { makeStyles } from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';
-
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-
+import DateFnsUtils from '@date-io/date-fns';
+import moment  from 'moment';
+import {
+  MuiPickersUtilsProvider,
+  KeyboardTimePicker,
+  KeyboardDatePicker,
+} from '@material-ui/pickers';
 
 
 function getModalStyle() {
@@ -40,8 +45,13 @@ function ShippingPaper(){
   const classes = useStyles();
   const GoogleMapsKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
   const [position, setPosition] = useState({})
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
+
   const handleOpen = () => {
     setOpen(true);
   };
@@ -125,6 +135,7 @@ function ShippingPaper(){
             "originwarehousenumber": dataToAdd[0].originwarehousenumber,
             "destinationwarehousenumber": dataToAdd[0].destinationwarehousenumber,
             "trucknumber": dataToAdd[0].trucknumber,
+            "date": selectedDate,
             "comments": dataToAdd[0].comments,
             "gps": dataToAdd[0].gps,
             type: "shipping_papers"
@@ -172,6 +183,7 @@ if(errorList.length < 1){
             "originwarehousenumber": dataToAdd[0].originwarehousenumber,
             "destinationwarehousenumber": dataToAdd[0].destinationwarehousenumber,
             "trucknumber": dataToAdd[0].trucknumber,
+            "date": selectedDate,
             "comments": dataToAdd[0].comments,
             "gps": dataToAdd[0].gps,
             type: "shipping_papers"
@@ -232,6 +244,12 @@ setPosition({
           id: doc.id,
           ...doc.data()
         })))
+        for (var key in newTimes) {
+
+          if(newTimes[key].date){
+          newTimes[key].date = moment(newTimes[key].date.toDate()).format("MM/DD/YY");
+        }
+        }
         setData(newTimes)
       })
   }, [])
@@ -254,6 +272,27 @@ setPosition({
         columns: [
           {title: "id", field: "id", hidden: true},
           {title: "Data Number", field: "datanumber",},
+          {
+            title: "Date",
+            field: "date",
+            editComponent: ({ value, onRowDataChange, rowData}) => (
+              <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <KeyboardDatePicker
+          disableToolbar
+          variant="inline"
+          format="MM/dd/yyyy"
+          margin="normal"
+          id="date-picker-inline"
+          label="Date picker inline"
+          value={selectedDate}
+          onChange={handleDateChange}
+          KeyboardButtonProps={{
+            'aria-label': 'change date',
+          }}
+        />
+        </MuiPickersUtilsProvider>
+            ),
+          },
           {title: "Created By", field: "createdby"},
           {title: "Origin Warehouse Number", field: "originwarehousenumber"},
           {title: "Destination Number", field: "destinationwarehousenumber"},

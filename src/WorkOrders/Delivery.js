@@ -118,6 +118,7 @@ function Delivery(){
           .firestore()
           .collection('asset_data').add({
             "company": (dataToAdd[0].company).name,
+            "companyid": (dataToAdd[0].company).id,
             "lease": (dataToAdd[0].lease).name,
             "well": (dataToAdd[0].well).name,
             "gps": dataToAdd[0].gps,
@@ -170,12 +171,15 @@ if(incoming.company.name === undefined){
   }
 if(errorList.length < 1){
  let dataToAdd =[];
+ 
  dataToAdd.push(incoming);
+
  
        fire 
        .firestore()
        .collection('asset_data').doc(oldincoming.id).update({
         "company": (dataToAdd[0].company).name,
+        "companyid": (dataToAdd[0].company).id,
         "lease": dataToAdd[0].lease.name,
         "well": dataToAdd[0].well.name,
         "gps": dataToAdd[0].gps,

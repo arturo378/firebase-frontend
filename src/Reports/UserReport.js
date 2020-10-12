@@ -21,9 +21,6 @@ const ExcelColumn = ReactExport.ExcelFile.ExcelColumn;
 
 
 
-
-
-
 const useStyles = makeStyles((theme) => ({
     root: {
       flexGrow: 1,
@@ -41,98 +38,80 @@ const useStyles = makeStyles((theme) => ({
 
 
 
-function WeeklyEarnings(){
+function UserReport(){
 const classes = useStyles();
 const [data, setData] = useState([]);
-const [companies, setCompanies] = useState([]);
+const [users, setUsers] = useState([]);
 const [pricing, setPricing] = useState([]);
-const [company, setCompany] = useState('');
+const [user, setUser] = useState('');
 const [date, setDate] = useState([]);
 const handleChange = (event) => {
-    setCompany(event.target.value);
+    setUser(event.target.value);
   };
 const handleSelect = (info) => {
     setDate(info)
   };
-  const fetchReport = async (data) => {
+  const fetchReport = (data) => {
     var list = [];
-    var chem_list = [];
+    
     
 
-    console.log(date)
-    await fire
+    
+     fire
     .firestore()
     .collection('asset_data').where('type', '==', 'delivery')
     .where('date', '>', date.selection.startDate)
     .where('date', '<', date.selection.endDate)
-    .where('company', '==', company)
+    .where('createdBy', '==', user)
     .onSnapshot((snapshot) => {
-      var tickets = snapshot.docs.map(((doc) => ({
+      var deliveries = snapshot.docs.map(((doc) => ({
         id: doc.id,
         ...doc.data()
       })))
-      
-      for (var key in tickets) {
-        chem_list.push(tickets[key].id)
-      }
 
-     if(chem_list.length>0){
+      for (var key in deliveries) {
+
+        
+        list.push(deliveries[key]);
+      
+      }
+    //   list.push(deliveries)
+      
+    
 
       fire
       .firestore()
-      .collection('asset_data').where('type', '==', 'delivery_chemical')
-      .where('deliveryid', 'in', chem_list)
+      .collection('asset_data').where('type', '==', 'shipping_papers')
+      .where('date', '>', date.selection.startDate)
+        .where('date', '<', date.selection.endDate)
+      .where('createdby', '==', user)
       .onSnapshot((snapshot) => {
-        var delivery_chems = snapshot.docs.map(((doc) => ({
+        var shipping = snapshot.docs.map(((doc) => ({
           id: doc.id,
           ...doc.data()
         })))
-        
-       
-        for (var key in tickets) {
-          for (var key2 in delivery_chems) {
-            if(tickets[key].id == delivery_chems[key2].deliveryid){
-              for(var key3 in pricing){
-                if(tickets[key].companyid == pricing[key3].company && delivery_chems[key2].name == pricing[key3].name){
 
-                  list.push({
-                    'Date': moment(tickets[key].date.Timestamp).format("MM/DD/YY"),
-                    'Data_Number': tickets[key].datanumber,
-                    'GPS': tickets[key].gps,
-                    'Company': tickets[key].company,
-                    'Lease': tickets[key].lease,
-                    'Well': tickets[key].well,
-                    'Chemical': delivery_chems[key2].name,
-                    'Quantity': delivery_chems[key2].quantity,
-                    'Pricing': pricing[key3].price,
-                    'Total':  pricing[key3].price*delivery_chems[key2].quantity
-                  })
+        for (var key2 in shipping) {
 
-
-                }
-
-                
-              }
-
-              
-              
-            }
-
-
-
+           list.push(shipping[key2])
           }
+        
+        if(list.length>0){
+            for (var key in list) {
 
-          // newTimes[key].date = moment(newTimes[key].date.toDate()).format("MM/DD/YY");
+                if(list[key].date){
+                list[key].date = moment(list[key].date.toDate()).format("MM/DD/YY");
+              }
+              }
         }
         console.log(list)
-        setData(list);
-        
-  
+        setData(list)
+ 
         // newTimes.date = moment(newTimes.date).format("MM/DD/YY"); 
         // console.log(moment(newTimes[0].date.toDate()).format("MM/DD/YY"));return;
         // setData(newTimes)
       })
-     }
+     
     })
     
  
@@ -158,28 +137,17 @@ const handleSelect = (info) => {
   useEffect(() => {
     fire
       .firestore()
-      .collection('assets').where('type', '==', 'company')
+      .collection('users')
       .onSnapshot((snapshot) => {
-        var companydata = snapshot.docs.map(((doc) => ({
+        var userdata = snapshot.docs.map(((doc) => ({
           id: doc.id,
           ...doc.data()
         })))
         
-        setCompanies(companydata)
+        setUsers(userdata)
       })
 
 
-      fire
-    .firestore()
-    .collection('assets').where('type', '==', 'pricing')
-    .onSnapshot((snapshot) => {
-      var prices = snapshot.docs.map(((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      })))
-      
-      setPricing(prices)
-    })
       
   }, [])
 
@@ -192,11 +160,11 @@ const handleSelect = (info) => {
 
     return (
         <div className={classes.root}>
-          <Typography variant="h3" component="h2" gutterBottom>
-        Earnings Report
+            <Typography variant="h3" component="h2" gutterBottom>
+        User Report
       </Typography>
       <Grid container spacing={3}>
-        <Grid item xs> 
+        <Grid item xs>
         <DateRangePicker
         ranges={[selectionRange]}
         onChange={handleSelect}
@@ -205,16 +173,16 @@ const handleSelect = (info) => {
         <Grid item xs>
           
 
-            <InputLabel id="demo-simple-select-label">Company</InputLabel>
+            <InputLabel id="demo-simple-select-label">User</InputLabel>
         <Select
           labelId="demo-simple-select-label"
           id="demo-simple-select"
-          value={company}
+          value={user}
           onChange={handleChange}
         >
-            { companies.map((info) => (
+            { users.map((info) => (
                   
-                  <MenuItem key={info.id} value={info.name}>{info.name}</MenuItem>
+                  <MenuItem key={info.id} value={info.fullname}>{info.fullname}</MenuItem>
                 ))}
               </Select>
           
@@ -230,16 +198,16 @@ const handleSelect = (info) => {
             return (
               <ExcelFile element={<button>Download Excel</button>}>
               <ExcelSheet data={data} name="Employees">
-                  <ExcelColumn label="Data Number" value="Data_Number"/>
-                  <ExcelColumn label="Date" value="Date"/>
-                  <ExcelColumn label="Company" value="Company"/>
-                  <ExcelColumn label="Lease" value="Lease"/>
-                  <ExcelColumn label="Well" value="Well"/>
-                  <ExcelColumn label="GPS Coordinate" value="GPS"/>
-                  <ExcelColumn label="Chemical" value="Chemical"/>
-                  <ExcelColumn label="Price" value="Pricing "/>
-                  <ExcelColumn label="Quantity" value="Quantity"/>
-                  <ExcelColumn label="Total" value="Total"/>
+                  <ExcelColumn label="Data Number" value="datanumber"/>
+                  <ExcelColumn label="Date" value="date"/>
+                  <ExcelColumn label="Company" value="company"/>
+                  <ExcelColumn label="Lease" value="lease"/>
+                  <ExcelColumn label="Well" value="well"/>
+                  <ExcelColumn label="GPS Coordinate" value="gps"/>
+                  <ExcelColumn label="Comments" value="comments"/>
+                  <ExcelColumn label="Origin Warehouse" value="originwarehousenumber"/>
+                  <ExcelColumn label="Destination Warehouse" value="destinationwarehousenumber"/>
+                  <ExcelColumn label="Truck Number" value="trucknumber"/>
                   
                   
               </ExcelSheet>
@@ -268,4 +236,4 @@ const handleSelect = (info) => {
     );
 }
 
-export default WeeklyEarnings;
+export default UserReport;

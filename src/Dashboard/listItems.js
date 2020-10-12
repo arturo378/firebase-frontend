@@ -5,10 +5,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
-import PeopleIcon from '@material-ui/icons/People';
-import BarChartIcon from '@material-ui/icons/BarChart';
-import LayersIcon from '@material-ui/icons/Layers';
-import AssignmentIcon from '@material-ui/icons/Assignment';
+
 import { Link } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
 import LocationOnIcon from '@material-ui/icons/LocationOn';
@@ -92,7 +89,7 @@ export const mainListItems = (
       <ListItemIcon>
         <LocalShippingIcon />
       </ListItemIcon>
-      <Button component={Link} to="/delivery" color="primary">
+      <Button component={Link} to="/userReport" color="primary">
       User Report
     </Button>
     </ListItem>
@@ -100,7 +97,7 @@ export const mainListItems = (
       <ListItemIcon>
         <LocalShippingIcon />
       </ListItemIcon>
-      <Button component={Link} to="/delivery" color="primary">
+      <Button component={Link} to="/warehouseInventory" color="primary">
       Inventory Levels
     </Button>
     </ListItem>
