@@ -123,7 +123,7 @@ function Delivery(){
             "well": (dataToAdd[0].well).name,
             "gps": dataToAdd[0].gps,
             "comments": dataToAdd[0].comments,
-            "datanumber": dataToAdd[0].datanumber,
+            "datanumber": "D-" + Math.round((new Date().getTime() / 1000)),
             "createdBy": dataToAdd[0].createdBy,
             "date": selectedDate,
             "invoicenum": dataToAdd[0].invoicenum,
@@ -184,7 +184,6 @@ if(errorList.length < 1){
         "well": dataToAdd[0].well.name,
         "gps": dataToAdd[0].gps,
         "comments": dataToAdd[0].comments,
-        "datanumber": dataToAdd[0].datanumber,
         "createdBy": dataToAdd[0].createdBy,
         "date": selectedDate,
         "invoicenum": dataToAdd[0].invoicenum,
@@ -329,7 +328,7 @@ const removeitem = (incoming, resolve) => {
     const [state, setState] = React.useState({
         columns: [
           {title: "id", field: "id", hidden: true},
-          {title: "Data Number", field: "datanumber"},
+          {title: "Data Number", field: "datanumber", editable: 'never'},
           {
             title: "Date",
             field: "date",

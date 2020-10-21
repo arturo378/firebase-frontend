@@ -9,7 +9,6 @@ import DateFnsUtils from '@date-io/date-fns';
 import moment  from 'moment';
 import {
   MuiPickersUtilsProvider,
-  KeyboardTimePicker,
   KeyboardDatePicker,
 } from '@material-ui/pickers';
 
@@ -104,9 +103,7 @@ function ShippingPaper(){
       
      //validation
   let errorList = []
-  if(incoming.datanumber === undefined){
-    errorList.push("Please enter first name")
-  }
+ 
   if(incoming.createdby === undefined){
     errorList.push("Please enter first name")
   }
@@ -154,9 +151,7 @@ const updateitem = (oldincoming, incoming, resolve) => {
  
   //validation
 let errorList = []
-if(incoming.datanumber === undefined){
-  errorList.push("Please enter first name")
-}
+
 if(incoming.createdby === undefined){
   errorList.push("Please enter first name")
 }
@@ -224,7 +219,7 @@ setPosition({
 })
 
  
-  console.log(position)
+  
 
  if(position != undefined){
   setOpen(true);
@@ -271,7 +266,7 @@ setPosition({
     const [state, setState] = React.useState({
         columns: [
           {title: "id", field: "id", hidden: true},
-          {title: "Data Number", field: "datanumber",},
+          {title: "Data Number", field: "datanumber", editable: 'never'},
           {
             title: "Date",
             field: "date",

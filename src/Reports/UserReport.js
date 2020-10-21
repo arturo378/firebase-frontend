@@ -13,13 +13,11 @@ import Button from '@material-ui/core/Button';
 import ReactExport from "react-export-excel";
 import moment  from 'moment';
 import Typography from '@material-ui/core/Typography';
+import { addDays } from 'date-fns';
 
 const ExcelFile = ReactExport.ExcelFile;
 const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
 const ExcelColumn = ReactExport.ExcelFile.ExcelColumn;
-
-
-
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -42,16 +40,23 @@ function UserReport(){
 const classes = useStyles();
 const [data, setData] = useState([]);
 const [users, setUsers] = useState([]);
-const [pricing, setPricing] = useState([]);
 const [user, setUser] = useState('');
-const [date, setDate] = useState([]);
+const [state, setState] = useState([
+  {
+    startDate: new Date(),
+    endDate: addDays(new Date(), 7),
+    key: 'selection'
+  }
+]);
+
+
 const handleChange = (event) => {
     setUser(event.target.value);
   };
-const handleSelect = (info) => {
-    setDate(info)
-  };
+
   const fetchReport = (data) => {
+
+    
     var list = [];
     
     
@@ -60,8 +65,8 @@ const handleSelect = (info) => {
      fire
     .firestore()
     .collection('asset_data').where('type', '==', 'delivery')
-    .where('date', '>', date.selection.startDate)
-    .where('date', '<', date.selection.endDate)
+    .where('date', '>', state[0].startDate)
+    .where('date', '<', state[0].endDate)
     .where('createdBy', '==', user)
     .onSnapshot((snapshot) => {
       var deliveries = snapshot.docs.map(((doc) => ({
@@ -82,8 +87,8 @@ const handleSelect = (info) => {
       fire
       .firestore()
       .collection('asset_data').where('type', '==', 'shipping_papers')
-      .where('date', '>', date.selection.startDate)
-        .where('date', '<', date.selection.endDate)
+      .where('date', '>', state[0].startDate)
+        .where('date', '<', state[0].endDate)
       .where('createdby', '==', user)
       .onSnapshot((snapshot) => {
         var shipping = snapshot.docs.map(((doc) => ({
@@ -124,13 +129,6 @@ const handleSelect = (info) => {
     
   };
 
-  const selectionRange = {
-    startDate: new Date(),
-    endDate: new Date(),
-    key: 'selection',
-  }
-
-
 
 
 
@@ -166,8 +164,9 @@ const handleSelect = (info) => {
       <Grid container spacing={3}>
         <Grid item xs>
         <DateRangePicker
-        ranges={[selectionRange]}
-        onChange={handleSelect}
+        onChange={item => setState([item.selection])}
+        ranges={state}
+        
       />
         </Grid>
         <Grid item xs>
