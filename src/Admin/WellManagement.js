@@ -93,7 +93,7 @@ dataToAdd.push(incoming);
         "name": dataToAdd[0].name,
         "gps": dataToAdd[0].gps,
         "description": dataToAdd[0].description,
-        company: leaseid,
+        lease: leaseid,
         type: "well"
       })
       .then(function(){
