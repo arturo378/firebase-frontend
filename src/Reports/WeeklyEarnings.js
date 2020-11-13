@@ -19,12 +19,6 @@ const ExcelFile = ReactExport.ExcelFile;
 const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
 const ExcelColumn = ReactExport.ExcelFile.ExcelColumn;
 
-
-
-
-
-
-
 const useStyles = makeStyles((theme) => ({
     root: {
       flexGrow: 1,
@@ -36,11 +30,6 @@ const useStyles = makeStyles((theme) => ({
       color: theme.palette.text.secondary,
     },
   }));
-
-  
-
-
-
 
 function WeeklyEarnings(){
 const classes = useStyles();
@@ -76,7 +65,6 @@ const handleChange = (event) => {
         id: doc.id,
         ...doc.data()
       })))
-      
       for (var key in tickets) {
         chem_list.push(tickets[key].id)
       }
@@ -96,9 +84,9 @@ const handleChange = (event) => {
        
         for (var key in tickets) {
           for (var key2 in delivery_chems) {
-            if(tickets[key].id == delivery_chems[key2].deliveryid){
+            if(tickets[key].id === delivery_chems[key2].deliveryid){
               for(var key3 in pricing){
-                if(tickets[key].companyid == pricing[key3].company && delivery_chems[key2].name == pricing[key3].name){
+                if(tickets[key].companyid === pricing[key3].company && delivery_chems[key2].name === pricing[key3].name){
 
                   list.push({
                     'Date': moment(tickets[key].date.Timestamp).format("MM/DD/YY"),
@@ -112,24 +100,12 @@ const handleChange = (event) => {
                     'Pricing': pricing[key3].price,
                     'Total':  pricing[key3].price*delivery_chems[key2].quantity
                   })
-
-
-                }
-
-                
-              }
-
-              
-              
+                } 
+              } 
             }
-
-
-
           }
-
           // newTimes[key].date = moment(newTimes[key].date.toDate()).format("MM/DD/YY");
         }
-        console.log(list)
         setData(list);
         
   
@@ -149,16 +125,6 @@ const handleChange = (event) => {
     
     
   };
-
-  const selectionRange = {
-    startDate: new Date(),
-    endDate: new Date(),
-    key: 'selection',
-  }
-
-
-
-
 
   useEffect(() => {
     fire
@@ -251,22 +217,9 @@ const handleChange = (event) => {
           </ExcelFile>
             )}
         })()}
-
-
-        
         </Grid>
       </Grid>
-      <Grid container spacing={3}>
-        <Grid item xs>
-          <Paper className={classes.paper}>xs</Paper>
-        </Grid>
-        <Grid item xs={6}>
-          <Paper className={classes.paper}>xs=6</Paper>
-        </Grid>
-        <Grid item xs>
-          <Paper className={classes.paper}>xs</Paper>
-        </Grid>
-      </Grid>
+
     </div>
 
 

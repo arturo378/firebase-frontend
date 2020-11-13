@@ -119,18 +119,6 @@ const removeitem = (incoming, resolve) => {
 
     //console.log(data)
   
-    const history = useHistory(); 
-    function test(data, rowdata) {
-      let id = rowdata;
-      setCompanyID(rowdata.id)
-      history.push({
-        pathname: '/locationmanagment/leasemanagment',
-        state: id
-      });
-      
-    }
- 
-  
     const [state, setState] = React.useState({
         columns: [
           {title: "id", field: "id", hidden: true},
@@ -173,14 +161,7 @@ const removeitem = (incoming, resolve) => {
             removeitem(oldData,resolve);
           }),
       }}
-      actions={[
-        {
-          icon: 'sort',
-          tooltip: 'Save User',
-          onClick: (event, rowData) => test(event, rowData)
-            
-        
-        }]}
+  
     />
     );
 }

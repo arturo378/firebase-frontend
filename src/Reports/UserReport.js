@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DateRangePicker } from 'react-date-range';
 import { makeStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import 'react-date-range/dist/styles.css'; // main style file
 import 'react-date-range/dist/theme/default.css'; // theme css file
@@ -73,17 +72,9 @@ const handleChange = (event) => {
         id: doc.id,
         ...doc.data()
       })))
-
       for (var key in deliveries) {
-
-        
         list.push(deliveries[key]);
-      
       }
-    //   list.push(deliveries)
-      
-    
-
       fire
       .firestore()
       .collection('asset_data').where('type', '==', 'shipping_papers')
@@ -95,12 +86,9 @@ const handleChange = (event) => {
           id: doc.id,
           ...doc.data()
         })))
-
         for (var key2 in shipping) {
-
            list.push(shipping[key2])
           }
-        
         if(list.length>0){
             for (var key in list) {
 
@@ -109,14 +97,8 @@ const handleChange = (event) => {
               }
               }
         }
-        console.log(list)
         setData(list)
- 
-        // newTimes.date = moment(newTimes.date).format("MM/DD/YY"); 
-        // console.log(moment(newTimes[0].date.toDate()).format("MM/DD/YY"));return;
-        // setData(newTimes)
       })
-     
     })
     
  
@@ -181,7 +163,7 @@ const handleChange = (event) => {
         >
             { users.map((info) => (
                   
-                  <MenuItem key={info.id} value={info.fullname}>{info.fullname}</MenuItem>
+                  <MenuItem key={info.id} value={info.email}>{info.email}</MenuItem>
                 ))}
               </Select>
           
@@ -216,17 +198,6 @@ const handleChange = (event) => {
 
 
         
-        </Grid>
-      </Grid>
-      <Grid container spacing={3}>
-        <Grid item xs>
-          <Paper className={classes.paper}>xs</Paper>
-        </Grid>
-        <Grid item xs={6}>
-          <Paper className={classes.paper}>xs=6</Paper>
-        </Grid>
-        <Grid item xs>
-          <Paper className={classes.paper}>xs</Paper>
         </Grid>
       </Grid>
     </div>

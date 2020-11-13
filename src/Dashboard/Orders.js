@@ -41,10 +41,6 @@ export default function Orders() {
           id: doc.id,
           ...doc.data()
         })))
-
-        
-
-        
         for (var key in newTimes) {
           
           var gpsdat = (newTimes[key].gps).split(',');
@@ -65,7 +61,7 @@ export default function Orders() {
       
   }, [])
 
-console.log(marks)
+
 
 
 

@@ -94,8 +94,6 @@ function ShippingPaper(){
           position={position}
         />
       </GoogleMap>
-        
-        
      </LoadScript>
     </div>
   );
@@ -135,7 +133,9 @@ function ShippingPaper(){
             "date": selectedDate,
             "comments": dataToAdd[0].comments,
             "gps": dataToAdd[0].gps,
-            type: "shipping_papers"
+            type: "shipping_papers",
+            active: 1
+
           })
           .then(function(){
             resolve()
@@ -181,7 +181,9 @@ if(errorList.length < 1){
             "date": selectedDate,
             "comments": dataToAdd[0].comments,
             "gps": dataToAdd[0].gps,
-            type: "shipping_papers"
+            type: "shipping_papers",
+            active: dataToAdd[0].active
+
        })
        .then(function(){
          resolve()
@@ -198,7 +200,7 @@ if(errorList.length < 1){
 const removeitem = (incoming, resolve) => {
   fire 
       .firestore()
-      .collection('assets').doc(incoming.id).delete()
+      .collection('asset_data').doc(incoming.id).delete()
       .then(function(){
         resolve()
         console.log("Document successfully written!");
@@ -293,7 +295,12 @@ setPosition({
           {title: "Destination Number", field: "destinationwarehousenumber"},
           {title: "Truck Number", field: "trucknumber"},
           {title: "Comments", field: "comments"},
-          {title: "Location", field: "gps"}
+          {title: "Location", field: "gps"},
+          {
+            title: 'Completed',
+            field: 'active',
+            lookup: { 1: 'Completed', 0: 'Non-Completed' },
+          },
         ]
         
       });
@@ -313,6 +320,9 @@ setPosition({
       title="Shipping Papers"
       columns={state.columns}
       data={data}
+      options={{
+        filtering: true
+      }}
       editable={{
         onRowAdd: (newData) =>
         new Promise((resolve) => {

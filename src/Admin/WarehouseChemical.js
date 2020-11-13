@@ -30,7 +30,6 @@ function WarehouseChemical(props){
 }
 
   useEffect(() => {
-    console.log(location.state)
     const id = location.state.id
  
 

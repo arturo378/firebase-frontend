@@ -1,66 +1,51 @@
-import React , { Component } from "react";
+import React, { useState } from "react";
+import { Button, FormGroup, FormControl, FormLabel } from "react-bootstrap";
 import fire from "./config/fire";
 
-class Login extends Component{
-constructor(props)
-{
-    super(props);
-    this.login = this.login.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.signup = this.signup.bind(this);
-    this.state={
-        email : "",
-        password : ""
-    }
-}
-login(e){
-    e.preventDefault();
-    fire.auth().signInWithEmailAndPassword(this.state.email,this.state.password).then((u)=>{
-        console.log(u)
-    }).catch((err)=>{
-        console.log(err);
-    })
-}
-signup(e){
-    e.preventDefault();
-    fire.auth().createUserWithEmailAndPassword(this.state.email,this.state.password).then((u)=>{
-        console.log(u)
-    }).catch((err)=>{
-        console.log(err);
-    })
-}
-handleChange(e){
-    this.setState({
-        [e.target.name] : e.target.value
-    })
-}
-render()
-{
-    return(
-        <div>
-            <form>
-                <input
-                type="email"
-                id="email"
-                name="email"
-                placeholder="enter email address"
-                onChange={this.handleChange}
-                value={this.state.email}
-                />
-                <input
-                name="password"
-                type= "password"
-                onChange={this.handleChange}
-                id="password"
-                placeholder="enter password"
-                value={this.state.password}
-                />
-                <button onClick={this.login}>Login</button>
-                <button onClick={this.signup}>Signup</button>
-            </form>
+import "./Login.css";
 
-        </div>
-    )
+export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  function validateForm() {
+    return email.length > 0 && password.length > 0;
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+   
+    fire.auth().signInWithEmailAndPassword(email,password).then((u)=>{
+        console.log(u)
+    }).catch((err)=>{
+        console.log(err);
+    })
+  }
+
+  return (
+    <div className="Login">
+      <form onSubmit={handleSubmit}>
+        <FormGroup controlId="email" bsSize="large">
+          <FormLabel>Email</FormLabel>
+          <FormControl
+            autoFocus
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+          />
+        </FormGroup>
+        <FormGroup controlId="password" bsSize="large">
+          <FormLabel>Password</FormLabel>
+          <FormControl
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            type="password"
+          />
+        </FormGroup>
+        <Button  variant="primary" block bsSize="large" disabled={!validateForm()} type="submit">
+          Login
+        </Button>
+      </form>
+    </div>
+  );
 }
-}
-export default Login;

@@ -109,7 +109,6 @@ export default function UserManagement() {
 
   const selectItem = (i) => {
     setUpdate(true);
-    console.log(i)
     setUID(i.id)
     setUser(i.username)
     setName(i.fullname)
@@ -118,22 +117,10 @@ export default function UserManagement() {
     setdelID('');
     if(typeof i.id !== 'undefined'){
       setdelID(i.id);
-      console.log(deleteID);
     }
     
 
-    //console.log(times)
-    
-    // editData.seteditData(times,{ id: i.id})
-  //   editData.seteditData(prevState => ({
-  //     times: {                   // object that we want to update
-  //         ...prevState.times,    // keep all other key-value pairs
-  //         id: i.id       // update the value of specific key
-  //     }
-  // }))
-  //   console.log(editData);
- //console.log(i.id);
-    
+
   };
   
   const deleteUser = () => {
@@ -250,7 +237,24 @@ export default function UserManagement() {
   const body = (
     <div style={modalStyle} className={classes.paper}>
       <form onSubmit={onSubmit}>
-        <h4>Create New User</h4>
+      {(function() {
+        if(update){
+          return (
+            
+          <h4>Update User</h4>
+          
+          );
+        }else{
+          return (
+            
+          <h4>Create New User</h4>
+          
+         );
+        }
+
+
+      })()}
+        
         <div>
             <label>Username:</label>
             <input type="text" value = {username} onChange={e => setUser(e.currentTarget.value)}></input>
@@ -302,7 +306,7 @@ export default function UserManagement() {
         <List className={classes.root}>
       <ButtonGroup  aria-label="outlined primary button group">
     <Button color="primary" onClick={handleOpen}>NEW</Button>
-    <Button color= "secondary" onClick={deleteUser}>SHOW DELETED</Button>
+    {/* <Button color= "secondary" onClick={deleteUser}>SHOW DELETED</Button> */}
     </ButtonGroup>
     <Modal
         open={open}

@@ -68,7 +68,7 @@ if(incoming.price === undefined){
 if(errorList.length < 1){
  let dataToAdd =[];
  dataToAdd.push(incoming);
- console.log(dataToAdd[0].city)
+ 
        fire 
        .firestore()
        .collection('assets').doc(oldincoming.id).update({

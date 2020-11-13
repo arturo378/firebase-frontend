@@ -4,6 +4,8 @@ import { BarChart, Tooltip, Bar, XAxis, YAxis, Label, ResponsiveContainer } from
 import Title from './Title';
 import fire from '../config/fire';
 import moment  from 'moment';
+import { subDays } from 'date-fns';
+
 
 // Generate Sales Data
 function createData(time, amount) {
@@ -14,23 +16,26 @@ function createData(time, amount) {
 export default function Chart() {
   const theme = useTheme();
   const [data, setData] = useState([])
-
-
-
-
+  const [date, setState] = useState([
+    {
+      start: new Date(),
+      end: subDays(new Date(), 7)
+    }
+  ]);
   useEffect(() => {
-
+  
    var data = [{}];
-    
- 
     fire
     .firestore()
     .collection('asset_data').where('type', '==', 'delivery')
+    .where('date', '>', date[0].end)
+    .where('date', '<', date[0].start)
     .onSnapshot((snapshot) => {
       const deliveries = snapshot.docs.map(((doc) => ({
         id: doc.id,
         ...doc.data()
       })))
+    
 
       fire
     .firestore()
@@ -48,18 +53,12 @@ export default function Chart() {
           
           if(value.id == value2.deliveryid){
             
-            total =+value2.quantity
+            total = total+parseInt(value2.quantity)
             
-          }
-
-
-          
+          }          
         }
-        console.log(total)
       deliveries[index].total= total
       }
-      
-
       var startdate = moment();
     startdate = startdate.subtract(7, "days");
     
@@ -75,20 +74,9 @@ export default function Chart() {
         
       }
       data[i] = createData(startdate.format("MM/DD/YYYY"), total);
-
   } setData(data)
-      
-    })
-      
-      
-    }) 
-
-    
-
-    console.log(data)
-
-    
-    
+    })     
+    })     
   }, [])
 
   return (

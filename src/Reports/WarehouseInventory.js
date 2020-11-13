@@ -50,7 +50,6 @@ const [warehouse, setWarehouse] = useState([]);
 
 const handleChange = (event) => {
     setWarehouse(event.target.value);
-    console.log(event.target.value)
   };
 
   const fetchReport = (data) => {
@@ -70,7 +69,6 @@ const handleChange = (event) => {
             warehousedata[key].company = warehouse.name
             warehousedata[key].areamanager = warehouse.areamanager
         }
-        console.log(warehousedata)
 
         setData(warehousedata)
         // setWarehouses(warehousedata)
@@ -159,17 +157,6 @@ const handleChange = (event) => {
 
 
         
-        </Grid>
-      </Grid>
-      <Grid container spacing={3}>
-        <Grid item xs>
-          <Paper className={classes.paper}>xs</Paper>
-        </Grid>
-        <Grid item xs={6}>
-          <Paper className={classes.paper}>xs=6</Paper>
-        </Grid>
-        <Grid item xs>
-          <Paper className={classes.paper}>xs</Paper>
         </Grid>
       </Grid>
     </div>

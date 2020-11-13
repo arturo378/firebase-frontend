@@ -20,7 +20,6 @@ function LeaseManagement(){
   const [leaseID, setLeaseID] = useState([])
 
   useEffect(() => {
-    console.log(location.state)
     const id = location.state.id
     setCompanyid(location.state.id)
     
@@ -198,7 +197,7 @@ const removeitem = (incoming, resolve) => {
       actions={[
         {
           icon: 'sort',
-          tooltip: 'Save User',
+          tooltip: 'Manage Well',
           onClick: (event, rowData) => test(event, rowData)
         }]}
     />

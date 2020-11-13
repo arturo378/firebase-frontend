@@ -189,7 +189,7 @@ const removeitem = (incoming, resolve) => {
       actions={[
         {
           icon: 'sort',
-          tooltip: 'Save User',
+          tooltip: 'Manage Lease',
           onClick: (event, rowData) => test(event, rowData)
         },
         {

@@ -82,7 +82,7 @@ export const mainListItems = (
         <ReceiptIcon />
       </ListItemIcon>
       <Button component={Link} to="/weeklyearnings" color="primary">
-      Weekly Earnings 
+      Earnings Report
     </Button>
     </ListItem>
     <ListItem button>

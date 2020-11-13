@@ -8,7 +8,6 @@ import Modal from '@material-ui/core/Modal';
 import { makeStyles } from '@material-ui/core/styles';
 import {
   MuiPickersUtilsProvider,
-  KeyboardTimePicker,
   KeyboardDatePicker,
 } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
@@ -84,28 +83,25 @@ function Delivery(){
      //validation
   let errorList = []
   if(incoming.company.name === undefined){
-    errorList.push("Please enter last name")
+    errorList.push("Please enter Company Name")
   }
   if(incoming.lease.name === undefined){
-    errorList.push("Please enter a valid lease")
+    errorList.push("Please enter a Lease Name")
   }
   if(incoming.well.name === undefined){
-    errorList.push("Please enter a valid well")
+    errorList.push("Please enter a Well name")
   }
   if(incoming.gps === undefined){
-    errorList.push("Please enter a valid gps")
+    errorList.push("Please enter a gps coordinates")
   }
   if(incoming.comments === undefined){
-    errorList.push("Please enter a valid email")
+    errorList.push("Please enter a comment")
   }
   if(incoming.createdBy === undefined){
-    errorList.push("Please enter a valid email")
+    errorList.push("Please enter a user created name")
   }
   if(incoming.invoicenum === undefined){
-    errorList.push("Please enter a valid email")
-  }
-  if(incoming.warehouse === undefined){
-    errorList.push("Please enter a valid email")
+    errorList.push("Please enter a invoice Num")
   }
   
   if(errorList.length < 1){
@@ -127,8 +123,8 @@ function Delivery(){
             "createdBy": dataToAdd[0].createdBy,
             "date": selectedDate,
             "invoicenum": dataToAdd[0].invoicenum,
-            "warehouse": dataToAdd[0].warehouse,
-            type: "delivery"
+            type: "delivery",
+            active: 0
           })
           .then(function(){
             resolve()
@@ -145,33 +141,28 @@ const updateitem = (oldincoming, incoming, resolve) => {
   //validation
 let errorList = []
 if(incoming.company.name === undefined){
-    errorList.push("Please enter last name")
+    errorList.push("Please enter last 1")
   }
   if(incoming.lease.name === undefined){
-    errorList.push("Please enter a valid email")
+    errorList.push("Please enter a valid 2")
   }
   if(incoming.well.name === undefined){
-    errorList.push("Please enter a valid email")
+    errorList.push("Please enter a valid 3")
   }
   if(incoming.gps === undefined){
-    errorList.push("Please enter a valid email")
+    errorList.push("Please enter a valid 4")
   }
   if(incoming.comments === undefined){
-    errorList.push("Please enter a valid email")
+    errorList.push("Please enter a valid 5")
   }
   if(incoming.createdBy === undefined){
-    errorList.push("Please enter a valid email")
+    errorList.push("Please enter a valid 6")
   }
  
-  if(incoming.invoicenum === undefined){
-    errorList.push("Please enter a valid email")
-  }
-  if(incoming.warehouse === undefined){
-    errorList.push("Please enter a valid email")
-  }
+ console.log(errorList);
 if(errorList.length < 1){
  let dataToAdd =[];
- 
+ console.log(incoming)
  dataToAdd.push(incoming);
 
  
@@ -187,8 +178,8 @@ if(errorList.length < 1){
         "createdBy": dataToAdd[0].createdBy,
         "date": selectedDate,
         "invoicenum": dataToAdd[0].invoicenum,
-        "warehouse": dataToAdd[0].warehouse,
-        type: "delivery"
+        type: "delivery",
+        active: dataToAdd[0].active
        })
        .then(function(){
          resolve()
@@ -207,7 +198,7 @@ const removeitem = (incoming, resolve) => {
 
   fire 
       .firestore()
-      .collection('assets').doc(incoming.id).delete()
+      .collection('asset_data').doc(incoming.id).delete()
       .then(function(){
         resolve()
         console.log("Document successfully written!");
@@ -250,7 +241,7 @@ const removeitem = (incoming, resolve) => {
    
     
   
-   if(position != undefined){
+   if(position !== undefined){
     setOpen(true);
   
    }
@@ -292,7 +283,7 @@ const removeitem = (incoming, resolve) => {
     const history = useHistory(); 
     function test(data, rowdata) {
       
-      let id = rowdata.id;
+      
       
       history.push({
         pathname: '/delivery/editdelivery',
@@ -375,7 +366,7 @@ const removeitem = (incoming, resolve) => {
                   }); 
                 }}
               >
-                {CLW.filter(type => type.type == 'company').map((companyinfo) => (
+                {CLW.filter(type => type.type === 'company').map((companyinfo) => (
                   
                   <MenuItem key={companyinfo.id} value={companyinfo}>
                     {companyinfo.name}
@@ -403,7 +394,7 @@ const removeitem = (incoming, resolve) => {
                   });
                 }}
               >
-                { CLW.filter(type => type.company == companyid).map((companyinfo) => (
+                { CLW.filter(type => type.company === companyid).map((companyinfo) => (
                   
                   <MenuItem key={companyinfo.id} value={companyinfo}>
                     {companyinfo.name}
@@ -429,7 +420,7 @@ const removeitem = (incoming, resolve) => {
                   });
                 }}
               >
-                { CLW.filter(type => type.lease == leaseid).map((companyinfo) => (
+                { CLW.filter(type => type.lease === leaseid).map((companyinfo) => (
                   
                   <MenuItem key={companyinfo.id} value={companyinfo}>
                     {companyinfo.name}
@@ -442,7 +433,11 @@ const removeitem = (incoming, resolve) => {
           {title: "Comments", field: "comments"},
           {title: "Created By", field: "createdBy"},
           {title: "Invoice Number", field: "invoicenum"},
-          {title: "Warehouse", field: "warehouse"},
+          {
+            title: 'Completed',
+            field: 'active',
+            lookup: { 1: 'Completed', 0: 'Non-Completed' },
+          }
 
         ]
         
@@ -456,6 +451,9 @@ const removeitem = (incoming, resolve) => {
       title="Delivery"
       columns={state.columns}
       data={data}
+      options={{
+        filtering: true
+      }}
       editable={{
         onRowAdd: (newData) =>
         new Promise((resolve) => {
