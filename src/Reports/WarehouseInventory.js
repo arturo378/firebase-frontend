@@ -143,7 +143,7 @@ const handleChange = (event) => {
             return (
               <ExcelFile element={<button>Download Excel</button>}>
               <ExcelSheet data={data} name="Employees">
-                  <ExcelColumn label="Company" value="company"/>
+                  <ExcelColumn label="Warehouse" value="company"/>
                   <ExcelColumn label="Chemical" value="name"/>
                   <ExcelColumn label="Quantity" value="quantity"/>
                   <ExcelColumn label="Area Manager" value="areamanager"/>
