@@ -7,7 +7,7 @@ import 'react-date-range/dist/theme/default.css'; // theme css file
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
-import fire from '../config/fire';
+// import fire from '../config/fire';
 import Button from '@material-ui/core/Button';
 import ReactExport from "react-export-excel";
 
@@ -54,25 +54,25 @@ const handleChange = (event) => {
 
   const fetchReport = (data) => {
 
-    fire
-      .firestore()
-      .collection('asset_data').where('type', '==', 'warehouse_chemical')
-      .where('warehouseid', '==', warehouse.id)
-      .onSnapshot((snapshot) => {
-        var warehousedata = snapshot.docs.map(((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        })))
+    // fire
+    //   .firestore()
+    //   .collection('asset_data').where('type', '==', 'warehouse_chemical')
+    //   .where('warehouseid', '==', warehouse.id)
+    //   .onSnapshot((snapshot) => {
+    //     var warehousedata = snapshot.docs.map(((doc) => ({
+    //       id: doc.id,
+    //       ...doc.data()
+    //     })))
        
 
-        for (var key in warehousedata) {
-            warehousedata[key].company = warehouse.name
-            warehousedata[key].areamanager = warehouse.areamanager
-        }
+    //     for (var key in warehousedata) {
+    //         warehousedata[key].company = warehouse.name
+    //         warehousedata[key].areamanager = warehouse.areamanager
+    //     }
 
-        setData(warehousedata)
-        // setWarehouses(warehousedata)
-      })
+    //     setData(warehousedata)
+    //     // setWarehouses(warehousedata)
+    //   })
 
       
  
@@ -86,17 +86,17 @@ const handleChange = (event) => {
 
 
   useEffect(() => {
-    fire
-      .firestore()
-      .collection('assets').where('type', '==', 'warehouse')
-      .onSnapshot((snapshot) => {
-        var warehousedata = snapshot.docs.map(((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        })))
+    // fire
+    //   .firestore()
+    //   .collection('assets').where('type', '==', 'warehouse')
+    //   .onSnapshot((snapshot) => {
+    //     var warehousedata = snapshot.docs.map(((doc) => ({
+    //       id: doc.id,
+    //       ...doc.data()
+    //     })))
         
-        setWarehouses(warehousedata)
-      })
+    //     setWarehouses(warehousedata)
+    //   })
 
       
   }, [])

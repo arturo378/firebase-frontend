@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import MaterialTable from 'material-table';
 import { useHistory, useLocation } from "react-router-dom";
-import fire from '../config/fire';
+// import fire from '../config/fire';
 import { makeStyles } from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
@@ -122,29 +122,29 @@ function ShippingPaper(){
     dataToAdd.push(incoming);
     console.log(dataToAdd);
     
-          fire 
-          .firestore()
-          .collection('asset_data').add({
-            "datanumber": dataToAdd[0].datanumber,
-            "createdby": dataToAdd[0].createdby,
-            "originwarehousenumber": dataToAdd[0].originwarehousenumber,
-            "destinationwarehousenumber": dataToAdd[0].destinationwarehousenumber,
-            "trucknumber": dataToAdd[0].trucknumber,
-            "date": selectedDate,
-            "comments": dataToAdd[0].comments,
-            "gps": dataToAdd[0].gps,
-            type: "shipping_papers",
-            active: 1
+          // fire 
+          // .firestore()
+          // .collection('asset_data').add({
+          //   "datanumber": dataToAdd[0].datanumber,
+          //   "createdby": dataToAdd[0].createdby,
+          //   "originwarehousenumber": dataToAdd[0].originwarehousenumber,
+          //   "destinationwarehousenumber": dataToAdd[0].destinationwarehousenumber,
+          //   "trucknumber": dataToAdd[0].trucknumber,
+          //   "date": selectedDate,
+          //   "comments": dataToAdd[0].comments,
+          //   "gps": dataToAdd[0].gps,
+          //   type: "shipping_papers",
+          //   active: 1
 
-          })
-          .then(function(){
-            resolve()
-            console.log("Document successfully written!");
-          })
-          .catch(function(error){
-            console.error("Error writing document: ", error);
-            resolve()
-          })
+          // })
+          // .then(function(){
+          //   resolve()
+          //   console.log("Document successfully written!");
+          // })
+          // .catch(function(error){
+          //   console.error("Error writing document: ", error);
+          //   resolve()
+          // })
   }
 };
 const updateitem = (oldincoming, incoming, resolve) => {
@@ -170,45 +170,45 @@ if(incoming.gps === undefined){
 if(errorList.length < 1){
  let dataToAdd =[];
  dataToAdd.push(incoming);
-       fire 
-       .firestore()
-       .collection('asset_data').doc(oldincoming.id).update({
-            "datanumber": dataToAdd[0].datanumber,
-            "createdby": dataToAdd[0].createdby,
-            "originwarehousenumber": dataToAdd[0].originwarehousenumber,
-            "destinationwarehousenumber": dataToAdd[0].destinationwarehousenumber,
-            "trucknumber": dataToAdd[0].trucknumber,
-            "date": selectedDate,
-            "comments": dataToAdd[0].comments,
-            "gps": dataToAdd[0].gps,
-            type: "shipping_papers",
-            active: dataToAdd[0].active
+      //  fire 
+      //  .firestore()
+      //  .collection('asset_data').doc(oldincoming.id).update({
+      //       "datanumber": dataToAdd[0].datanumber,
+      //       "createdby": dataToAdd[0].createdby,
+      //       "originwarehousenumber": dataToAdd[0].originwarehousenumber,
+      //       "destinationwarehousenumber": dataToAdd[0].destinationwarehousenumber,
+      //       "trucknumber": dataToAdd[0].trucknumber,
+      //       "date": selectedDate,
+      //       "comments": dataToAdd[0].comments,
+      //       "gps": dataToAdd[0].gps,
+      //       type: "shipping_papers",
+      //       active: dataToAdd[0].active
 
-       })
-       .then(function(){
-         resolve()
-         console.log("Document successfully written!");
-       })
-       .catch(function(error){
-         console.error("Error writing document: ", error);
-         resolve()
-       })
+      //  })
+      //  .then(function(){
+      //    resolve()
+      //    console.log("Document successfully written!");
+      //  })
+      //  .catch(function(error){
+      //    console.error("Error writing document: ", error);
+      //    resolve()
+      //  })
 }
 };
 
 
 const removeitem = (incoming, resolve) => {
-  fire 
-      .firestore()
-      .collection('asset_data').doc(incoming.id).delete()
-      .then(function(){
-        resolve()
-        console.log("Document successfully written!");
-      })
-      .catch(function(error){
-        resolve()
-        console.error("Error writing document: ", error);
-      });
+  // fire 
+  //     .firestore()
+  //     .collection('asset_data').doc(incoming.id).delete()
+  //     .then(function(){
+  //       resolve()
+  //       console.log("Document successfully written!");
+  //     })
+  //     .catch(function(error){
+  //       resolve()
+  //       console.error("Error writing document: ", error);
+  //     });
 };
 
 
@@ -233,22 +233,22 @@ setPosition({
 };
 
   useEffect(() => {
-    fire
-      .firestore()
-      .collection('asset_data').where('type', '==', 'shipping_papers')
-      .onSnapshot((snapshot) => {
-        const newTimes = snapshot.docs.map(((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        })))
-        for (var key in newTimes) {
+    // fire
+    //   .firestore()
+    //   .collection('asset_data').where('type', '==', 'shipping_papers')
+    //   .onSnapshot((snapshot) => {
+    //     const newTimes = snapshot.docs.map(((doc) => ({
+    //       id: doc.id,
+    //       ...doc.data()
+    //     })))
+    //     for (var key in newTimes) {
 
-          if(newTimes[key].date){
-          newTimes[key].date = moment(newTimes[key].date.toDate()).format("MM/DD/YY");
-        }
-        }
-        setData(newTimes)
-      })
+    //       if(newTimes[key].date){
+    //       newTimes[key].date = moment(newTimes[key].date.toDate()).format("MM/DD/YY");
+    //     }
+    //     }
+    //     setData(newTimes)
+    //   })
   }, [])
 
     //console.log(data)

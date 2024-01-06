@@ -8,7 +8,7 @@ import 'react-date-range/dist/theme/default.css'; // theme css file
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
-import fire from '../config/fire';
+// import fire from '../config/fire';
 import Button from '@material-ui/core/Button';
 import ReactExport from "react-export-excel";
 import moment  from 'moment';
@@ -54,67 +54,67 @@ const handleChange = (event) => {
     
 
   
-    await fire
-    .firestore()
-    .collection('asset_data').where('type', '==', 'delivery')
-    .where('date', '>', state[0].startDate)
-    .where('date', '<', state[0].endDate)
-    .where('company', '==', company)
-    .onSnapshot((snapshot) => {
-      var tickets = snapshot.docs.map(((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      })))
-      for (var key in tickets) {
-        chem_list.push(tickets[key].id)
-      }
+    // await fire
+    // .firestore()
+    // .collection('asset_data').where('type', '==', 'delivery')
+    // .where('date', '>', state[0].startDate)
+    // .where('date', '<', state[0].endDate)
+    // .where('company', '==', company)
+    // .onSnapshot((snapshot) => {
+    //   var tickets = snapshot.docs.map(((doc) => ({
+    //     id: doc.id,
+    //     ...doc.data()
+    //   })))
+    //   for (var key in tickets) {
+    //     chem_list.push(tickets[key].id)
+    //   }
 
-     if(chem_list.length>0){
+    //  if(chem_list.length>0){
 
-      fire
-      .firestore()
-      .collection('asset_data').where('type', '==', 'delivery_chemical')
-      .where('deliveryid', 'in', chem_list)
-      .onSnapshot((snapshot) => {
-        var delivery_chems = snapshot.docs.map(((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        })))
+    //   // fire
+    //   // .firestore()
+    //   // .collection('asset_data').where('type', '==', 'delivery_chemical')
+    //   // .where('deliveryid', 'in', chem_list)
+    //   // .onSnapshot((snapshot) => {
+    //   //   var delivery_chems = snapshot.docs.map(((doc) => ({
+    //   //     id: doc.id,
+    //   //     ...doc.data()
+    //   //   })))
         
        
-        for (var key in tickets) {
-          for (var key2 in delivery_chems) {
-            if(tickets[key].id === delivery_chems[key2].deliveryid){
-              for(var key3 in pricing){
-                if(tickets[key].companyid === pricing[key3].company && delivery_chems[key2].name === pricing[key3].name){
+    //   //   for (var key in tickets) {
+    //   //     for (var key2 in delivery_chems) {
+    //   //       if(tickets[key].id === delivery_chems[key2].deliveryid){
+    //   //         for(var key3 in pricing){
+    //   //           if(tickets[key].companyid === pricing[key3].company && delivery_chems[key2].name === pricing[key3].name){
 
-                  list.push({
-                    'Date': moment(tickets[key].date.Timestamp).format("MM/DD/YY"),
-                    'Data_Number': tickets[key].datanumber,
-                    'GPS': tickets[key].gps,
-                    'Company': tickets[key].company,
-                    'Lease': tickets[key].lease,
-                    'Well': tickets[key].well,
-                    'Chemical': delivery_chems[key2].name,
-                    'Quantity': delivery_chems[key2].quantity,
-                    'Pricing': pricing[key3].price,
-                    'Total':  pricing[key3].price*delivery_chems[key2].quantity
-                  })
-                } 
-              } 
-            }
-          }
-          // newTimes[key].date = moment(newTimes[key].date.toDate()).format("MM/DD/YY");
-        }
-        setData(list);
+    //   //             list.push({
+    //   //               'Date': moment(tickets[key].date.Timestamp).format("MM/DD/YY"),
+    //   //               'Data_Number': tickets[key].datanumber,
+    //   //               'GPS': tickets[key].gps,
+    //   //               'Company': tickets[key].company,
+    //   //               'Lease': tickets[key].lease,
+    //   //               'Well': tickets[key].well,
+    //   //               'Chemical': delivery_chems[key2].name,
+    //   //               'Quantity': delivery_chems[key2].quantity,
+    //   //               'Pricing': pricing[key3].price,
+    //   //               'Total':  pricing[key3].price*delivery_chems[key2].quantity
+    //   //             })
+    //   //           } 
+    //   //         } 
+    //   //       }
+    //   //     }
+    //   //     // newTimes[key].date = moment(newTimes[key].date.toDate()).format("MM/DD/YY");
+    //   //   }
+    //   //   setData(list);
         
   
-        // newTimes.date = moment(newTimes.date).format("MM/DD/YY"); 
-        // console.log(moment(newTimes[0].date.toDate()).format("MM/DD/YY"));return;
-        // setData(newTimes)
-      })
-     }
-    })
+    //   //   // newTimes.date = moment(newTimes.date).format("MM/DD/YY"); 
+    //   //   // console.log(moment(newTimes[0].date.toDate()).format("MM/DD/YY"));return;
+    //   //   // setData(newTimes)
+    //   // })
+    //  }
+    // })
     
  
 
@@ -127,30 +127,30 @@ const handleChange = (event) => {
   };
 
   useEffect(() => {
-    fire
-      .firestore()
-      .collection('assets').where('type', '==', 'company')
-      .onSnapshot((snapshot) => {
-        var companydata = snapshot.docs.map(((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        })))
+    // fire
+    //   .firestore()
+    //   .collection('assets').where('type', '==', 'company')
+    //   .onSnapshot((snapshot) => {
+    //     var companydata = snapshot.docs.map(((doc) => ({
+    //       id: doc.id,
+    //       ...doc.data()
+    //     })))
         
-        setCompanies(companydata)
-      })
+    //     setCompanies(companydata)
+    //   })
 
 
-      fire
-    .firestore()
-    .collection('assets').where('type', '==', 'pricing')
-    .onSnapshot((snapshot) => {
-      var prices = snapshot.docs.map(((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      })))
+    //   fire
+    // .firestore()
+    // .collection('assets').where('type', '==', 'pricing')
+    // .onSnapshot((snapshot) => {
+    //   var prices = snapshot.docs.map(((doc) => ({
+    //     id: doc.id,
+    //     ...doc.data()
+    //   })))
       
-      setPricing(prices)
-    })
+    //   setPricing(prices)
+    // })
       
   }, [])
 

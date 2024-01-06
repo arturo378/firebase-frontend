@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, FormGroup, FormControl, FormLabel } from "react-bootstrap";
-import fire from "./config/fire";
+// import fire from "./config/fire";
 
 import "./Login.css";
 
@@ -15,11 +15,11 @@ export default function Login() {
   function handleSubmit(event) {
     event.preventDefault();
    
-    fire.auth().signInWithEmailAndPassword(email,password).then((u)=>{
-        console.log(u)
-    }).catch((err)=>{
-        console.log(err);
-    })
+    // fire.auth().signInWithEmailAndPassword(email,password).then((u)=>{
+    //     console.log(u)
+    // }).catch((err)=>{
+    //     console.log(err);
+    // })
   }
 
   return (

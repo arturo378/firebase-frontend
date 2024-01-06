@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from '@material-ui/core/styles';
 import { BarChart, Tooltip, Bar, XAxis, YAxis, Label, ResponsiveContainer } from 'recharts';
 import Title from './Title';
-import fire from '../config/fire';
+// import fire from '../config/fire';
 import moment  from 'moment';
 import { subDays } from 'date-fns';
 
@@ -25,58 +25,58 @@ export default function Chart() {
   useEffect(() => {
   
    var data = [{}];
-    fire
-    .firestore()
-    .collection('asset_data').where('type', '==', 'delivery')
-    .where('date', '>', date[0].end)
-    .where('date', '<', date[0].start)
-    .onSnapshot((snapshot) => {
-      const deliveries = snapshot.docs.map(((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      })))
+  //   fire
+  //   .firestore()
+  //   .collection('asset_data').where('type', '==', 'delivery')
+  //   .where('date', '>', date[0].end)
+  //   .where('date', '<', date[0].start)
+  //   .onSnapshot((snapshot) => {
+  //     const deliveries = snapshot.docs.map(((doc) => ({
+  //       id: doc.id,
+  //       ...doc.data()
+  //     })))
     
 
-      fire
-    .firestore()
-    .collection('asset_data').where('type', '==', 'delivery_chemical')
-    .onSnapshot((snapshot) => {
-      const chem_data = snapshot.docs.map(((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      })))
+  //     fire
+  //   .firestore()
+  //   .collection('asset_data').where('type', '==', 'delivery_chemical')
+  //   .onSnapshot((snapshot) => {
+  //     const chem_data = snapshot.docs.map(((doc) => ({
+  //       id: doc.id,
+  //       ...doc.data()
+  //     })))
      
-      for (const [index, value] of deliveries.entries()) {
-        var total = 0;
+  //     for (const [index, value] of deliveries.entries()) {
+  //       var total = 0;
 
-        for (const [index2, value2] of chem_data.entries()) {
+  //       for (const [index2, value2] of chem_data.entries()) {
           
-          if(value.id == value2.deliveryid){
+  //         if(value.id == value2.deliveryid){
             
-            total = total+parseInt(value2.quantity)
+  //           total = total+parseInt(value2.quantity)
             
-          }          
-        }
-      deliveries[index].total= total
-      }
-      var startdate = moment();
-    startdate = startdate.subtract(7, "days");
+  //         }          
+  //       }
+  //     deliveries[index].total= total
+  //     }
+  //     var startdate = moment();
+  //   startdate = startdate.subtract(7, "days");
     
-    for (var i=0; i < 7; i++) {
-      var total = 0;
-      startdate = startdate.add(1, "days");
-      for (const [index, value] of deliveries.entries()) {
+  //   for (var i=0; i < 7; i++) {
+  //     var total = 0;
+  //     startdate = startdate.add(1, "days");
+  //     for (const [index, value] of deliveries.entries()) {
         
         
-          if(startdate.format("MM/DD/YYYY") == moment(value.date.toDate()).format("MM/DD/YYYY")){
-            total =+value.total
-          } 
+  //         if(startdate.format("MM/DD/YYYY") == moment(value.date.toDate()).format("MM/DD/YYYY")){
+  //           total =+value.total
+  //         } 
         
-      }
-      data[i] = createData(startdate.format("MM/DD/YYYY"), total);
-  } setData(data)
-    })     
-    })     
+  //     }
+  //     data[i] = createData(startdate.format("MM/DD/YYYY"), total);
+  // } setData(data)
+  //   })     
+  //   })     
   }, [])
 
   return (

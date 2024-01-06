@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import MaterialTable from 'material-table';
 import { useHistory, useLocation } from "react-router-dom";
-import fire from '../config/fire';
+// import fire from '../config/fire';
 
 
 
@@ -31,22 +31,22 @@ function WarehouseManagement(){
     dataToAdd.push(incoming);
     console.log(dataToAdd);
     
-          fire 
-          .firestore()
-          .collection('assets').add({
-            "warehousenumber": dataToAdd[0].warehousenumber,
-            "name": dataToAdd[0].name,
-            "areamanager": dataToAdd[0].areamanager,
-            type: "warehouse"
-          })
-          .then(function(){
-            resolve()
-            console.log("Document successfully written!");
-          })
-          .catch(function(error){
-            console.error("Error writing document: ", error);
-            resolve()
-          })
+          // fire 
+          // .firestore()
+          // .collection('assets').add({
+          //   "warehousenumber": dataToAdd[0].warehousenumber,
+          //   "name": dataToAdd[0].name,
+          //   "areamanager": dataToAdd[0].areamanager,
+          //   type: "warehouse"
+          // })
+          // .then(function(){
+          //   resolve()
+          //   console.log("Document successfully written!");
+          // })
+          // .catch(function(error){
+          //   console.error("Error writing document: ", error);
+          //   resolve()
+          // })
   }
 };
 const updateitem = (oldincoming, incoming, resolve) => {
@@ -66,22 +66,22 @@ if(errorList.length < 1){
  let dataToAdd =[];
  dataToAdd.push(incoming);
  console.log(dataToAdd[0].city)
-       fire 
-       .firestore()
-       .collection('assets').doc(oldincoming.id).update({
-        "warehousenumber": dataToAdd[0].warehousenumber,
-        "name": dataToAdd[0].name,
-        "areamanager": dataToAdd[0].areamanager,
-         type: "warehouse"
-       })
-       .then(function(){
-         resolve()
-         console.log("Document successfully written!");
-       })
-       .catch(function(error){
-         console.error("Error writing document: ", error);
-         resolve()
-       })
+      //  fire 
+      //  .firestore()
+      //  .collection('assets').doc(oldincoming.id).update({
+      //   "warehousenumber": dataToAdd[0].warehousenumber,
+      //   "name": dataToAdd[0].name,
+      //   "areamanager": dataToAdd[0].areamanager,
+      //    type: "warehouse"
+      //  })
+      //  .then(function(){
+      //    resolve()
+      //    console.log("Document successfully written!");
+      //  })
+      //  .catch(function(error){
+      //    console.error("Error writing document: ", error);
+      //    resolve()
+      //  })
 }
 };
 
@@ -89,32 +89,32 @@ if(errorList.length < 1){
 const removeitem = (incoming, resolve) => {
   
 
-  fire 
-      .firestore()
-      .collection('assets').doc(incoming.id).delete()
-      .then(function(){
-        resolve()
-        console.log("Document successfully written!");
-      })
-      .catch(function(error){
-        resolve()
-        console.error("Error writing document: ", error);
-      });
+  // fire 
+  //     .firestore()
+  //     .collection('assets').doc(incoming.id).delete()
+  //     .then(function(){
+  //       resolve()
+  //       console.log("Document successfully written!");
+  //     })
+  //     .catch(function(error){
+  //       resolve()
+  //       console.error("Error writing document: ", error);
+  //     });
   
 
 };
 
   useEffect(() => {
-    fire
-      .firestore()
-      .collection('assets').where('type', '==', 'warehouse')
-      .onSnapshot((snapshot) => {
-        const newTimes = snapshot.docs.map(((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        })))
-        setData(newTimes)
-      })
+    // fire
+    //   .firestore()
+    //   .collection('assets').where('type', '==', 'warehouse')
+    //   .onSnapshot((snapshot) => {
+    //     const newTimes = snapshot.docs.map(((doc) => ({
+    //       id: doc.id,
+    //       ...doc.data()
+    //     })))
+    //     setData(newTimes)
+    //   })
   }, [])
 
     //console.log(data)

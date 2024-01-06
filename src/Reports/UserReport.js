@@ -7,7 +7,7 @@ import 'react-date-range/dist/theme/default.css'; // theme css file
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
-import fire from '../config/fire';
+// import fire from '../config/fire';
 import Button from '@material-ui/core/Button';
 import ReactExport from "react-export-excel";
 import moment  from 'moment';
@@ -61,45 +61,45 @@ const handleChange = (event) => {
     
 
     
-     fire
-    .firestore()
-    .collection('asset_data').where('type', '==', 'delivery')
-    .where('date', '>', state[0].startDate)
-    .where('date', '<', state[0].endDate)
-    .where('createdBy', '==', user)
-    .onSnapshot((snapshot) => {
-      var deliveries = snapshot.docs.map(((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      })))
-      for (var key in deliveries) {
-        list.push(deliveries[key]);
-      }
-      fire
-      .firestore()
-      .collection('asset_data').where('type', '==', 'shipping_papers')
-      .where('date', '>', state[0].startDate)
-        .where('date', '<', state[0].endDate)
-      .where('createdby', '==', user)
-      .onSnapshot((snapshot) => {
-        var shipping = snapshot.docs.map(((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        })))
-        for (var key2 in shipping) {
-           list.push(shipping[key2])
-          }
-        if(list.length>0){
-            for (var key in list) {
+    //  fire
+    // .firestore()
+    // .collection('asset_data').where('type', '==', 'delivery')
+    // .where('date', '>', state[0].startDate)
+    // .where('date', '<', state[0].endDate)
+    // .where('createdBy', '==', user)
+    // .onSnapshot((snapshot) => {
+    //   var deliveries = snapshot.docs.map(((doc) => ({
+    //     id: doc.id,
+    //     ...doc.data()
+    //   })))
+    //   for (var key in deliveries) {
+    //     list.push(deliveries[key]);
+    //   }
+    //   fire
+    //   .firestore()
+    //   .collection('asset_data').where('type', '==', 'shipping_papers')
+    //   .where('date', '>', state[0].startDate)
+    //     .where('date', '<', state[0].endDate)
+    //   .where('createdby', '==', user)
+    //   .onSnapshot((snapshot) => {
+    //     var shipping = snapshot.docs.map(((doc) => ({
+    //       id: doc.id,
+    //       ...doc.data()
+    //     })))
+    //     for (var key2 in shipping) {
+    //        list.push(shipping[key2])
+    //       }
+    //     if(list.length>0){
+    //         for (var key in list) {
 
-                if(list[key].date){
-                list[key].date = moment(list[key].date.toDate()).format("MM/DD/YY");
-              }
-              }
-        }
-        setData(list)
-      })
-    })
+    //             if(list[key].date){
+    //             list[key].date = moment(list[key].date.toDate()).format("MM/DD/YY");
+    //           }
+    //           }
+    //     }
+    //     setData(list)
+    //   })
+    // })
     
  
 
@@ -115,17 +115,17 @@ const handleChange = (event) => {
 
 
   useEffect(() => {
-    fire
-      .firestore()
-      .collection('users')
-      .onSnapshot((snapshot) => {
-        var userdata = snapshot.docs.map(((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        })))
+    // fire
+    //   .firestore()
+    //   .collection('users')
+    //   .onSnapshot((snapshot) => {
+    //     var userdata = snapshot.docs.map(((doc) => ({
+    //       id: doc.id,
+    //       ...doc.data()
+    //     })))
         
-        setUsers(userdata)
-      })
+    //     setUsers(userdata)
+    //   })
 
 
       

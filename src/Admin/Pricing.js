@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import MaterialTable, {MTableToolbar} from 'material-table';
 import { useHistory, useLocation } from "react-router-dom";
-import fire from '../config/fire';
+// import fire from '../config/fire';
 import Button from '@material-ui/core/Button';
 import { Select, MenuItem } from "@material-ui/core";
 
@@ -36,22 +36,22 @@ function Pricing(){
     let dataToAdd =[];
     dataToAdd.push(incoming);
     console.log(dataToAdd[0].city)
-          fire 
-          .firestore()
-          .collection('assets').add({
-            "price": dataToAdd[0].price,
-            "name": dataToAdd[0].name,
-            company: companyid,
-            type: "pricing"
-          })
-          .then(function(){
-            resolve()
-            console.log("Document successfully written!");
-          })
-          .catch(function(error){
-            console.error("Error writing document: ", error);
-            resolve()
-          })
+          // fire 
+          // .firestore()
+          // .collection('assets').add({
+          //   "price": dataToAdd[0].price,
+          //   "name": dataToAdd[0].name,
+          //   company: companyid,
+          //   type: "pricing"
+          // })
+          // .then(function(){
+          //   resolve()
+          //   console.log("Document successfully written!");
+          // })
+          // .catch(function(error){
+          //   console.error("Error writing document: ", error);
+          //   resolve()
+          // })
   }
 };
 
@@ -69,22 +69,22 @@ if(errorList.length < 1){
  let dataToAdd =[];
  dataToAdd.push(incoming);
  
-       fire 
-       .firestore()
-       .collection('assets').doc(oldincoming.id).update({
-        "price": dataToAdd[0].price,
-        "name": dataToAdd[0].name,
-        company: companyid,
-        type: "pricing"
-       })
-       .then(function(){
-         resolve()
-         console.log("Document successfully written!");
-       })
-       .catch(function(error){
-         console.error("Error writing document: ", error);
-         resolve()
-       })
+      //  fire 
+      //  .firestore()
+      //  .collection('assets').doc(oldincoming.id).update({
+      //   "price": dataToAdd[0].price,
+      //   "name": dataToAdd[0].name,
+      //   company: companyid,
+      //   type: "pricing"
+      //  })
+      //  .then(function(){
+      //    resolve()
+      //    console.log("Document successfully written!");
+      //  })
+      //  .catch(function(error){
+      //    console.error("Error writing document: ", error);
+      //    resolve()
+      //  })
 }
 };
 
@@ -92,17 +92,17 @@ if(errorList.length < 1){
 const removeitem = (incoming, resolve) => {
   
 
-  fire 
-      .firestore()
-      .collection('assets').doc(incoming.id).delete()
-      .then(function(){
-        resolve()
-        console.log("Document successfully written!");
-      })
-      .catch(function(error){
-        resolve()
-        console.error("Error writing document: ", error);
-      });
+  // fire 
+  //     .firestore()
+  //     .collection('assets').doc(incoming.id).delete()
+  //     .then(function(){
+  //       resolve()
+  //       console.log("Document successfully written!");
+  //     })
+  //     .catch(function(error){
+  //       resolve()
+  //       console.error("Error writing document: ", error);
+  //     });
   
 
 };
@@ -115,17 +115,17 @@ const removeitem = (incoming, resolve) => {
 
 
 
-    fire
-    .firestore()
-    .collection('assets').where('type', '==', 'pricing').where('company', '==', id)
-    .onSnapshot((snapshot) => {
-      const newTimes = snapshot.docs.map(((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      })))
+    // fire
+    // .firestore()
+    // .collection('assets').where('type', '==', 'pricing').where('company', '==', id)
+    // .onSnapshot((snapshot) => {
+    //   const newTimes = snapshot.docs.map(((doc) => ({
+    //     id: doc.id,
+    //     ...doc.data()
+    //   })))
       
-      setData(newTimes)
-    })
+    //   setData(newTimes)
+    // })
 
     
     
@@ -155,17 +155,17 @@ const removeitem = (incoming, resolve) => {
       
         var info = [];
       
-        fire
-        .firestore()
-        .collection('assets').where('type', '==', 'chemical')
-        .onSnapshot((snapshot) => {
-          const chemicals = snapshot.docs.map(((doc) => ({
-            id: doc.id,
-            ...doc.data()
-          })))
+        // fire
+        // .firestore()
+        // .collection('assets').where('type', '==', 'chemical')
+        // .onSnapshot((snapshot) => {
+        //   const chemicals = snapshot.docs.map(((doc) => ({
+        //     id: doc.id,
+        //     ...doc.data()
+        //   })))
           
-           info.push(chemicals)
-        })
+        //    info.push(chemicals)
+        // })
       
       
     

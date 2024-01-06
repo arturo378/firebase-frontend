@@ -13,7 +13,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { mainListItems} from './Dashboard/listItems.js';
 import Button from '@material-ui/core/Button';
-import fire from './config/fire.js';
+// import fire from './config/fire.js';
 import { BrowserRouter as Router, Switch as Switcher, Route } from 'react-router-dom';
 import {Container} from "@material-ui/core";
 import UserManagement from './Admin/UserManagement'; 
@@ -34,7 +34,7 @@ import WarehouseChemical from './Admin/WarehouseChemical.js';
 import UserReport from './Reports/UserReport.js';
 
 function logout(){
-fire.auth().signOut();
+// fire.auth().signOut();
 };
 
 
