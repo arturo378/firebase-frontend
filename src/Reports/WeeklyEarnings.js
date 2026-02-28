@@ -10,10 +10,10 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import fire from '../config/fire';
 import Button from '@material-ui/core/Button';
-import ReactHTMLTableToExcel from "react-html-table-to-excel";
 import moment from 'moment';
 import Typography from '@material-ui/core/Typography';
 import { addDays } from 'date-fns';
+import * as XLSX from 'xlsx';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -97,6 +97,27 @@ function WeeklyEarnings() {
     }
   };
 
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.aoa_to_sheet([
+      ['Data Number', 'Date', 'Company', 'Lease', 'Well', 'GPS Coordinate', 'Chemical', 'Price', 'Quantity', 'Total'],
+      ...data.map((row) => [
+        row.Data_Number,
+        row.Date,
+        row.Company,
+        row.Lease,
+        row.Well,
+        row.GPS,
+        row.Chemical,
+        row.Pricing,
+        row.Quantity,
+        row.Total,
+      ]),
+    ]);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    XLSX.writeFile(workbook, 'Weekly_Report.xlsx');
+  };
+
   useEffect(() => {
     const unsubscribeCompanies = fire
       .firestore()
@@ -152,46 +173,9 @@ function WeeklyEarnings() {
         </Grid>
         {data.length > 0 && (
           <Grid item xs={12}>
-            <ReactHTMLTableToExcel
-              id="weekly-report-btn"
-              className="btn btn-primary"
-              table="weekly-report-table"
-              filename="Weekly_Report"
-              sheet="Sheet1"
-              buttonText="Download Excel"
-            />
-            <table id="weekly-report-table" style={{ display: 'none' }}>
-              <thead>
-                <tr>
-                  <th>Data Number</th>
-                  <th>Date</th>
-                  <th>Company</th>
-                  <th>Lease</th>
-                  <th>Well</th>
-                  <th>GPS Coordinate</th>
-                  <th>Chemical</th>
-                  <th>Price</th>
-                  <th>Quantity</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((row, index) => (
-                  <tr key={index}>
-                    <td>{row.Data_Number}</td>
-                    <td>{row.Date}</td>
-                    <td>{row.Company}</td>
-                    <td>{row.Lease}</td>
-                    <td>{row.Well}</td>
-                    <td>{row.GPS}</td>
-                    <td>{row.Chemical}</td>
-                    <td>{row.Pricing}</td>
-                    <td>{row.Quantity}</td>
-                    <td>{row.Total}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <Button variant="outlined" color="primary" onClick={exportToExcel}>
+              Download Excel
+            </Button>
           </Grid>
         )}
       </Grid>

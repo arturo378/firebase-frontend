@@ -7,10 +7,10 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import fire from '../config/fire';
 import Button from '@material-ui/core/Button';
-import ReactHTMLTableToExcel from "react-html-table-to-excel";
 import moment from 'moment';
 import Typography from '@material-ui/core/Typography';
 import { addDays } from 'date-fns';
+import * as XLSX from 'xlsx';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -78,6 +78,27 @@ function UserReport() {
     setData(formattedList);
   };
 
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.aoa_to_sheet([
+      ['Data Number', 'Date', 'Company', 'Lease', 'Well', 'GPS Coordinate', 'Comments', 'Origin Warehouse', 'Destination Warehouse', 'Truck Number'],
+      ...data.map((row) => [
+        row.datanumber,
+        row.date,
+        row.company,
+        row.lease,
+        row.well,
+        row.gps,
+        row.comments,
+        row.originwarehousenumber,
+        row.destinationwarehousenumber,
+        row.trucknumber,
+      ]),
+    ]);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    XLSX.writeFile(workbook, 'User_Report.xlsx');
+  };
+
   useEffect(() => {
     const unsubscribe = fire.firestore().collection('users')
       .onSnapshot(snapshot => {
@@ -118,46 +139,9 @@ function UserReport() {
         </Grid>
         {data.length > 0 && (
           <Grid item xs={12}>
-            <ReactHTMLTableToExcel
-              id="user-report-btn"
-              className="btn btn-primary"
-              table="user-report-table"
-              filename="User_Report"
-              sheet="Sheet1"
-              buttonText="Download Excel"
-            />
-            <table id="user-report-table" style={{ display: 'none' }}>
-              <thead>
-                <tr>
-                  <th>Data Number</th>
-                  <th>Date</th>
-                  <th>Company</th>
-                  <th>Lease</th>
-                  <th>Well</th>
-                  <th>GPS Coordinate</th>
-                  <th>Comments</th>
-                  <th>Origin Warehouse</th>
-                  <th>Destination Warehouse</th>
-                  <th>Truck Number</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((row, index) => (
-                  <tr key={index}>
-                    <td>{row.datanumber}</td>
-                    <td>{row.date}</td>
-                    <td>{row.company}</td>
-                    <td>{row.lease}</td>
-                    <td>{row.well}</td>
-                    <td>{row.gps}</td>
-                    <td>{row.comments}</td>
-                    <td>{row.originwarehousenumber}</td>
-                    <td>{row.destinationwarehousenumber}</td>
-                    <td>{row.trucknumber}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <Button variant="outlined" color="primary" onClick={exportToExcel}>
+              Download Excel
+            </Button>
           </Grid>
         )}
       </Grid>

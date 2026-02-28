@@ -6,8 +6,8 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import fire from '../config/fire';
 import Button from '@material-ui/core/Button';
-import ReactHTMLTableToExcel from "react-html-table-to-excel";
 import Typography from '@material-ui/core/Typography';
+import * as XLSX from 'xlsx';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -50,6 +50,21 @@ function WarehouseInventory() {
     setData(warehousedata);
   };
 
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.aoa_to_sheet([
+      ['Warehouse', 'Chemical', 'Quantity', 'Area Manager'],
+      ...data.map((row) => [
+        row.company,
+        row.name,
+        row.quantity,
+        row.areamanager,
+      ]),
+    ]);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    XLSX.writeFile(workbook, 'Warehouse_Inventory_Report.xlsx');
+  };
+
   useEffect(() => {
     const unsubscribe = fire
       .firestore()
@@ -87,34 +102,9 @@ function WarehouseInventory() {
         </Grid>
         {data.length > 0 && (
           <Grid item xs={12}>
-            <ReactHTMLTableToExcel
-              id="warehouse-report-btn"
-              className="btn btn-primary"
-              table="warehouse-report-table"
-              filename="Warehouse_Inventory_Report"
-              sheet="Sheet1"
-              buttonText="Download Excel"
-            />
-            <table id="warehouse-report-table" style={{ display: 'none' }}>
-              <thead>
-                <tr>
-                  <th>Warehouse</th>
-                  <th>Chemical</th>
-                  <th>Quantity</th>
-                  <th>Area Manager</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((row, index) => (
-                  <tr key={index}>
-                    <td>{row.company}</td>
-                    <td>{row.name}</td>
-                    <td>{row.quantity}</td>
-                    <td>{row.areamanager}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <Button variant="outlined" color="primary" onClick={exportToExcel}>
+              Download Excel
+            </Button>
           </Grid>
         )}
       </Grid>
