@@ -32,6 +32,7 @@ import WeeklyEarnings from './Reports/WeeklyEarnings.js';
 import WarehouseInventory from './Reports/WarehouseInventory.js';
 import WarehouseChemical from './Admin/WarehouseChemical.js';
 import UserReport from './Reports/UserReport.js';
+import { APP_TITLE } from './config/appInfo';
 
 function logout(){
 fire.auth().signOut();
@@ -149,7 +150,7 @@ export default function Home() {
             <MenuIcon />
           </IconButton>
           <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-            Dashboard
+            {APP_TITLE}
           </Typography>
           <IconButton color="inherit">
           <Button onClick={logout} variant="contained" color="secondary">

@@ -3,6 +3,7 @@ import './App.css';
 import fire from './config/fire';
 import Login from './Login'
 import Home from './Home'
+import { APP_TITLE } from './config/appInfo';
 
 
 class App extends Component{
@@ -15,6 +16,7 @@ class App extends Component{
   }
   componentDidMount()
   {
+    document.title = APP_TITLE;
     this.authListener();
   }
   authListener(){
