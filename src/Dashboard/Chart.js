@@ -82,7 +82,7 @@ export default function Chart() {
   return (
     <React.Fragment>
       <Title>Weekly Delivery Count</Title>
-      <ResponsiveContainer>
+      <ResponsiveContainer width="100%" height={300}>
         <BarChart
           data={data}
           margin={{
@@ -102,8 +102,16 @@ export default function Chart() {
               Deliveries (Gallons)
             </Label>
           </YAxis>
-          <Tooltip wrapperStyle={{ width: 100, backgroundColor: '#ccc' }} />
-          <Bar dataKey="amount" fill="#8884d8" barSize={30} />
+          <Tooltip
+            wrapperStyle={{ borderRadius: 8 }}
+            contentStyle={{
+              borderRadius: 8,
+              border: '1px solid #cbd5e1',
+              backgroundColor: '#ffffff',
+            }}
+            labelStyle={{ color: '#334155' }}
+          />
+          <Bar dataKey="amount" fill="#1e40af" barSize={28} radius={[6, 6, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </React.Fragment>

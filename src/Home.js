@@ -1,6 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
+import { useTheme } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
@@ -11,11 +12,10 @@ import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu'; 
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import { mainListItems} from './Dashboard/listItems.js';
+import { MainListItems } from './Dashboard/listItems.js';
 import Button from '@material-ui/core/Button';
 import fire from './config/fire.js';
 import { BrowserRouter as Router, Switch as Switcher, Route } from 'react-router-dom';
-import {Container} from "@material-ui/core";
 import UserManagement from './Admin/UserManagement'; 
 import LocationManagement from './Admin/LocationManagement.js';
 import LeaseManagement from './Admin/LeaseManagement.js';
@@ -33,6 +33,7 @@ import WarehouseInventory from './Reports/WarehouseInventory.js';
 import WarehouseChemical from './Admin/WarehouseChemical.js';
 import UserReport from './Reports/UserReport.js';
 import { APP_TITLE } from './config/appInfo';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 function logout(){
 fire.auth().signOut();
@@ -44,9 +45,14 @@ const drawerWidth = 240;
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
+    backgroundColor: '#f1f5f9',
+    minHeight: '100vh',
   },
   toolbar: {
-    paddingRight: 24, // keep right padding when drawer closed
+    paddingRight: 16,
+    [theme.breakpoints.up('sm')]: {
+      paddingRight: 24,
+    },
   },
   toolbarIcon: {
     display: 'flex',
@@ -57,6 +63,8 @@ const useStyles = makeStyles((theme) => ({
   },
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
+    background: 'linear-gradient(90deg, #0f172a 0%, #1e3a8a 100%)',
+    boxShadow: '0 8px 24px rgba(15, 23, 42, 0.25)',
     transition: theme.transitions.create(['width', 'margin'], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
@@ -71,18 +79,26 @@ const useStyles = makeStyles((theme) => ({
     }),
   },
   menuButton: {
-    marginRight: 36,
+    marginRight: 12,
+    [theme.breakpoints.up('sm')]: {
+      marginRight: 24,
+    },
   },
   menuButtonHidden: {
     display: 'none',
   },
   title: {
     flexGrow: 1,
+    fontWeight: 600,
+    letterSpacing: 0.2,
   },
   drawerPaper: {
     position: 'relative',
     whiteSpace: 'nowrap',
     width: drawerWidth,
+    borderRight: '1px solid #e2e8f0',
+    backgroundColor: '#ffffff',
+    boxSizing: 'border-box',
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -94,29 +110,29 @@ const useStyles = makeStyles((theme) => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-    width: theme.spacing(7),
+    width: theme.spacing(8),
     [theme.breakpoints.up('sm')]: {
       width: theme.spacing(9),
     },
+  },
+  drawerList: {
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1.5),
   },
   appBarSpacer: theme.mixins.toolbar,
   content: {
     flexGrow: 1,
     height: '100vh',
     overflow: 'auto',
+    backgroundColor: '#f8fafc',
   },
-  container: {
-    paddingTop: theme.spacing(4),
-    paddingBottom: theme.spacing(4),
-  },
-  paper: {
-    padding: theme.spacing(2),
-    display: 'flex',
-    overflow: 'auto',
-    flexDirection: 'column',
-  },
-  fixedHeight: {
-    height: 240,
+  signOutButton: {
+    borderRadius: 10,
+    textTransform: 'none',
+    fontWeight: 600,
+    paddingLeft: theme.spacing(1.75),
+    paddingRight: theme.spacing(1.75),
+    minWidth: 96,
   },
 }));
 
@@ -125,27 +141,33 @@ export default function Home() {
 
     
   const classes = useStyles();
-  const [open, setOpen] = React.useState(true);
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const [open, setOpen] = React.useState(!isSmallScreen);
+
+  React.useEffect(() => {
+    setOpen(!isSmallScreen);
+  }, [isSmallScreen]);
+
   const handleDrawerOpen = () => {
     setOpen(true);
   };
   const handleDrawerClose = () => {
     setOpen(false);
   };
-  const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
 
   return (
     <Router>
     <div className={classes.root}>
       <CssBaseline />
-      <AppBar position="absolute" className={clsx(classes.appBar, open && classes.appBarShift)}>
+      <AppBar position="absolute" className={clsx(classes.appBar, !isSmallScreen && open && classes.appBarShift)}>
         <Toolbar className={classes.toolbar}>
           <IconButton
             edge="start"
             color="inherit"
             aria-label="open drawer"
             onClick={handleDrawerOpen}
-            className={clsx(classes.menuButton, open && classes.menuButtonHidden)}
+            className={clsx(classes.menuButton, !isSmallScreen && open && classes.menuButtonHidden)}
           >
             <MenuIcon />
           </IconButton>
@@ -153,14 +175,18 @@ export default function Home() {
             {APP_TITLE}
           </Typography>
           <IconButton color="inherit">
-          <Button onClick={logout} variant="contained" color="secondary">
+          <Button onClick={logout} variant="contained" color="secondary" className={classes.signOutButton}>
         SignOut
       </Button>
           </IconButton>
         </Toolbar>
       </AppBar>
       <Drawer
-        variant="permanent"
+        variant={isSmallScreen ? 'temporary' : 'permanent'}
+        onClose={handleDrawerClose}
+        ModalProps={{
+          keepMounted: true,
+        }}
         classes={{
           paper: clsx(classes.drawerPaper, !open && classes.drawerPaperClose),
         }}
@@ -172,7 +198,9 @@ export default function Home() {
           </IconButton>
         </div>
         <Divider />
-        <List>{mainListItems}</List>
+        <List className={classes.drawerList}>
+          <MainListItems isCollapsed={!isSmallScreen && !open} />
+        </List>
       </Drawer>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />

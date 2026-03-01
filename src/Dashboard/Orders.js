@@ -1,34 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import Link from '@material-ui/core/Link';
-import { makeStyles } from '@material-ui/core/styles';
-
-
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import fire from '../config/fire';
 
-// Generate Order Data
-function createData(id, date, name, shipTo, paymentMethod, amount) {
-  return { id, date, name, shipTo, paymentMethod, amount };
-}
-
-
-
-function preventDefault(event) {
-  event.preventDefault();
-}
-
-const useStyles = makeStyles((theme) => ({
-  seeMore: {
-    marginTop: theme.spacing(3),
-  },
-}));
+const defaultCenter = {
+  lat: 31.9686,
+  lng: -99.9018,
+};
 
 
 export default function Orders() {
   
   const GoogleMapsKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
-  const classes = useStyles();
-  const [position, setPosition] = useState({})
   const [marks, setLocations] = useState([])
 
   useEffect(() => {
@@ -68,15 +50,11 @@ export default function Orders() {
 
 
 
-  const onLoad = marker => {
-    setPosition({
-      lat: 31.9686,
-    lng: -99.9018
-  })
-  }
-  const mapStyles = {        
-    height: "400px",
-    width: "100%"};
+  const mapStyles = {
+    width: '100%',
+    height: 'clamp(260px, 42vh, 420px)',
+    borderRadius: '12px',
+  };
 
 
   return (
@@ -88,15 +66,18 @@ export default function Orders() {
           id="marker-example"
           mapContainerStyle={mapStyles}
           zoom={5}
-           center={position}
+           center={defaultCenter}
+           options={{
+            fullscreenControl: false,
+            mapTypeControl: false,
+            streetViewControl: false,
+          }}
         >
 
           { marks.map((mark, index) => (
 
                   <Marker
                   key = {index}
-
-                  onLoad={onLoad}
                   position={mark}
                   />
                   

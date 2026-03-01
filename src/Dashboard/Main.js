@@ -1,149 +1,95 @@
 import React from 'react';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
-import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-import Link from '@material-ui/core/Link';
 import Chart from './Chart';
 import Orders from './Orders';
 
-function Copyright() {
-  return (
-    <Typography variant="body2" color="textSecondary" align="center">
-      {'Copyright © '}
-      <Link color="inherit" href="https://material-ui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
-
-const drawerWidth = 240;
-
 const useStyles = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-  },
-  toolbar: {
-    paddingRight: 24, // keep right padding when drawer closed
-  },
-  toolbarIcon: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    padding: '0 8px',
-    ...theme.mixins.toolbar,
-  },
-  appBar: {
-    zIndex: theme.zIndex.drawer + 1,
-    transition: theme.transitions.create(['width', 'margin'], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-  },
-  appBarShift: {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(['width', 'margin'], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  },
-  menuButton: {
-    marginRight: 36,
-  },
-  menuButtonHidden: {
-    display: 'none',
-  },
-  title: {
-    flexGrow: 1,
-  },
-  drawerPaper: {
-    position: 'relative',
-    whiteSpace: 'nowrap',
-    width: drawerWidth,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  },
-  drawerPaperClose: {
-    overflowX: 'hidden',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    width: theme.spacing(7),
-    [theme.breakpoints.up('sm')]: {
-      width: theme.spacing(9),
+  container: {
+    paddingTop: theme.spacing(3),
+    paddingBottom: theme.spacing(4),
+    [theme.breakpoints.up('md')]: {
+      paddingTop: theme.spacing(4),
     },
   },
-  appBarSpacer: theme.mixins.toolbar,
-  content: {
-    flexGrow: 1,
-    height: '100vh',
-    overflow: 'auto',
+  heroCard: {
+    padding: theme.spacing(2.5, 3),
+    borderRadius: 16,
+    marginBottom: theme.spacing(3),
+    background: 'linear-gradient(120deg, #0f172a 0%, #1e3a8a 100%)',
+    color: '#f8fafc',
+    [theme.breakpoints.down('sm')]: {
+      padding: theme.spacing(2.25),
+    },
   },
-  container: {
-    paddingTop: theme.spacing(4),
-    paddingBottom: theme.spacing(4),
+  heroTitle: {
+    fontWeight: 700,
+    letterSpacing: 0.2,
   },
-  paper: {
-    padding: theme.spacing(2),
+  heroSubtitle: {
+    marginTop: theme.spacing(0.75),
+    color: 'rgba(248, 250, 252, 0.86)',
+  },
+  paperBase: {
+    padding: theme.spacing(2.5),
     display: 'flex',
-    overflow: 'auto',
     flexDirection: 'column',
+    borderRadius: 16,
+    border: '1px solid #e2e8f0',
+    boxShadow: '0 10px 28px rgba(15, 23, 42, 0.08)',
+    backgroundColor: '#ffffff',
+    [theme.breakpoints.down('sm')]: {
+      padding: theme.spacing(2),
+    },
   },
-  fixedHeight: {
-    height: 240,
+  chartPaper: {
+    minHeight: 360,
+    [theme.breakpoints.down('sm')]: {
+      minHeight: 320,
+    },
+  },
+  mapHeader: {
+    marginBottom: theme.spacing(1.5),
+    color: '#0f172a',
+    fontWeight: 600,
   },
 }));
 
 export default function Main() {
   const classes = useStyles();
-  const [open, setOpen] = React.useState(true);
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
-  const handleDrawerClose = () => {
-    setOpen(false);
-  };
-  const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
+  const chartPaperClass = clsx(classes.paperBase, classes.chartPaper);
 
   return (
-    <div className={classes.root}>
-    
-      <main className={classes.content}>
-        <div className={classes.appBarSpacer} />
-        <Container maxWidth="lg" className={classes.container}>
-          <Grid container spacing={3}>
-            {/* Chart */}
-            <Grid item xs={12} md={8} lg={9}>
-              <Paper className={fixedHeightPaper}>
-                <Chart />
-              </Paper>
-            </Grid>
-            {/* Recent Deposits */}
-            <Grid item xs={12} md={4} lg={3}>
-              
-            </Grid>
-            {/* Recent Orders */}
-            <Grid item xs={12}>
-              <Paper className={classes.paper}>
-                <Orders />
-              </Paper>
-            </Grid>
-          </Grid>
-          <Box pt={4}>
-           
-          </Box>
-        </Container>
-      </main>
-    </div>
+    <Container maxWidth="xl" className={classes.container}>
+      <Paper elevation={0} className={classes.heroCard}>
+        <Typography variant="h5" className={classes.heroTitle}>
+          Dashboard Overview
+        </Typography>
+        <Typography variant="body2" className={classes.heroSubtitle}>
+          Monitor deliveries and well activity in real time across all screen sizes.
+        </Typography>
+      </Paper>
+
+      <Grid container spacing={3}>
+        <Grid item xs={12} lg={8}>
+          <Paper className={chartPaperClass}>
+            <Chart />
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12} lg={4}>
+          <Paper className={classes.paperBase}>
+            <Typography variant="h6" className={classes.mapHeader}>
+              Active Wells
+            </Typography>
+            <Orders />
+          </Paper>
+        </Grid>
+      </Grid>
+    </Container>
   );
 }

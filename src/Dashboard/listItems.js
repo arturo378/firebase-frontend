@@ -1,110 +1,191 @@
 import React from 'react';
+import { makeStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
+import Tooltip from '@material-ui/core/Tooltip';
 import DashboardIcon from '@material-ui/icons/Dashboard';
-import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
-
-import { Link } from 'react-router-dom';
-import Button from '@material-ui/core/Button';
-import LocationOnIcon from '@material-ui/icons/LocationOn';
-import HomeIcon from '@material-ui/icons/LocationOn';
-
-import ReceiptIcon from '@material-ui/icons/Receipt';
+import PeopleIcon from '@material-ui/icons/People';
+import RoomIcon from '@material-ui/icons/Room';
+import BusinessIcon from '@material-ui/icons/Business';
+import LocalOfferIcon from '@material-ui/icons/LocalOffer';
+import DescriptionIcon from '@material-ui/icons/Description';
 import LocalShippingIcon from '@material-ui/icons/LocalShipping';
+import ShowChartIcon from '@material-ui/icons/ShowChart';
+import AssignmentIndIcon from '@material-ui/icons/AssignmentInd';
+import StorageIcon from '@material-ui/icons/Storage';
+import { Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
-export const mainListItems = (
-  <div>
-    <ListItem button>
-      <ListItemIcon>
-        <DashboardIcon />
-      </ListItemIcon>
-      <Button component={Link} to="/" color="primary">
-      Dashboard
-    </Button>
-    </ListItem>
-    <ListSubheader inset>Admin</ListSubheader>
-    <ListItem button>
-      <ListItemIcon>
-        <ShoppingCartIcon />
-      </ListItemIcon>
-      <Button component={Link} to="/usermanagement" color="primary">
-      User Management
-    </Button>
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <LocationOnIcon />
-      </ListItemIcon>
-      <Button component={Link} to="/locationmanagment" color="primary">
-      Manage Location
-    </Button>
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <HomeIcon />
-      </ListItemIcon>
-      <Button component={Link} to="/warehousemanagement" color="primary">
-      Manage Warehouse
-    </Button>
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <HomeIcon />
-      </ListItemIcon>
-      <Button component={Link} to="/chemicalmanagement" color="primary">
-      Manage Products
-    </Button>
-    </ListItem>
-    
-    <ListSubheader inset>Work Orders</ListSubheader>
-    <ListItem button>
-      <ListItemIcon>
-        <ReceiptIcon />
-      </ListItemIcon>
-      <Button component={Link} to="/shippingpapers" color="primary">
-      Shipping Papers
-    </Button>
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <LocalShippingIcon />
-      </ListItemIcon>
-      <Button component={Link} to="/delivery" color="primary">
-      Delivery
-    </Button>
-    </ListItem>
+const useStyles = makeStyles(() => ({
+  navItem: {
+    position: 'relative',
+    borderRadius: 10,
+    margin: '2px 8px',
+    minHeight: 44,
+    transition: 'background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease',
+    '&:hover': {
+      backgroundColor: 'rgba(30, 64, 175, 0.08)',
+      transform: 'translateX(2px)',
+    },
+  },
+  navItemSelected: {
+    backgroundColor: 'rgba(30, 64, 175, 0.14) !important',
+    boxShadow: 'inset 0 0 0 1px rgba(30, 64, 175, 0.18)',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      left: 0,
+      top: 8,
+      bottom: 8,
+      width: 3,
+      borderRadius: 999,
+      backgroundColor: '#1e40af',
+    },
+  },
+  navIcon: {
+    color: '#475569',
+    transition: 'color 180ms ease',
+  },
+  navIconSelected: {
+    color: '#1e40af',
+  },
+  navLabel: {
+    fontSize: 14,
+    fontWeight: 500,
+    color: '#334155',
+    transition: 'color 180ms ease, font-weight 180ms ease',
+  },
+  navLabelSelected: {
+    color: '#0f172a',
+    fontWeight: 600,
+  },
+}));
 
+const menuSections = [
+  {
+    header: null,
+    items: [
+      { label: 'Dashboard', to: '/', icon: DashboardIcon },
+    ],
+  },
+  {
+    header: 'Admin',
+    items: [
+      { label: 'User Management', to: '/usermanagement', icon: PeopleIcon },
+      { label: 'Manage Location', to: '/locationmanagment', icon: RoomIcon },
+      { label: 'Manage Warehouse', to: '/warehousemanagement', icon: BusinessIcon },
+      { label: 'Manage Products', to: '/chemicalmanagement', icon: LocalOfferIcon },
+    ],
+  },
+  {
+    header: 'Work Orders',
+    items: [
+      { label: 'Shipping Papers', to: '/shippingpapers', icon: DescriptionIcon },
+      { label: 'Delivery', to: '/delivery', icon: LocalShippingIcon },
+    ],
+  },
+  {
+    header: 'Reports',
+    items: [
+      { label: 'Earnings Report', to: '/weeklyearnings', icon: ShowChartIcon },
+      { label: 'User Report', to: '/userReport', icon: AssignmentIndIcon },
+      { label: 'Inventory Levels', to: '/warehouseInventory', icon: StorageIcon },
+    ],
+  },
+];
 
-    <ListSubheader inset>Reports</ListSubheader>
-    <ListItem button>
-      <ListItemIcon>
-        <ReceiptIcon />
+function SidebarItem({ item, isCollapsed, isSelected }) {
+  const classes = useStyles();
+  const Icon = item.icon;
+  const itemContent = (
+    <ListItem
+      button
+      component={Link}
+      to={item.to}
+      selected={isSelected}
+      className={[classes.navItem, isSelected ? classes.navItemSelected : ''].join(' ')}
+      style={{
+        justifyContent: isCollapsed ? 'center' : 'flex-start',
+        paddingLeft: isCollapsed ? 0 : 14,
+        paddingRight: isCollapsed ? 0 : 14,
+      }}
+    >
+      <ListItemIcon
+        className={[classes.navIcon, isSelected ? classes.navIconSelected : ''].join(' ')}
+        style={{
+          minWidth: isCollapsed ? 0 : 36,
+          justifyContent: 'center',
+        }}
+      >
+        <Icon fontSize="small" />
       </ListItemIcon>
-      <Button component={Link} to="/weeklyearnings" color="primary">
-      Earnings Report
-    </Button>
+      {!isCollapsed && (
+        <ListItemText
+          primary={item.label}
+          primaryTypographyProps={{
+            className: [classes.navLabel, isSelected ? classes.navLabelSelected : ''].join(' '),
+          }}
+        />
+      )}
     </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <LocalShippingIcon />
-      </ListItemIcon>
-      <Button component={Link} to="/userReport" color="primary">
-      User Report
-    </Button>
-    </ListItem>
-    <ListItem button>
-      <ListItemIcon>
-        <LocalShippingIcon />
-      </ListItemIcon>
-      <Button component={Link} to="/warehouseInventory" color="primary">
-      Inventory Levels
-    </Button>
-    </ListItem>
-    
-  </div>
-);
+  );
+
+  if (isCollapsed) {
+    return (
+      <Tooltip title={item.label} placement="right" arrow>
+        {itemContent}
+      </Tooltip>
+    );
+  }
+
+  return itemContent;
+}
+
+export function MainListItems({ isCollapsed }) {
+  const location = useLocation();
+
+  return (
+    <div>
+      {menuSections.map((section) => (
+        <div key={section.header || 'main'}>
+          {!isCollapsed && section.header && (
+            <ListSubheader
+              inset
+              disableSticky
+              style={{
+                lineHeight: '28px',
+                fontSize: 11,
+                letterSpacing: 0.8,
+                textTransform: 'uppercase',
+                color: '#64748b',
+                backgroundColor: 'transparent',
+              }}
+            >
+              {section.header}
+            </ListSubheader>
+          )}
+
+          {section.items.map((item) => {
+            const isSelected = item.to === '/'
+              ? location.pathname === '/'
+              : location.pathname.startsWith(item.to);
+
+            return (
+              <SidebarItem
+                key={item.to}
+                item={item}
+                isCollapsed={isCollapsed}
+                isSelected={isSelected}
+              />
+            );
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 
 
