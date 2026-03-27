@@ -89,6 +89,52 @@
   opacity: 0.65;
 }
 
+/* Demo mode styles */
+.Login .demo-badge {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: rgba(234, 179, 8, 0.15);
+  color: #92400e;
+  border: 1px solid rgba(234, 179, 8, 0.4);
+}
+
+.Login .demo-divider {
+  display: flex;
+  align-items: center;
+  margin: 14px 0 8px;
+  gap: 10px;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.Login .demo-divider::before,
+.Login .demo-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.Login .demo-mode-button,
+.Login .demo-exit-button {
+  background: transparent;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.Login .demo-mode-button:hover,
+.Login .demo-exit-button:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
 @media all and (max-width: 480px) {
   .Login {
     align-items: flex-start;

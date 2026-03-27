@@ -35,8 +35,13 @@ import UserReport from './Reports/UserReport.js';
 import { APP_TITLE } from './config/appInfo';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 
-function logout(){
-fire.auth().signOut();
+const DEMO_MODE = localStorage.getItem('demoMode') === 'true';
+
+function logout() {
+  if (DEMO_MODE) {
+    localStorage.removeItem('demoMode');
+  }
+  fire.auth().signOut();
 };
 
 
@@ -173,6 +178,22 @@ export default function Home() {
           </IconButton>
           <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
             {APP_TITLE}
+            {DEMO_MODE && (
+              <span style={{
+                marginLeft: 10,
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: 1,
+                padding: '2px 8px',
+                borderRadius: 4,
+                backgroundColor: 'rgba(234,179,8,0.25)',
+                color: '#fde68a',
+                border: '1px solid rgba(234,179,8,0.4)',
+                verticalAlign: 'middle',
+              }}>
+                DEMO
+              </span>
+            )}
           </Typography>
           <IconButton color="inherit">
           <Button onClick={logout} variant="contained" color="secondary" className={classes.signOutButton}>
