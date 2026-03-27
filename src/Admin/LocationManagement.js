@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import MaterialTable from 'material-table';
-import { useHistory, useLocation } from "react-router-dom";
-// import fire from '../config/fire';
+import { useHistory } from "react-router-dom";
 
 
 
@@ -10,8 +9,8 @@ import { useHistory, useLocation } from "react-router-dom";
 
 
 function LocationManagement(){
-  const [data, setData] = useState([])
-  const [companyID, setCompanyID] = useState([])
+  const [data] = useState([])
+  const [, setCompanyID] = useState([])
 
 
   const additem = (incoming, resolve) => {
@@ -142,7 +141,7 @@ const removeitem = (incoming, resolve) => {
     }
  
   
-    const [state, setState] = React.useState({
+    const [state] = React.useState({
         columns: [
           {title: "id", field: "id", hidden: true},
           {title: "Name", field: "name"},
@@ -151,7 +150,7 @@ const removeitem = (incoming, resolve) => {
           {title: "Zip Code", field: "zip"},
           {title: "Phone Number", field: "phone"}
         ]
-        
+
       });
 
 

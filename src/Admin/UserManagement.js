@@ -7,7 +7,6 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 import Typography from '@material-ui/core/Typography';
-// import fire from '../config/fire';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Modal from '@material-ui/core/Modal';
@@ -35,7 +34,7 @@ function getModalStyle() {
 
 
 function useTimes(){
-  const [times, setTimes] = useState([])
+  const [times] = useState([])
 
   useEffect(() => {
     // fire
@@ -93,9 +92,9 @@ export default function UserManagement() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [confirmpassword, setconfirmPassword] = useState('')
-    const [UID, setUID] = useState('')
-    const [deleteID, setdelID] = useState('')
-    const [editData, seteditData] = useState([])
+    const [, setUID] = useState('')
+    const [, setdelID] = useState('')
+    const [editData] = useState([])
     const [update, setUpdate] = useState(false)
     
   const handleOpen = () => {

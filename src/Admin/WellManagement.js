@@ -3,7 +3,6 @@ import MaterialTable, {MTableToolbar}  from 'material-table';
 import { useHistory, useLocation } from "react-router-dom";
 
 import Button from '@material-ui/core/Button';
-// import fire from '../config/fire';
 
 
 
@@ -15,14 +14,13 @@ import Button from '@material-ui/core/Button';
 
 function WellManagement(props){
   const location = useLocation();
-  const [data, setData] = useState([])
-  const [leaseid, setLeaseid]= useState('')
+  const [data] = useState([])
+  const [, setLeaseid]= useState('')
   const [companyid, seCompanyid]= useState('')
 
 
 
   useEffect(() => {
-    const id = location.state.leaseid
     setLeaseid(location.state.leaseid)
     seCompanyid(location.state.companyid)
     
@@ -40,7 +38,7 @@ function WellManagement(props){
     //     setData(newTimes)
     //   })
     
-  }, [])
+  }, [location.state.companyid, location.state.leaseid])
 
   const additem = (incoming, resolve) => {
     //validation
@@ -138,15 +136,15 @@ const removeitem = (incoming, resolve) => {
       });
     }
 
-    const [state, setState] = React.useState({
+    const [state] = React.useState({
       columns: [
         {title: "id", field: "id", hidden: true},
         {title: "Name", field: "name"},
         {title: "GPS Coordinates", field: "gps"},
         {title: "Description", field: "description"},
-        
+
       ],
-        
+
       });
 
 

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import MaterialTable, {MTableToolbar} from 'material-table';
 import { useHistory, useLocation } from "react-router-dom";
 import Button from '@material-ui/core/Button';
-// import fire from '../config/fire';
 
 
 
@@ -14,13 +13,11 @@ import Button from '@material-ui/core/Button';
 
 function LeaseManagement(){
   const location = useLocation();
-  const [data, setData] = useState([])
-  const [chemicallist, setChemicalList] = useState([])
+  const [data] = useState([])
   const [companyid, setCompanyid]= useState('')
-  const [leaseID, setLeaseID] = useState([])
+  const [, setLeaseID] = useState([])
 
   useEffect(() => {
-    const id = location.state.id
     setCompanyid(location.state.id)
     
     
@@ -39,7 +36,7 @@ function LeaseManagement(){
 
 
       
-  }, [])
+  }, [location.state.id])
 
   
 
@@ -146,13 +143,13 @@ const removeitem = (incoming, resolve) => {
       history.push("/locationmanagment/");
     }
 
-    const [state, setState] = React.useState({
+    const [state] = React.useState({
         columns: [
           {title: "id", field: "id", hidden: true},
           {title: "Name", field: "name"},
-          
+
         ],
-        
+
       });
 
 

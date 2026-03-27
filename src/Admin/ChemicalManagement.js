@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import MaterialTable from 'material-table';
-import { useHistory } from "react-router-dom";
-// import fire from '../config/fire';
 
 
 
@@ -9,8 +7,8 @@ import { useHistory } from "react-router-dom";
 
 
 function ChemicalManagement(){
-  const [data, setData] = useState([])
-  const [companyID, setCompanyID] = useState([])
+  const [data] = useState([])
+
 
 
   const additem = (incoming, resolve) => {
@@ -119,14 +117,14 @@ const removeitem = (incoming, resolve) => {
 
     //console.log(data)
   
-    const [state, setState] = React.useState({
+    const [state] = React.useState({
         columns: [
           {title: "id", field: "id", hidden: true},
           {title: "Trade Name", field: "tradename"},
           {title: "DOT Tag", field: "dottag"},
           {title: "Weight", field: "weight"}
         ]
-        
+
       });
 
 

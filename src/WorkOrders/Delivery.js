@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import MaterialTable from 'material-table';
 import { useHistory } from "react-router-dom";
-// import fire from '../config/fire';
 import { Select, MenuItem } from "@material-ui/core";
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import Modal from '@material-ui/core/Modal';
@@ -11,7 +10,6 @@ import {
   KeyboardDatePicker,
 } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
-import moment  from 'moment';
 
 
 
@@ -42,7 +40,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Delivery(){
-  const [data, setData] = useState([])
+  const [data] = useState([])
   const [open, setOpen] = useState(false);
   // const [leaselist, setLeaseList] = useState([''])
   const CLW = getCLW();
@@ -295,28 +293,32 @@ const removeitem = (incoming, resolve) => {
 
     const body = (
       <div style={modalStyle} className={classes.paper}>
-       <LoadScript
-       id= "Deliveries"
-         googleMapsApiKey={GoogleMapsKey}>
-          <GoogleMap
-          id="marker-example"
-          mapContainerStyle={mapStyles}
-          zoom={13}
-          center={position}
-        >
-          <Marker
-            onLoad={onLoad}
-            position={position}
-          />
-        </GoogleMap>
-          
-          
-       </LoadScript>
+       {GoogleMapsKey ? (
+         <LoadScript
+         id= "Deliveries"
+           googleMapsApiKey={GoogleMapsKey}>
+            <GoogleMap
+            id="marker-example"
+            mapContainerStyle={mapStyles}
+            zoom={13}
+            center={position}
+          >
+            <Marker
+              onLoad={onLoad}
+              position={position}
+            />
+          </GoogleMap>
+         </LoadScript>
+       ) : (
+         <div style={{...mapStyles, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e0e0e0'}}>
+           <span>Map unavailable – no API key configured</span>
+         </div>
+       )}
       </div>
     );
  
   
-    const [state, setState] = React.useState({
+    const [state] = React.useState({
         columns: [
           {title: "id", field: "id", hidden: true},
           {title: "Data Number", field: "datanumber", editable: 'never'},

@@ -3,12 +3,11 @@ import MaterialTable, {MTableToolbar}  from 'material-table';
 import { useHistory, useLocation } from "react-router-dom";
 import { Select, MenuItem } from "@material-ui/core";
 import Button from '@material-ui/core/Button';
-// import fire from '../config/fire';
 
 
 function WarehouseChemical(props){
   const location = useLocation();
-  const [data, setData] = useState([])
+  const [data] = useState([])
   const list = getChemicals();
 
  
@@ -30,10 +29,6 @@ function WarehouseChemical(props){
 }
 
   useEffect(() => {
-    const id = location.state.id
- 
-
-
     // fire
     //   .firestore()
     //   .collection('asset_data').where('type', '==', 'warehouse_chemical').where('warehouseid', '==', id)
@@ -45,7 +40,7 @@ function WarehouseChemical(props){
     //     })))
     //     setData(newTimes)
     //   })
-  }, [])
+  }, [location.state.id])
     //setData(newTimes)
     
     
@@ -147,7 +142,7 @@ const removeitem = (incoming, resolve) => {
       });
     }
 
-    const [state, setState] = React.useState({
+    const [state] = React.useState({
       columns: [
         {title: "id", field: "id", hidden: true},
         {

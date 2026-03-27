@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-// import fire from '../config/fire';
 
 const defaultCenter = {
   lat: 31.9686,
@@ -11,10 +10,9 @@ const defaultCenter = {
 export default function Orders() {
   
   const GoogleMapsKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
-  const [marks, setLocations] = useState([])
+  const [marks] = useState([])
 
   useEffect(() => {
-    var locations = [];
     // fire
     //   .firestore()
     //   .collection('assets').where('type', '==', 'well')
@@ -59,35 +57,41 @@ export default function Orders() {
 
   return (
     <React.Fragment>
-      <LoadScript
-       id= "Deliveries"
-         googleMapsApiKey={GoogleMapsKey}>
-          <GoogleMap
-          id="marker-example"
-          mapContainerStyle={mapStyles}
-          zoom={5}
-           center={defaultCenter}
-           options={{
-            fullscreenControl: false,
-            mapTypeControl: false,
-            streetViewControl: false,
-          }}
-        >
+      {GoogleMapsKey ? (
+        <LoadScript
+         id= "Deliveries"
+           googleMapsApiKey={GoogleMapsKey}>
+            <GoogleMap
+            id="marker-example"
+            mapContainerStyle={mapStyles}
+            zoom={5}
+             center={defaultCenter}
+             options={{
+              fullscreenControl: false,
+              mapTypeControl: false,
+              streetViewControl: false,
+            }}
+          >
 
-          { marks.map((mark, index) => (
+            { marks.map((mark, index) => (
 
-                  <Marker
-                  key = {index}
-                  position={mark}
-                  />
-                  
-                  
-                ))}
-          
-        </GoogleMap>
-          
-          
-       </LoadScript>
+                    <Marker
+                    key = {index}
+                    position={mark}
+                    />
+
+
+                  ))}
+
+          </GoogleMap>
+
+
+         </LoadScript>
+      ) : (
+        <div style={{...mapStyles, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e0e0e0'}}>
+          <span>Map unavailable – no API key configured</span>
+        </div>
+      )}
     </React.Fragment>
   );
 }

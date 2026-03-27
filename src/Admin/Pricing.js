@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import MaterialTable, {MTableToolbar} from 'material-table';
 import { useHistory, useLocation } from "react-router-dom";
-// import fire from '../config/fire';
 import Button from '@material-ui/core/Button';
 import { Select, MenuItem } from "@material-ui/core";
 
@@ -11,11 +10,9 @@ import { Select, MenuItem } from "@material-ui/core";
 
 function Pricing(){
   const location = useLocation();
-  const [data, setData] = useState([])
+  const [data] = useState([])
   const [companyid, setCompanyid]= useState('')
-  const [chemicallist, setChemicalList] = useState([])
   const list = getChemicals();
-  const [times, setTimes] = useState([])
 
   
 
@@ -109,7 +106,6 @@ const removeitem = (incoming, resolve) => {
 
   useEffect(() => {
     
-    const id = location.state.id
     setCompanyid(location.state.id)
 
 
@@ -129,7 +125,7 @@ const removeitem = (incoming, resolve) => {
 
     
     
-  }, [])
+  }, [location.state.id])
 
  
 
@@ -174,7 +170,7 @@ const removeitem = (incoming, resolve) => {
     }
     
   
-    const [state, setState] = React.useState({
+    const [state] = React.useState({
         columns: [
           {title: "id", field: "id", hidden: true},
           {

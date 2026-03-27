@@ -3,12 +3,11 @@ import MaterialTable, {MTableToolbar}  from 'material-table';
 import { useHistory, useLocation } from "react-router-dom";
 import { Select, MenuItem } from "@material-ui/core";
 import Button from '@material-ui/core/Button';
-// import fire from '../config/fire';
 
 
 function ShippingChemicals(props){
   const location = useLocation();
-  const [data, setData] = useState([])
+  const [data] = useState([])
   const list = getChemicals();
 
  
@@ -31,7 +30,6 @@ function ShippingChemicals(props){
 
   useEffect(() => {
     console.log(location.state)
-    const id = location.state.id
  
 
 
@@ -46,7 +44,7 @@ function ShippingChemicals(props){
     //     })))
     //     setData(newTimes)
     //   })
-  }, [])
+  }, [location.state])
     //setData(newTimes)
     
     
@@ -148,7 +146,7 @@ const removeitem = (incoming, resolve) => {
       });
     }
 
-    const [state, setState] = React.useState({
+    const [state] = React.useState({
       columns: [
         {title: "id", field: "id", hidden: true},
         {

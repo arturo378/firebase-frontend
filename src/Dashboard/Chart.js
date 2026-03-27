@@ -2,29 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from '@material-ui/core/styles';
 import { BarChart, Tooltip, Bar, XAxis, YAxis, Label, ResponsiveContainer } from 'recharts';
 import Title from './Title';
-// import fire from '../config/fire';
-import moment  from 'moment';
 import { subDays } from 'date-fns';
-
-
-// Generate Sales Data
-function createData(time, amount) {
-  return { time, amount };
-}
 
 
 export default function Chart() {
   const theme = useTheme();
-  const [data, setData] = useState([])
-  const [date, setState] = useState([
+  const [data] = useState([])
+  useState([
     {
       start: new Date(),
       end: subDays(new Date(), 7)
     }
   ]);
   useEffect(() => {
-  
-   var data = [{}];
   //   fire
   //   .firestore()
   //   .collection('asset_data').where('type', '==', 'delivery')

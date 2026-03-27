@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { DateRangePicker } from 'react-date-range';
 import { makeStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import 'react-date-range/dist/styles.css'; // main style file
 import 'react-date-range/dist/theme/default.css'; // theme css file
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
-// import fire from '../config/fire';
+import fire from '../config/fire';
 import Button from '@material-ui/core/Button';
 import moment from 'moment';
 import Typography from '@material-ui/core/Typography';

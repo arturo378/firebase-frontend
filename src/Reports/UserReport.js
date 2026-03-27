@@ -5,7 +5,7 @@ import Grid from '@material-ui/core/Grid';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
-// import fire from '../config/fire';
+import fire from '../config/fire';
 import Button from '@material-ui/core/Button';
 import moment from 'moment';
 import Typography from '@material-ui/core/Typography';

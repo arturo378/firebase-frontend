@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import MaterialTable from 'material-table';
-import { useHistory, useLocation } from "react-router-dom";
-// import fire from '../config/fire';
+import { useHistory } from "react-router-dom";
 import { makeStyles } from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import DateFnsUtils from '@date-io/date-fns';
-import moment  from 'moment';
 import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker,
@@ -37,8 +35,8 @@ const useStyles = makeStyles((theme) => ({
 
 
 function ShippingPaper(){
-  const [data, setData] = useState([])
-  const [companyID, setCompanyID] = useState([])
+  const [data] = useState([])
+  const [, setCompanyID] = useState([])
   const [modalStyle] = useState(getModalStyle);
   const [open, setOpen] = useState(false);
   const classes = useStyles();
@@ -51,26 +49,13 @@ function ShippingPaper(){
     setSelectedDate(date);
   };
 
-  const handleOpen = () => {
-    setOpen(true);
-  };
   const handleClose = () => {
     setOpen(false);
   };
 
-  const mapContainerStyle = {
-    height: "400px",
-    width: "800px"
-  }
   const mapStyles = {        
     height: "400px",
     width: "100%"};
-  
-  const center = {
-    lat: 0,
-    lng: -180
-  }
- 
   
   const onLoad = marker => {
     console.log('marker: ', marker)
@@ -80,21 +65,27 @@ function ShippingPaper(){
 
   const body = (
     <div style={modalStyle} className={classes.paper}>
-     <LoadScript
-     id= "Deliveries"
-       googleMapsApiKey={GoogleMapsKey}>
-        <GoogleMap
-        id="marker-example"
-        mapContainerStyle={mapStyles}
-        zoom={13}
-        center={position}
-      >
-        <Marker
-          onLoad={onLoad}
-          position={position}
-        />
-      </GoogleMap>
-     </LoadScript>
+     {GoogleMapsKey ? (
+       <LoadScript
+       id= "Deliveries"
+         googleMapsApiKey={GoogleMapsKey}>
+          <GoogleMap
+          id="marker-example"
+          mapContainerStyle={mapStyles}
+          zoom={13}
+          center={position}
+        >
+          <Marker
+            onLoad={onLoad}
+            position={position}
+          />
+        </GoogleMap>
+       </LoadScript>
+     ) : (
+       <div style={{...mapStyles, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e0e0e0'}}>
+         <span>Map unavailable – no API key configured</span>
+       </div>
+     )}
     </div>
   );
   const additem = (incoming, resolve) => {
@@ -223,7 +214,7 @@ setPosition({
  
   
 
- if(position != undefined){
+ if(position !== undefined){
   setOpen(true);
 
  }
@@ -265,7 +256,7 @@ setPosition({
     }
  
   
-    const [state, setState] = React.useState({
+    const [state] = React.useState({
         columns: [
           {title: "id", field: "id", hidden: true},
           {title: "Data Number", field: "datanumber", editable: 'never'},
