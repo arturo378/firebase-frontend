@@ -3,7 +3,7 @@ import MaterialTable, {MTableToolbar}  from 'material-table';
 import { useHistory, useLocation } from "react-router-dom";
 import { Select, MenuItem } from "@material-ui/core";
 import Button from '@material-ui/core/Button';
-import fire from '../config/fire';
+// import fire from '../config/fire';
 
 
 function DeliveryEdit(props){
@@ -15,17 +15,17 @@ function DeliveryEdit(props){
   
   function getChemicals(){
     var info = [];
-    fire
-    .firestore()
-    .collection('assets').where('type', '==', 'chemical')
-    .onSnapshot((snapshot) => {
-      const chemicals = snapshot.docs.map(((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      })))
+    // fire
+    // .firestore()
+    // .collection('assets').where('type', '==', 'chemical')
+    // .onSnapshot((snapshot) => {
+    //   const chemicals = snapshot.docs.map(((doc) => ({
+    //     id: doc.id,
+    //     ...doc.data()
+    //   })))
       
-       info.push(chemicals)
-    })
+    //    info.push(chemicals)
+    // })
   return info;
 }
 
@@ -36,17 +36,17 @@ function DeliveryEdit(props){
  
 
 
-    fire
-      .firestore()
-      .collection('asset_data').where('type', '==', 'delivery_chemical').where('deliveryid', '==', id)
-      .onSnapshot((snapshot) => {
-        const newTimes = snapshot.docs.map(((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+    // fire
+    //   .firestore()
+    //   .collection('asset_data').where('type', '==', 'delivery_chemical').where('deliveryid', '==', id)
+    //   .onSnapshot((snapshot) => {
+    //     const newTimes = snapshot.docs.map(((doc) => ({
+    //       id: doc.id,
+    //       ...doc.data(),
           
-        })))
-        setData(newTimes)
-      })
+    //     })))
+    //     setData(newTimes)
+    //   })
   }, [])
     //setData(newTimes)
     
@@ -64,25 +64,25 @@ function DeliveryEdit(props){
    let dataToAdd =[];
    dataToAdd.push(incoming);
    console.log(location.state.id)
-         fire 
-         .firestore()
-         .collection('asset_data').add({
+        //  fire 
+        //  .firestore()
+        //  .collection('asset_data').add({
            
-           "name": dataToAdd[0].name,
-           "quantity": dataToAdd[0].quantity,
-          "deliveryid": location.state.id,
-          "type": "delivery_chemical"
+        //    "name": dataToAdd[0].name,
+        //    "quantity": dataToAdd[0].quantity,
+        //   "deliveryid": location.state.id,
+        //   "type": "delivery_chemical"
            
            
-         })
-         .then(function(){
-           resolve()
-           console.log("Document successfully written!");
-         })
-         .catch(function(error){
-           console.error("Error writing document: ", error);
-           resolve()
-         })
+        //  })
+        //  .then(function(){
+        //    resolve()
+        //    console.log("Document successfully written!");
+        //  })
+        //  .catch(function(error){
+        //    console.error("Error writing document: ", error);
+        //    resolve()
+        //  })
  }
 };
 const updateitem = (oldincoming, incoming, resolve) => {
@@ -98,23 +98,23 @@ if(errorList.length < 1){
 let dataToAdd =[];
 dataToAdd.push(incoming);
 
-      fire 
-      .firestore()
-      .collection('asset_data').doc(oldincoming.id).update({
+      // fire 
+      // .firestore()
+      // .collection('asset_data').doc(oldincoming.id).update({
        
-        "name": dataToAdd[0].name,
-           "quantity": dataToAdd[0].quantity,
-          "shippingid": location.state.id,
-          "type": "shipping_chemical"
-      })
-      .then(function(){
-        resolve()
-        console.log("Document successfully written!");
-      })
-      .catch(function(error){
-        console.error("Error writing document: ", error);
-        resolve()
-      })
+      //   "name": dataToAdd[0].name,
+      //      "quantity": dataToAdd[0].quantity,
+      //     "shippingid": location.state.id,
+      //     "type": "shipping_chemical"
+      // })
+      // .then(function(){
+      //   resolve()
+      //   console.log("Document successfully written!");
+      // })
+      // .catch(function(error){
+      //   console.error("Error writing document: ", error);
+      //   resolve()
+      // })
 }
 };
 
@@ -122,17 +122,17 @@ dataToAdd.push(incoming);
 const removeitem = (incoming, resolve) => {
  
 
- fire 
-     .firestore()
-     .collection('asset_data').doc(incoming.id).delete()
-     .then(function(){
-       resolve()
-       console.log("Document successfully written!");
-     })
-     .catch(function(error){
-       resolve()
-       console.error("Error writing document: ", error);
-     });
+//  fire 
+//      .firestore()
+//      .collection('asset_data').doc(incoming.id).delete()
+//      .then(function(){
+//        resolve()
+//        console.log("Document successfully written!");
+//      })
+//      .catch(function(error){
+//        resolve()
+//        console.error("Error writing document: ", error);
+//      });
  
 
 };

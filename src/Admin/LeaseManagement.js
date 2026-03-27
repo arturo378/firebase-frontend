@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import MaterialTable, {MTableToolbar} from 'material-table';
 import { useHistory, useLocation } from "react-router-dom";
 import Button from '@material-ui/core/Button';
-import fire from '../config/fire';
+// import fire from '../config/fire';
 
 
 
@@ -25,17 +25,17 @@ function LeaseManagement(){
     
     
     
-    fire
-      .firestore()
-      .collection('assets').where('type', '==', 'lease').where('company', '==', id)
-      .onSnapshot((snapshot) => {
-        const newTimes = snapshot.docs.map(((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        })))
+    // fire
+    //   .firestore()
+    //   .collection('assets').where('type', '==', 'lease').where('company', '==', id)
+    //   .onSnapshot((snapshot) => {
+    //     const newTimes = snapshot.docs.map(((doc) => ({
+    //       id: doc.id,
+    //       ...doc.data()
+    //     })))
         
-        setData(newTimes)
-      })
+    //     setData(newTimes)
+    //   })
 
 
       
@@ -56,23 +56,23 @@ function LeaseManagement(){
    let dataToAdd =[];
    dataToAdd.push(incoming);
    
-         fire 
-         .firestore()
-         .collection('assets').add({
+        //  fire 
+        //  .firestore()
+        //  .collection('assets').add({
            
-           "name": dataToAdd[0].name,
+        //    "name": dataToAdd[0].name,
            
-           type: "lease",
-           company: companyid
-         })
-         .then(function(){
-           resolve()
-           console.log("Document successfully written!");
-         })
-         .catch(function(error){
-           console.error("Error writing document: ", error);
-           resolve()
-         })
+        //    type: "lease",
+        //    company: companyid
+        //  })
+        //  .then(function(){
+        //    resolve()
+        //    console.log("Document successfully written!");
+        //  })
+        //  .catch(function(error){
+        //    console.error("Error writing document: ", error);
+        //    resolve()
+        //  })
  }
 };
 const updateitem = (oldincoming, incoming, resolve) => {
@@ -88,22 +88,22 @@ if(errorList.length < 1){
 let dataToAdd =[];
 dataToAdd.push(incoming);
 
-      fire 
-      .firestore()
-      .collection('assets').doc(oldincoming.id).update({
+      // fire 
+      // .firestore()
+      // .collection('assets').doc(oldincoming.id).update({
        
-        "name": dataToAdd[0].name,
-        company: companyid,
-        type: "lease"
-      })
-      .then(function(){
-        resolve()
-        console.log("Document successfully written!");
-      })
-      .catch(function(error){
-        console.error("Error writing document: ", error);
-        resolve()
-      })
+      //   "name": dataToAdd[0].name,
+      //   company: companyid,
+      //   type: "lease"
+      // })
+      // .then(function(){
+      //   resolve()
+      //   console.log("Document successfully written!");
+      // })
+      // .catch(function(error){
+      //   console.error("Error writing document: ", error);
+      //   resolve()
+      // })
 }
 };
 
@@ -111,17 +111,17 @@ dataToAdd.push(incoming);
 const removeitem = (incoming, resolve) => {
  
 
- fire 
-     .firestore()
-     .collection('assets').doc(incoming.id).delete()
-     .then(function(){
-       resolve()
-       console.log("Document successfully written!");
-     })
-     .catch(function(error){
-       resolve()
-       console.error("Error writing document: ", error);
-     });
+//  fire 
+//      .firestore()
+//      .collection('assets').doc(incoming.id).delete()
+//      .then(function(){
+//        resolve()
+//        console.log("Document successfully written!");
+//      })
+//      .catch(function(error){
+//        resolve()
+//        console.error("Error writing document: ", error);
+//      });
  
 
 };

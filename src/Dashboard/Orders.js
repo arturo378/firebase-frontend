@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-import fire from '../config/fire';
+// import fire from '../config/fire';
 
 const defaultCenter = {
   lat: 31.9686,
@@ -15,30 +15,30 @@ export default function Orders() {
 
   useEffect(() => {
     var locations = [];
-    fire
-      .firestore()
-      .collection('assets').where('type', '==', 'well')
-      .onSnapshot((snapshot) => {
-        var newTimes = snapshot.docs.map(((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        })))
-        for (var key in newTimes) {
+    // fire
+    //   .firestore()
+    //   .collection('assets').where('type', '==', 'well')
+    //   .onSnapshot((snapshot) => {
+    //     var newTimes = snapshot.docs.map(((doc) => ({
+    //       id: doc.id,
+    //       ...doc.data()
+    //     })))
+    //     for (var key in newTimes) {
           
-          var gpsdat = (newTimes[key].gps).split(',');
+    //       var gpsdat = (newTimes[key].gps).split(',');
 
-          locations[key] = {
-            lat: parseFloat(gpsdat[0]),
-            lng: parseFloat(gpsdat[1])
-          };
-        }
-        if(locations){
-          setLocations(locations)
-        }
+    //       locations[key] = {
+    //         lat: parseFloat(gpsdat[0]),
+    //         lng: parseFloat(gpsdat[1])
+    //       };
+    //     }
+    //     if(locations){
+    //       setLocations(locations)
+    //     }
         
         
         
-      })
+    //   })
       
       
   }, [])

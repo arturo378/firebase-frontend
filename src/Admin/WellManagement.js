@@ -3,7 +3,7 @@ import MaterialTable, {MTableToolbar}  from 'material-table';
 import { useHistory, useLocation } from "react-router-dom";
 
 import Button from '@material-ui/core/Button';
-import fire from '../config/fire';
+// import fire from '../config/fire';
 
 
 
@@ -28,17 +28,17 @@ function WellManagement(props){
     
     
     
-    fire
-      .firestore()
-      .collection('assets').where('type', '==', 'well').where('lease', '==', id)
-      .onSnapshot((snapshot) => {
-        const newTimes = snapshot.docs.map(((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        })))
+    // fire
+    //   .firestore()
+    //   .collection('assets').where('type', '==', 'well').where('lease', '==', id)
+    //   .onSnapshot((snapshot) => {
+    //     const newTimes = snapshot.docs.map(((doc) => ({
+    //       id: doc.id,
+    //       ...doc.data()
+    //     })))
         
-        setData(newTimes)
-      })
+    //     setData(newTimes)
+    //   })
     
   }, [])
 
@@ -52,24 +52,24 @@ function WellManagement(props){
    let dataToAdd =[];
    dataToAdd.push(incoming);
    
-         fire 
-         .firestore()
-         .collection('assets').add({
+        //  fire 
+        //  .firestore()
+        //  .collection('assets').add({
            
-           "name": dataToAdd[0].name,
-           "gps": dataToAdd[0].gps,
-          "description": dataToAdd[0].description,
-           type: "well",
-           lease: leaseid
-         })
-         .then(function(){
-           resolve()
-           console.log("Document successfully written!");
-         })
-         .catch(function(error){
-           console.error("Error writing document: ", error);
-           resolve()
-         })
+        //    "name": dataToAdd[0].name,
+        //    "gps": dataToAdd[0].gps,
+        //   "description": dataToAdd[0].description,
+        //    type: "well",
+        //    lease: leaseid
+        //  })
+        //  .then(function(){
+        //    resolve()
+        //    console.log("Document successfully written!");
+        //  })
+        //  .catch(function(error){
+        //    console.error("Error writing document: ", error);
+        //    resolve()
+        //  })
  }
 };
 const updateitem = (oldincoming, incoming, resolve) => {
@@ -85,24 +85,24 @@ if(errorList.length < 1){
 let dataToAdd =[];
 dataToAdd.push(incoming);
 
-      fire 
-      .firestore()
-      .collection('assets').doc(oldincoming.id).update({
+      // fire 
+      // .firestore()
+      // .collection('assets').doc(oldincoming.id).update({
        
-        "name": dataToAdd[0].name,
-        "gps": dataToAdd[0].gps,
-        "description": dataToAdd[0].description,
-        lease: leaseid,
-        type: "well"
-      })
-      .then(function(){
-        resolve()
-        console.log("Document successfully written!");
-      })
-      .catch(function(error){
-        console.error("Error writing document: ", error);
-        resolve()
-      })
+      //   "name": dataToAdd[0].name,
+      //   "gps": dataToAdd[0].gps,
+      //   "description": dataToAdd[0].description,
+      //   lease: leaseid,
+      //   type: "well"
+      // })
+      // .then(function(){
+      //   resolve()
+      //   console.log("Document successfully written!");
+      // })
+      // .catch(function(error){
+      //   console.error("Error writing document: ", error);
+      //   resolve()
+      // })
 }
 };
 
@@ -110,17 +110,17 @@ dataToAdd.push(incoming);
 const removeitem = (incoming, resolve) => {
  
 
- fire 
-     .firestore()
-     .collection('assets').doc(incoming.id).delete()
-     .then(function(){
-       resolve()
-       console.log("Document successfully written!");
-     })
-     .catch(function(error){
-       resolve()
-       console.error("Error writing document: ", error);
-     });
+//  fire 
+//      .firestore()
+//      .collection('assets').doc(incoming.id).delete()
+//      .then(function(){
+//        resolve()
+//        console.log("Document successfully written!");
+//      })
+//      .catch(function(error){
+//        resolve()
+//        console.error("Error writing document: ", error);
+//      });
  
 
 };

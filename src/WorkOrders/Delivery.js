@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import MaterialTable from 'material-table';
 import { useHistory } from "react-router-dom";
-import fire from '../config/fire';
+// import fire from '../config/fire';
 import { Select, MenuItem } from "@material-ui/core";
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import Modal from '@material-ui/core/Modal';
@@ -110,30 +110,30 @@ function Delivery(){
     dataToAdd.push(incoming);
     
     
-          fire 
-          .firestore()
-          .collection('asset_data').add({
-            "company": (dataToAdd[0].company).name,
-            "companyid": (dataToAdd[0].company).id,
-            "lease": (dataToAdd[0].lease).name,
-            "well": (dataToAdd[0].well).name,
-            "gps": dataToAdd[0].gps,
-            "comments": dataToAdd[0].comments,
-            "datanumber": "D-" + Math.round((new Date().getTime() / 1000)),
-            "createdBy": dataToAdd[0].createdBy,
-            "date": selectedDate,
-            "invoicenum": dataToAdd[0].invoicenum,
-            type: "delivery",
-            active: 0
-          })
-          .then(function(){
-            resolve()
-            console.log("Document successfully written!");
-          })
-          .catch(function(error){
-            console.error("Error writing document: ", error);
-            resolve()
-          })
+          // fire 
+          // .firestore()
+          // .collection('asset_data').add({
+          //   "company": (dataToAdd[0].company).name,
+          //   "companyid": (dataToAdd[0].company).id,
+          //   "lease": (dataToAdd[0].lease).name,
+          //   "well": (dataToAdd[0].well).name,
+          //   "gps": dataToAdd[0].gps,
+          //   "comments": dataToAdd[0].comments,
+          //   "datanumber": "D-" + Math.round((new Date().getTime() / 1000)),
+          //   "createdBy": dataToAdd[0].createdBy,
+          //   "date": selectedDate,
+          //   "invoicenum": dataToAdd[0].invoicenum,
+          //   type: "delivery",
+          //   active: 0
+          // })
+          // .then(function(){
+          //   resolve()
+          //   console.log("Document successfully written!");
+          // })
+          // .catch(function(error){
+          //   console.error("Error writing document: ", error);
+          //   resolve()
+          // })
   }
 };
 const updateitem = (oldincoming, incoming, resolve) => {
@@ -166,29 +166,29 @@ if(errorList.length < 1){
  dataToAdd.push(incoming);
 
  
-       fire 
-       .firestore()
-       .collection('asset_data').doc(oldincoming.id).update({
-        "company": (dataToAdd[0].company).name,
-        "companyid": (dataToAdd[0].company).id,
-        "lease": dataToAdd[0].lease.name,
-        "well": dataToAdd[0].well.name,
-        "gps": dataToAdd[0].gps,
-        "comments": dataToAdd[0].comments,
-        "createdBy": dataToAdd[0].createdBy,
-        "date": selectedDate,
-        "invoicenum": dataToAdd[0].invoicenum,
-        type: "delivery",
-        active: dataToAdd[0].active
-       })
-       .then(function(){
-         resolve()
-         console.log("Document successfully written!");
-       })
-       .catch(function(error){
-         console.error("Error writing document: ", error);
-         resolve()
-       })
+      //  fire 
+      //  .firestore()
+      //  .collection('asset_data').doc(oldincoming.id).update({
+      //   "company": (dataToAdd[0].company).name,
+      //   "companyid": (dataToAdd[0].company).id,
+      //   "lease": dataToAdd[0].lease.name,
+      //   "well": dataToAdd[0].well.name,
+      //   "gps": dataToAdd[0].gps,
+      //   "comments": dataToAdd[0].comments,
+      //   "createdBy": dataToAdd[0].createdBy,
+      //   "date": selectedDate,
+      //   "invoicenum": dataToAdd[0].invoicenum,
+      //   type: "delivery",
+      //   active: dataToAdd[0].active
+      //  })
+      //  .then(function(){
+      //    resolve()
+      //    console.log("Document successfully written!");
+      //  })
+      //  .catch(function(error){
+      //    console.error("Error writing document: ", error);
+      //    resolve()
+      //  })
 }
 };
 
@@ -196,36 +196,36 @@ if(errorList.length < 1){
 const removeitem = (incoming, resolve) => {
   
 
-  fire 
-      .firestore()
-      .collection('asset_data').doc(incoming.id).delete()
-      .then(function(){
-        resolve()
-        console.log("Document successfully written!");
-      })
-      .catch(function(error){
-        resolve()
-        console.error("Error writing document: ", error);
-      });
+  // fire 
+  //     .firestore()
+  //     .collection('asset_data').doc(incoming.id).delete()
+  //     .then(function(){
+  //       resolve()
+  //       console.log("Document successfully written!");
+  //     })
+  //     .catch(function(error){
+  //       resolve()
+  //       console.error("Error writing document: ", error);
+  //     });
 };
 
   function getCLW(){
         
     var info = [];
 
-    fire
-    .firestore()
-    .collection('assets').where('type', 'in', ['company', 'lease', 'well'])
-    .onSnapshot((snapshot) => {
-      const companies = snapshot.docs.map(((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      })))
+    // fire
+    // .firestore()
+    // .collection('assets').where('type', 'in', ['company', 'lease', 'well'])
+    // .onSnapshot((snapshot) => {
+    //   const companies = snapshot.docs.map(((doc) => ({
+    //     id: doc.id,
+    //     ...doc.data()
+    //   })))
       
-      for (var key in companies) {
-        info.push(companies[key]);
-      }
-    })
+    //   for (var key in companies) {
+    //     info.push(companies[key]);
+    //   }
+    // })
 
   return info;
 
@@ -254,26 +254,26 @@ const removeitem = (incoming, resolve) => {
 
   useEffect(() => {
     
-    fire
-      .firestore()
-      .collection('asset_data').where('type', '==', 'delivery')
-      .onSnapshot((snapshot) => {
-        var newTimes = snapshot.docs.map(((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        })))
+    // fire
+    //   .firestore()
+    //   .collection('asset_data').where('type', '==', 'delivery')
+    //   .onSnapshot((snapshot) => {
+    //     var newTimes = snapshot.docs.map(((doc) => ({
+    //       id: doc.id,
+    //       ...doc.data()
+    //     })))
 
         
-        for (var key in newTimes) {
+    //     for (var key in newTimes) {
 
           
-          newTimes[key].date = moment(newTimes[key].date.toDate()).format("MM/DD/YY");
-        }
+    //       newTimes[key].date = moment(newTimes[key].date.toDate()).format("MM/DD/YY");
+    //     }
 
-        // newTimes.date = moment(newTimes.date).format("MM/DD/YY"); 
-        // console.log(moment(newTimes[0].date.toDate()).format("MM/DD/YY"));return;
-        setData(newTimes)
-      })
+    //     // newTimes.date = moment(newTimes.date).format("MM/DD/YY"); 
+    //     // console.log(moment(newTimes[0].date.toDate()).format("MM/DD/YY"));return;
+    //     setData(newTimes)
+    //   })
       
       
   }, [])

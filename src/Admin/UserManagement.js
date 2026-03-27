@@ -7,7 +7,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 import Typography from '@material-ui/core/Typography';
-import fire from '../config/fire';
+// import fire from '../config/fire';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Modal from '@material-ui/core/Modal';
@@ -38,16 +38,16 @@ function useTimes(){
   const [times, setTimes] = useState([])
 
   useEffect(() => {
-    fire
-      .firestore()
-      .collection('users').where('status', '==', '1')
-      .onSnapshot((snapshot) => {
-        const newTimes = snapshot.docs.map(((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        })))
-        setTimes(newTimes)
-      })
+    // fire
+    //   .firestore()
+    //   .collection('users').where('status', '==', '1')
+    //   .onSnapshot((snapshot) => {
+    //     const newTimes = snapshot.docs.map(((doc) => ({
+    //       id: doc.id,
+    //       ...doc.data()
+    //     })))
+    //     setTimes(newTimes)
+    //   })
   }, [])
   
 
@@ -124,57 +124,57 @@ export default function UserManagement() {
   };
   
   const deleteUser = () => {
-    fire 
-      .firestore()
-      .collection('users').doc(UID).update({
-        status: '0'
-      })
-      .then(function(){
-        setOpen(false);
-        console.log("Document successfully written!");
-      })
-      .catch(function(error){
-        setOpen(false);
+    // fire 
+    //   .firestore()
+    //   .collection('users').doc(UID).update({
+    //     status: '0'
+    //   })
+    //   .then(function(){
+    //     setOpen(false);
+    //     console.log("Document successfully written!");
+    //   })
+    //   .catch(function(error){
+    //     setOpen(false);
 
-        console.error("Error writing document: ", error);
-      });
+    //     console.error("Error writing document: ", error);
+    //   });
     
 
     
   };
 
   const passwordreset = () => {
-    fire.auth().sendPasswordResetEmail(email)
-    .then(function (user) {
-      alert('Please check your email...')
-      setOpen(false);
-    }).catch(function (e) {
-      console.log(e)
-    })
+    // fire.auth().sendPasswordResetEmail(email)
+    // .then(function (user) {
+    //   alert('Please check your email...')
+    //   setOpen(false);
+    // }).catch(function (e) {
+    //   console.log(e)
+    // })
 
 
     
   };
 
   const updatedata = () => {
-    fire 
-      .firestore()
-      .collection('users').doc(UID).update({
+    // fire 
+    //   .firestore()
+    //   .collection('users').doc(UID).update({
        
-        "username": username,
-        "fullname": fullname,
+    //     "username": username,
+    //     "fullname": fullname,
         
-      })
-      .then(function(){
+    //   })
+    //   .then(function(){
         
-        setOpen(false);
-        console.log("Document successfully written!");
-      })
-      .catch(function(error){
-        setOpen(false);
-        console.error("Error writing document: ", error);
+    //     setOpen(false);
+    //     console.log("Document successfully written!");
+    //   })
+    //   .catch(function(error){
+    //     setOpen(false);
+    //     console.error("Error writing document: ", error);
         
-      })
+    //   })
     
   
 
@@ -192,32 +192,32 @@ export default function UserManagement() {
     
   
       
-    fire.auth().createUserWithEmailAndPassword(email,confirmpassword).then((u)=>{
-      console.log(u.user.uid)
+    // fire.auth().createUserWithEmailAndPassword(email,confirmpassword).then((u)=>{
+    //   console.log(u.user.uid)
 
-      fire
-    .firestore()
-    .collection('users')
-    .add({
-      username,
-      fullname,
-      UID: u.user.uid,
-      email,
-      status: '1'
-    })
-    .then(() => {
-      setUser('')
-      setName('')
-      setEmail('')
-      setPassword('')
-      setUID('');
-    })
-    handleClose();
-      //setUID(u.user.uid)
-        //console.log(u)
-    }).catch((err)=>{
-        console.log(err);
-    })
+    //   fire
+    // .firestore()
+    // .collection('users')
+    // .add({
+    //   username,
+    //   fullname,
+    //   UID: u.user.uid,
+    //   email,
+    //   status: '1'
+    // })
+    // .then(() => {
+    //   setUser('')
+    //   setName('')
+    //   setEmail('')
+    //   setPassword('')
+    //   setUID('');
+    // })
+    // handleClose();
+    //   //setUID(u.user.uid)
+    //     //console.log(u)
+    // }).catch((err)=>{
+    //     console.log(err);
+    // })
     
 
     

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
-import fire from './config/fire';
+// import fire from './config/fire';
 import Login from './Login'
 import Home from './Home'
 import { APP_TITLE } from './config/appInfo';
@@ -19,17 +19,17 @@ class App extends Component{
     document.title = APP_TITLE;
     this.authListener();
   }
-  authListener(){
-    fire.auth().onAuthStateChanged((user)=>{
-      if(user)
-      {
-        this.setState({user})
-      }
-      else{
-        this.setState({user : null})
-      }
-    })
-  }
+  // authListener(){
+  //   fire.auth().onAuthStateChanged((user)=>{
+  //     if(user)
+  //     {
+  //       this.setState({user})
+  //     }
+  //     else{
+  //       this.setState({user : null})
+  //     }
+  //   })
+  // }
 
   render(){
     return (

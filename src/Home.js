@@ -14,7 +14,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { MainListItems } from './Dashboard/listItems.js';
 import Button from '@material-ui/core/Button';
-import fire from './config/fire.js';
+// import fire from './config/fire.js';
 import { BrowserRouter as Router, Switch as Switcher, Route } from 'react-router-dom';
 import UserManagement from './Admin/UserManagement'; 
 import LocationManagement from './Admin/LocationManagement.js';
