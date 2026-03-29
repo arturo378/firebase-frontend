@@ -1,185 +1,95 @@
 import React, { useState, useEffect } from 'react';
 import MaterialTable from 'material-table';
 import { useHistory } from "react-router-dom";
-
-
-
-
-
+import api from '../config/api';
 
 function WarehouseManagement(){
-  const [data] = useState([])
-  const [, setCompanyID] = useState([])
+  const [data, setData] = useState([]);
 
-
-  const additem = (incoming, resolve) => {
-      
-     //validation
-  let errorList = []
-  if(incoming.name === undefined){
-    errorList.push("Please enter first name")
-  }
-  if(incoming.warehousenumber === undefined){
-    errorList.push("Please enter last name")
-  }
-  if(incoming.areamanager === undefined){
-    errorList.push("Please enter a valid email")
-  }
-  if(errorList.length < 1){
-    let dataToAdd =[];
-    dataToAdd.push(incoming);
-    console.log(dataToAdd);
-    
-          // fire 
-          // .firestore()
-          // .collection('assets').add({
-          //   "warehousenumber": dataToAdd[0].warehousenumber,
-          //   "name": dataToAdd[0].name,
-          //   "areamanager": dataToAdd[0].areamanager,
-          //   type: "warehouse"
-          // })
-          // .then(function(){
-          //   resolve()
-          //   console.log("Document successfully written!");
-          // })
-          // .catch(function(error){
-          //   console.error("Error writing document: ", error);
-          //   resolve()
-          // })
-  }
-};
-const updateitem = (oldincoming, incoming, resolve) => {
- 
-  //validation
-let errorList = []
-if(incoming.name === undefined){
- errorList.push("Please enter first name")
-}
-if(incoming.city === undefined){
- errorList.push("Please enter last name")
-}
-if(incoming.state === undefined){
- errorList.push("Please enter a valid email")
-}
-if(errorList.length < 1){
- let dataToAdd =[];
- dataToAdd.push(incoming);
- console.log(dataToAdd[0].city)
-      //  fire 
-      //  .firestore()
-      //  .collection('assets').doc(oldincoming.id).update({
-      //   "warehousenumber": dataToAdd[0].warehousenumber,
-      //   "name": dataToAdd[0].name,
-      //   "areamanager": dataToAdd[0].areamanager,
-      //    type: "warehouse"
-      //  })
-      //  .then(function(){
-      //    resolve()
-      //    console.log("Document successfully written!");
-      //  })
-      //  .catch(function(error){
-      //    console.error("Error writing document: ", error);
-      //    resolve()
-      //  })
-}
-};
-
-
-const removeitem = (incoming, resolve) => {
-  
-
-  // fire 
-  //     .firestore()
-  //     .collection('assets').doc(incoming.id).delete()
-  //     .then(function(){
-  //       resolve()
-  //       console.log("Document successfully written!");
-  //     })
-  //     .catch(function(error){
-  //       resolve()
-  //       console.error("Error writing document: ", error);
-  //     });
-  
-
-};
+  const refreshData = async () => {
+    const result = await api.get('/api/warehouses');
+    setData(result);
+  };
 
   useEffect(() => {
-    // fire
-    //   .firestore()
-    //   .collection('assets').where('type', '==', 'warehouse')
-    //   .onSnapshot((snapshot) => {
-    //     const newTimes = snapshot.docs.map(((doc) => ({
-    //       id: doc.id,
-    //       ...doc.data()
-    //     })))
-    //     setData(newTimes)
-    //   })
-  }, [])
+    refreshData();
+  }, []);
 
-    //console.log(data)
-  
-    const history = useHistory(); 
-    function test(data, rowdata) {
-      let id = rowdata;
-      setCompanyID(rowdata.id) 
-      history.push({
-        pathname: '/warehousechemical',
-        state: id
+  const additem = async (incoming, resolve) => {
+    let errorList = [];
+    if (!incoming.name) errorList.push("Please enter name");
+    if (!incoming.warehousenumber) errorList.push("Please enter warehouse number");
+    if (!incoming.areamanager) errorList.push("Please enter area manager");
+    if (errorList.length > 0) { resolve(); return; }
+
+    try {
+      await api.post('/api/warehouses', {
+        warehousenumber: incoming.warehousenumber,
+        name: incoming.name,
+        areamanager: incoming.areamanager,
       });
-      
+      await refreshData();
+    } catch (err) {
+      console.error(err);
     }
- 
-  
-    const [state] = React.useState({
-        columns: [
-          {title: "id", field: "id", hidden: true},
-          {title: "Warehouse Number", field: "warehousenumber"},
-          {title: "Name", field: "name"},
-          {title: "Area Manager", field: "areamanager"}
-        ]
+    resolve();
+  };
 
+  const updateitem = async (oldincoming, incoming, resolve) => {
+    try {
+      await api.put(`/api/warehouses/${oldincoming.id}`, {
+        warehousenumber: incoming.warehousenumber,
+        name: incoming.name,
+        areamanager: incoming.areamanager,
       });
+      await refreshData();
+    } catch (err) {
+      console.error(err);
+    }
+    resolve();
+  };
 
+  const removeitem = async (incoming, resolve) => {
+    try {
+      await api.delete(`/api/warehouses/${incoming.id}`);
+      await refreshData();
+    } catch (err) {
+      console.error(err);
+    }
+    resolve();
+  };
 
+  const history = useHistory();
+  function goToInventory(data, rowdata) {
+    history.push({ pathname: '/warehousechemical', state: rowdata });
+  }
 
-    
-    
-    return (
-      
-      
-      
-      
-        <MaterialTable
-        
+  const columns = [
+    { title: "id", field: "id", hidden: true },
+    { title: "Warehouse Number", field: "warehousenumber" },
+    { title: "Name", field: "name" },
+    { title: "Area Manager", field: "areamanager" },
+  ];
+
+  return (
+    <MaterialTable
       title="Warehouses"
-      columns={state.columns}
+      columns={columns}
       data={data}
       editable={{
-        onRowAdd: (newData) =>
-        new Promise((resolve) => {
-        additem(newData,resolve);
-    }),
-        onRowUpdate: (newData, oldData) =>
-          new Promise((resolve) => {
-            
-            updateitem(oldData, newData,resolve);
-            
-          }),
-        onRowDelete: (oldData) =>
-          
-          new Promise((resolve) => {
-            
-            removeitem(oldData,resolve);
-          }),
+        onRowAdd: (newData) => new Promise((resolve) => additem(newData, resolve)),
+        onRowUpdate: (newData, oldData) => new Promise((resolve) => updateitem(oldData, newData, resolve)),
+        onRowDelete: (oldData) => new Promise((resolve) => removeitem(oldData, resolve)),
       }}
       actions={[
         {
           icon: 'science',
           tooltip: 'Manage Inventory',
-          onClick: (event, rowData) => test(event, rowData)
-        }]}
+          onClick: (event, rowData) => goToInventory(event, rowData),
+        },
+      ]}
     />
-    );
+  );
 }
 
 export default WarehouseManagement;

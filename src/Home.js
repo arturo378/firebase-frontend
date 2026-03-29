@@ -10,13 +10,13 @@ import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu'; 
+import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { MainListItems } from './Dashboard/listItems.js';
 import Button from '@material-ui/core/Button';
-import fire from './config/fire.js';
+import api from './config/api.js';
 import { BrowserRouter as Router, Switch as Switcher, Route } from 'react-router-dom';
-import UserManagement from './Admin/UserManagement'; 
+import UserManagement from './Admin/UserManagement';
 import LocationManagement from './Admin/LocationManagement.js';
 import LeaseManagement from './Admin/LeaseManagement.js';
 import WellManagement from './Admin/WellManagement.js';
@@ -35,14 +35,14 @@ import UserReport from './Reports/UserReport.js';
 import { APP_TITLE } from './config/appInfo';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 
-const DEMO_MODE = localStorage.getItem('demoMode') === 'true';
-
-function logout() {
-  if (DEMO_MODE) {
-    localStorage.removeItem('demoMode');
-  }
-  fire.auth().signOut();
-};
+async function logout() {
+  try {
+    await api.post('/api/auth/logout');
+  } catch (e) {}
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('currentUser');
+  window.location.reload();
+}
 
 
 const drawerWidth = 240;
@@ -142,9 +142,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Home() {
-
-
-    
   const classes = useStyles();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -178,22 +175,6 @@ export default function Home() {
           </IconButton>
           <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
             {APP_TITLE}
-            {DEMO_MODE && (
-              <span style={{
-                marginLeft: 10,
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: 1,
-                padding: '2px 8px',
-                borderRadius: 4,
-                backgroundColor: 'rgba(234,179,8,0.25)',
-                color: '#fde68a',
-                border: '1px solid rgba(234,179,8,0.4)',
-                verticalAlign: 'middle',
-              }}>
-                DEMO
-              </span>
-            )}
           </Typography>
           <IconButton color="inherit">
           <Button onClick={logout} variant="contained" color="secondary" className={classes.signOutButton}>
@@ -277,11 +258,6 @@ export default function Home() {
         </Switcher>
       </main>
     </div>
-    
-    
-    
     </Router>
   );
 }
-
-

@@ -2,22 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { DateRangePicker } from 'react-date-range';
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import 'react-date-range/dist/styles.css'; // main style file
-import 'react-date-range/dist/theme/default.css'; // theme css file
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
-import fire from '../config/fire';
 import Button from '@material-ui/core/Button';
 import moment from 'moment';
 import Typography from '@material-ui/core/Typography';
 import { addDays } from 'date-fns';
 import * as XLSX from 'xlsx';
+import api from '../config/api';
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-  },
+  root: { flexGrow: 1 },
   paper: {
     padding: theme.spacing(2),
     textAlign: 'center',
@@ -29,87 +27,44 @@ function WeeklyEarnings() {
   const classes = useStyles();
   const [data, setData] = useState([]);
   const [companies, setCompanies] = useState([]);
-  const [pricing, setPricing] = useState([]);
   const [company, setCompany] = useState('');
-  const [state, setState] = useState([
-    {
-      startDate: new Date(),
-      endDate: addDays(new Date(), 7),
-      key: 'selection'
-    }
-  ]);
+  const [state, setState] = useState([{
+    startDate: new Date(),
+    endDate: addDays(new Date(), 7),
+    key: 'selection'
+  }]);
 
-  const handleChange = (event) => {
-    setCompany(event.target.value);
-  };
+  const handleChange = (event) => setCompany(event.target.value);
 
   const fetchReport = async () => {
-    const list = [];
-    const chem_list = [];
-
-    const ticketsSnapshot = await fire
-      .firestore()
-      .collection('asset_data')
-      .where('type', '==', 'delivery')
-      .where('date', '>', state[0].startDate)
-      .where('date', '<', state[0].endDate)
-      .where('company', '==', company)
-      .get();
-
-    const tickets = ticketsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    tickets.forEach(ticket => chem_list.push(ticket.id));
-
-    if (chem_list.length > 0) {
-      const deliveryChemsSnapshot = await fire
-        .firestore()
-        .collection('asset_data')
-        .where('type', '==', 'delivery_chemical')
-        .where('deliveryid', 'in', chem_list)
-        .get();
-
-      const delivery_chems = deliveryChemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-      tickets.forEach(ticket => {
-        delivery_chems.forEach(dc => {
-          if (ticket.id === dc.deliveryid) {
-            pricing.forEach(price => {
-              if (ticket.companyid === price.company && dc.name === price.name) {
-                list.push({
-                  Date: moment(ticket.date.Timestamp).format("MM/DD/YY"),
-                  Data_Number: ticket.datanumber,
-                  GPS: ticket.gps,
-                  Company: ticket.company,
-                  Lease: ticket.lease,
-                  Well: ticket.well,
-                  Chemical: dc.name,
-                  Quantity: dc.quantity,
-                  Pricing: price.price,
-                  Total: price.price * dc.quantity
-                });
-              }
-            });
-          }
-        });
-      });
-
-      setData(list);
+    if (!company) return;
+    try {
+      const startDate = state[0].startDate.toISOString();
+      const endDate = state[0].endDate.toISOString();
+      const result = await api.get(
+        `/api/reports/weekly-earnings?startDate=${startDate}&endDate=${endDate}&company=${company}`
+      );
+      setData(result);
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const exportToExcel = () => {
+    const selectedCompany = companies.find(c => c.id === company);
     const worksheet = XLSX.utils.aoa_to_sheet([
       ['Data Number', 'Date', 'Company', 'Lease', 'Well', 'GPS Coordinate', 'Chemical', 'Price', 'Quantity', 'Total'],
       ...data.map((row) => [
-        row.Data_Number,
-        row.Date,
-        row.Company,
-        row.Lease,
-        row.Well,
-        row.GPS,
-        row.Chemical,
-        row.Pricing,
-        row.Quantity,
-        row.Total,
+        row.datanumber,
+        row.date ? moment(row.date).format("MM/DD/YY") : '',
+        selectedCompany?.name || '',
+        row.lease,
+        row.well,
+        row.gps,
+        row.chemical,
+        row.price,
+        row.quantity,
+        row.total,
       ]),
     ]);
     const workbook = XLSX.utils.book_new();
@@ -118,28 +73,7 @@ function WeeklyEarnings() {
   };
 
   useEffect(() => {
-    const unsubscribeCompanies = fire
-      .firestore()
-      .collection('assets')
-      .where('type', '==', 'company')
-      .onSnapshot(snapshot => {
-        const companydata = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setCompanies(companydata);
-      });
-
-    const unsubscribePricing = fire
-      .firestore()
-      .collection('assets')
-      .where('type', '==', 'pricing')
-      .onSnapshot(snapshot => {
-        const prices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setPricing(prices);
-      });
-
-    return () => {
-      unsubscribeCompanies();
-      unsubscribePricing();
-    };
+    api.get('/api/companies').then(setCompanies).catch(console.error);
   }, []);
 
   return (
@@ -163,7 +97,7 @@ function WeeklyEarnings() {
             onChange={handleChange}
           >
             {companies.map(info => (
-              <MenuItem key={info.id} value={info.name}>{info.name}</MenuItem>
+              <MenuItem key={info.id} value={info.id}>{info.name}</MenuItem>
             ))}
           </Select>
         </Grid>

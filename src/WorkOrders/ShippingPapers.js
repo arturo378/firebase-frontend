@@ -9,16 +9,14 @@ import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker,
 } from '@material-ui/pickers';
-
+import moment from 'moment';
+import api, { getCurrentUser } from '../config/api';
 
 function getModalStyle() {
-  const top = 50 ;
-  const left = 50 ;
-
   return {
-    top: `${top}%`,
-    left: `${left}%`,
-    transform: `translate(-${top}%, -${left}%)`,
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
   };
 }
 
@@ -33,316 +31,175 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-
-function ShippingPaper(){
-  const [data] = useState([])
-  const [, setCompanyID] = useState([])
+function ShippingPaper() {
+  const [data, setData] = useState([]);
   const [modalStyle] = useState(getModalStyle);
   const [open, setOpen] = useState(false);
   const classes = useStyles();
   const GoogleMapsKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
-  const [position, setPosition] = useState({})
+  const [position, setPosition] = useState({});
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
+  const handleDateChange = (date) => setSelectedDate(date);
+  const handleClose = () => setOpen(false);
+
+  const mapStyles = { height: "400px", width: "100%" };
+  const onLoad = marker => console.log('marker: ', marker);
+
+  const refreshData = async () => {
+    const result = await api.get('/api/shipping-papers');
+    setData(result);
   };
 
-  const handleClose = () => {
-    setOpen(false);
+  useEffect(() => {
+    refreshData();
+  }, []);
+
+  const additem = async (incoming, resolve) => {
+    if (!incoming.originwarehousenumber || !incoming.destinationwarehousenumber || !incoming.trucknumber || !incoming.gps) {
+      resolve(); return;
+    }
+    const currentUser = getCurrentUser();
+    try {
+      await api.post('/api/shipping-papers', {
+        date: selectedDate,
+        createdBy: currentUser?.id,
+        originwarehousenumber: incoming.originwarehousenumber,
+        destinationwarehousenumber: incoming.destinationwarehousenumber,
+        trucknumber: incoming.trucknumber,
+        comments: incoming.comments,
+        gps: incoming.gps,
+        active: 1,
+      });
+      await refreshData();
+    } catch (err) {
+      console.error(err);
+    }
+    resolve();
   };
 
-  const mapStyles = {        
-    height: "400px",
-    width: "100%"};
-  
-  const onLoad = marker => {
-    console.log('marker: ', marker)
+  const updateitem = async (oldincoming, incoming, resolve) => {
+    try {
+      await api.put(`/api/shipping-papers/${oldincoming.id}`, {
+        date: selectedDate,
+        originwarehousenumber: incoming.originwarehousenumber,
+        destinationwarehousenumber: incoming.destinationwarehousenumber,
+        trucknumber: incoming.trucknumber,
+        comments: incoming.comments,
+        gps: incoming.gps,
+        active: incoming.active,
+      });
+      await refreshData();
+    } catch (err) {
+      console.error(err);
+    }
+    resolve();
+  };
+
+  const removeitem = async (incoming, resolve) => {
+    try {
+      await api.delete(`/api/shipping-papers/${incoming.id}`);
+      await refreshData();
+    } catch (err) {
+      console.error(err);
+    }
+    resolve();
+  };
+
+  const openmap = (event, rowData) => {
+    if (!rowData.gps) return;
+    const gpsdat = rowData.gps.split(',');
+    setPosition({ lat: parseFloat(gpsdat[0]), lng: parseFloat(gpsdat[1]) });
+    setOpen(true);
+  };
+
+  const history = useHistory();
+  function goToChemicals(event, rowData) {
+    history.push({ pathname: '/shippingchemicals', state: rowData });
   }
-
-  
 
   const body = (
     <div style={modalStyle} className={classes.paper}>
-     {GoogleMapsKey ? (
-       <LoadScript
-       id= "Deliveries"
-         googleMapsApiKey={GoogleMapsKey}>
+      {GoogleMapsKey ? (
+        <LoadScript id="Deliveries" googleMapsApiKey={GoogleMapsKey}>
           <GoogleMap
-          id="marker-example"
-          mapContainerStyle={mapStyles}
-          zoom={13}
-          center={position}
-        >
-          <Marker
-            onLoad={onLoad}
-            position={position}
-          />
-        </GoogleMap>
-       </LoadScript>
-     ) : (
-       <div style={{...mapStyles, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e0e0e0'}}>
-         <span>Map unavailable – no API key configured</span>
-       </div>
-     )}
+            id="marker-example"
+            mapContainerStyle={mapStyles}
+            zoom={13}
+            center={position}
+          >
+            <Marker onLoad={onLoad} position={position} />
+          </GoogleMap>
+        </LoadScript>
+      ) : (
+        <div style={{ ...mapStyles, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e0e0e0' }}>
+          <span>Map unavailable – no API key configured</span>
+        </div>
+      )}
     </div>
   );
-  const additem = (incoming, resolve) => {
-      
-     //validation
-  let errorList = []
- 
-  if(incoming.createdby === undefined){
-    errorList.push("Please enter first name")
-  }
-  if(incoming.originwarehousenumber === undefined){
-    errorList.push("Please enter last name")
-  }
-  if(incoming.destinationwarehousenumber === undefined){
-    errorList.push("Please enter a valid email")
-  }
-  if(incoming.trucknumber === undefined){
-    errorList.push("Please enter a valid email")
-  }
-  if(incoming.gps === undefined){
-    errorList.push("Please enter a valid email")
-  }
-  if(errorList.length < 1){
-    let dataToAdd =[];
-    dataToAdd.push(incoming);
-    console.log(dataToAdd);
-    
-          // fire 
-          // .firestore()
-          // .collection('asset_data').add({
-          //   "datanumber": dataToAdd[0].datanumber,
-          //   "createdby": dataToAdd[0].createdby,
-          //   "originwarehousenumber": dataToAdd[0].originwarehousenumber,
-          //   "destinationwarehousenumber": dataToAdd[0].destinationwarehousenumber,
-          //   "trucknumber": dataToAdd[0].trucknumber,
-          //   "date": selectedDate,
-          //   "comments": dataToAdd[0].comments,
-          //   "gps": dataToAdd[0].gps,
-          //   type: "shipping_papers",
-          //   active: 1
 
-          // })
-          // .then(function(){
-          //   resolve()
-          //   console.log("Document successfully written!");
-          // })
-          // .catch(function(error){
-          //   console.error("Error writing document: ", error);
-          //   resolve()
-          // })
-  }
-};
-const updateitem = (oldincoming, incoming, resolve) => {
- 
-  //validation
-let errorList = []
-
-if(incoming.createdby === undefined){
-  errorList.push("Please enter first name")
-}
-if(incoming.originwarehousenumber === undefined){
-  errorList.push("Please enter last name")
-}
-if(incoming.destinationwarehousenumber === undefined){
-  errorList.push("Please enter a valid email")
-}
-if(incoming.trucknumber === undefined){
-  errorList.push("Please enter a valid email")
-}
-if(incoming.gps === undefined){
-  errorList.push("Please enter a valid email")
-}
-if(errorList.length < 1){
- let dataToAdd =[];
- dataToAdd.push(incoming);
-      //  fire 
-      //  .firestore()
-      //  .collection('asset_data').doc(oldincoming.id).update({
-      //       "datanumber": dataToAdd[0].datanumber,
-      //       "createdby": dataToAdd[0].createdby,
-      //       "originwarehousenumber": dataToAdd[0].originwarehousenumber,
-      //       "destinationwarehousenumber": dataToAdd[0].destinationwarehousenumber,
-      //       "trucknumber": dataToAdd[0].trucknumber,
-      //       "date": selectedDate,
-      //       "comments": dataToAdd[0].comments,
-      //       "gps": dataToAdd[0].gps,
-      //       type: "shipping_papers",
-      //       active: dataToAdd[0].active
-
-      //  })
-      //  .then(function(){
-      //    resolve()
-      //    console.log("Document successfully written!");
-      //  })
-      //  .catch(function(error){
-      //    console.error("Error writing document: ", error);
-      //    resolve()
-      //  })
-}
-};
-
-
-const removeitem = (incoming, resolve) => {
-  // fire 
-  //     .firestore()
-  //     .collection('asset_data').doc(incoming.id).delete()
-  //     .then(function(){
-  //       resolve()
-  //       console.log("Document successfully written!");
-  //     })
-  //     .catch(function(error){
-  //       resolve()
-  //       console.error("Error writing document: ", error);
-  //     });
-};
-
-
-
-const openmap = (event, rowData) => {
-  var gpsdat = (rowData.gps).split(',');
-setPosition({
-  lat: parseFloat(gpsdat[0]),
-  lng: parseFloat(gpsdat[1])
-})
-
- 
-  
-
- if(position !== undefined){
-  setOpen(true);
-
- }
-  
- 
- 
-};
-
-  useEffect(() => {
-    // fire
-    //   .firestore()
-    //   .collection('asset_data').where('type', '==', 'shipping_papers')
-    //   .onSnapshot((snapshot) => {
-    //     const newTimes = snapshot.docs.map(((doc) => ({
-    //       id: doc.id,
-    //       ...doc.data()
-    //     })))
-    //     for (var key in newTimes) {
-
-    //       if(newTimes[key].date){
-    //       newTimes[key].date = moment(newTimes[key].date.toDate()).format("MM/DD/YY");
-    //     }
-    //     }
-    //     setData(newTimes)
-    //   })
-  }, [])
-
-    //console.log(data)
-  
-    const history = useHistory(); 
-    function test(data, rowdata) {
-      let id = rowdata;
-      setCompanyID(rowdata.id)
-      history.push({
-        pathname: '/shippingchemicals',
-        state: id
-      });
-      
-    }
- 
-  
-    const [state] = React.useState({
-        columns: [
-          {title: "id", field: "id", hidden: true},
-          {title: "Data Number", field: "datanumber", editable: 'never'},
-          {
-            title: "Date",
-            field: "date",
-            editComponent: ({ value, onRowDataChange, rowData}) => (
-              <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <KeyboardDatePicker
-          disableToolbar
-          variant="inline"
-          format="MM/dd/yyyy"
-          margin="normal"
-          id="date-picker-inline"
-          label="Date picker inline"
-          value={selectedDate}
-          onChange={handleDateChange}
-          KeyboardButtonProps={{
-            'aria-label': 'change date',
-          }}
-        />
+  const columns = [
+    { title: "id", field: "id", hidden: true },
+    { title: "Data Number", field: "datanumber", editable: 'never' },
+    {
+      title: "Date",
+      field: "date",
+      render: rowData => rowData.date ? moment(rowData.date).format("MM/DD/YY") : '',
+      editComponent: () => (
+        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+          <KeyboardDatePicker
+            disableToolbar
+            variant="inline"
+            format="MM/dd/yyyy"
+            margin="normal"
+            id="date-picker-inline"
+            label="Date picker inline"
+            value={selectedDate}
+            onChange={handleDateChange}
+            KeyboardButtonProps={{ 'aria-label': 'change date' }}
+          />
         </MuiPickersUtilsProvider>
-            ),
-          },
-          {title: "Created By", field: "createdby"},
-          {title: "Origin Warehouse Number", field: "originwarehousenumber"},
-          {title: "Destination Number", field: "destinationwarehousenumber"},
-          {title: "Truck Number", field: "trucknumber"},
-          {title: "Comments", field: "comments"},
-          {title: "Location", field: "gps"},
-          {
-            title: 'Completed',
-            field: 'active',
-            lookup: { 1: 'Completed', 0: 'Non-Completed' },
-          },
-        ]
-        
-      });
-      
+      ),
+    },
+    {
+      title: "Created By",
+      field: "createdBy",
+      editable: 'never',
+      render: rowData => rowData.createdBy?.username || rowData.createdBy?.name || '',
+    },
+    { title: "Origin Warehouse Number", field: "originwarehousenumber" },
+    { title: "Destination Number", field: "destinationwarehousenumber" },
+    { title: "Truck Number", field: "trucknumber" },
+    { title: "Comments", field: "comments" },
+    { title: "Location", field: "gps" },
+    {
+      title: 'Completed',
+      field: 'active',
+      lookup: { 1: 'Completed', 0: 'Non-Completed' },
+    },
+  ];
 
-
-
-
-
-    return (
-      
-      
-      
-      <div>
-        <MaterialTable
-      onRowClick={openmap}
-      title="Shipping Papers"
-      columns={state.columns}
-      data={data}
-      options={{
-        filtering: true
-      }}
-      editable={{
-        onRowAdd: (newData) =>
-        new Promise((resolve) => {
-        additem(newData,resolve);
-    }),
-        onRowUpdate: (newData, oldData) =>
-          new Promise((resolve) => {
-            
-            updateitem(oldData, newData,resolve);
-            
-          }),
-        onRowDelete: (oldData) =>
-          
-          new Promise((resolve) => {
-            
-            removeitem(oldData,resolve);
-          }),
-      }}
-      actions={[
-        {
+  return (
+    <div>
+      <MaterialTable
+        onRowClick={openmap}
+        title="Shipping Papers"
+        columns={columns}
+        data={data}
+        options={{ filtering: true }}
+        editable={{
+          onRowAdd: (newData) => new Promise((resolve) => additem(newData, resolve)),
+          onRowUpdate: (newData, oldData) => new Promise((resolve) => updateitem(oldData, newData, resolve)),
+          onRowDelete: (oldData) => new Promise((resolve) => removeitem(oldData, resolve)),
+        }}
+        actions={[{
           icon: 'science',
           tooltip: 'Manage Chemicals',
-          onClick: (event, rowData) => test(event, rowData)
-            
-        
+          onClick: (event, rowData) => goToChemicals(event, rowData),
         }]}
-        
-    />
-    <Modal
+      />
+      <Modal
         open={open}
         onClose={handleClose}
         aria-labelledby="simple-modal-title"
@@ -351,8 +208,7 @@ setPosition({
         {body}
       </Modal>
     </div>
-    );
-    
+  );
 }
 
 export default ShippingPaper;

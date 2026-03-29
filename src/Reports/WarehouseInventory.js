@@ -4,15 +4,13 @@ import Grid from '@material-ui/core/Grid';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
-import fire from '../config/fire';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import * as XLSX from 'xlsx';
+import api from '../config/api';
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-  },
+  root: { flexGrow: 1 },
   paper: {
     padding: theme.spacing(2),
     textAlign: 'center',
@@ -24,38 +22,26 @@ function WarehouseInventory() {
   const classes = useStyles();
   const [data, setData] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
-  const [warehouse, setWarehouse] = useState(null);
+  const [warehouse, setWarehouse] = useState('');
 
-  const handleChange = (event) => {
-    setWarehouse(event.target.value);
-  };
+  const handleChange = (event) => setWarehouse(event.target.value);
 
   const fetchReport = async () => {
     if (!warehouse) return;
-
-    const snapshot = await fire
-      .firestore()
-      .collection('asset_data')
-      .where('type', '==', 'warehouse_chemical')
-      .where('warehouseid', '==', warehouse.id)
-      .get();
-
-    const warehousedata = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      company: warehouse.name,
-      areamanager: warehouse.areamanager
-    }));
-
-    setData(warehousedata);
+    try {
+      const result = await api.get(`/api/reports/warehouse-inventory?warehouse=${warehouse}`);
+      setData(result);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const exportToExcel = () => {
     const worksheet = XLSX.utils.aoa_to_sheet([
       ['Warehouse', 'Chemical', 'Quantity', 'Area Manager'],
       ...data.map((row) => [
-        row.company,
-        row.name,
+        row.warehouse,
+        row.chemical,
         row.quantity,
         row.areamanager,
       ]),
@@ -66,16 +52,7 @@ function WarehouseInventory() {
   };
 
   useEffect(() => {
-    const unsubscribe = fire
-      .firestore()
-      .collection('assets')
-      .where('type', '==', 'warehouse')
-      .onSnapshot(snapshot => {
-        const warehousedata = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setWarehouses(warehousedata);
-      });
-
-    return () => unsubscribe();
+    api.get('/api/warehouses').then(setWarehouses).catch(console.error);
   }, []);
 
   return (
@@ -89,11 +66,11 @@ function WarehouseInventory() {
           <Select
             labelId="warehouse-select-label"
             id="warehouse-select"
-            value={warehouse || ''}
+            value={warehouse}
             onChange={handleChange}
           >
             {warehouses.map(info => (
-              <MenuItem key={info.id} value={info}>{info.name}</MenuItem>
+              <MenuItem key={info.id} value={info.id}>{info.name}</MenuItem>
             ))}
           </Select>
         </Grid>

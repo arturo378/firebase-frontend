@@ -5,17 +5,15 @@ import Grid from '@material-ui/core/Grid';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
-import fire from '../config/fire';
 import Button from '@material-ui/core/Button';
 import moment from 'moment';
 import Typography from '@material-ui/core/Typography';
 import { addDays } from 'date-fns';
 import * as XLSX from 'xlsx';
+import api from '../config/api';
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-  },
+  root: { flexGrow: 1 },
   paper: {
     padding: theme.spacing(2),
     textAlign: 'center',
@@ -34,48 +32,27 @@ function UserReport() {
     key: 'selection'
   }]);
 
-  const handleChange = (event) => {
-    setUser(event.target.value);
-  };
+  const handleChange = (event) => setUser(event.target.value);
 
   const fetchReport = async () => {
     if (!user) return;
-
-    let list = [];
-
-    // Fetch deliveries
-    const deliveriesSnap = await fire
-      .firestore()
-      .collection('asset_data')
-      .where('type', '==', 'delivery')
-      .where('date', '>', state[0].startDate)
-      .where('date', '<', state[0].endDate)
-      .where('createdBy', '==', user)
-      .get();
-
-    const deliveries = deliveriesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    list.push(...deliveries);
-
-    // Fetch shipping papers
-    const shippingSnap = await fire
-      .firestore()
-      .collection('asset_data')
-      .where('type', '==', 'shipping_papers')
-      .where('date', '>', state[0].startDate)
-      .where('date', '<', state[0].endDate)
-      .where('createdby', '==', user)
-      .get();
-
-    const shipping = shippingSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    list.push(...shipping);
-
-    // Format dates
-    const formattedList = list.map(item => ({
-      ...item,
-      date: item.date ? moment(item.date.toDate()).format("MM/DD/YY") : ''
-    }));
-
-    setData(formattedList);
+    try {
+      const startDate = state[0].startDate.toISOString();
+      const endDate = state[0].endDate.toISOString();
+      const result = await api.get(
+        `/api/reports/user-activity?startDate=${startDate}&endDate=${endDate}&userId=${user}`
+      );
+      const merged = [
+        ...result.deliveries.map(d => ({ ...d, _recordType: 'delivery' })),
+        ...result.shippingPapers.map(s => ({ ...s, _recordType: 'shipping' })),
+      ].map(item => ({
+        ...item,
+        date: item.date ? moment(item.date).format("MM/DD/YY") : '',
+      }));
+      setData(merged);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const exportToExcel = () => {
@@ -84,9 +61,9 @@ function UserReport() {
       ...data.map((row) => [
         row.datanumber,
         row.date,
-        row.company,
-        row.lease,
-        row.well,
+        row.company?.name || '',
+        row.lease?.name || '',
+        row.well?.name || '',
         row.gps,
         row.comments,
         row.originwarehousenumber,
@@ -100,13 +77,7 @@ function UserReport() {
   };
 
   useEffect(() => {
-    const unsubscribe = fire.firestore().collection('users')
-      .onSnapshot(snapshot => {
-        const userdata = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setUsers(userdata);
-      });
-
-    return () => unsubscribe();
+    api.get('/api/users').then(setUsers).catch(console.error);
   }, []);
 
   return (
@@ -130,7 +101,7 @@ function UserReport() {
             onChange={handleChange}
           >
             {users.map(info => (
-              <MenuItem key={info.id} value={info.email}>{info.email}</MenuItem>
+              <MenuItem key={info.id} value={info.id}>{info.email}</MenuItem>
             ))}
           </Select>
         </Grid>

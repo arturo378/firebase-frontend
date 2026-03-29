@@ -10,23 +10,16 @@ import {
   KeyboardDatePicker,
 } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
-
-
-
-
-
+import moment from 'moment';
+import api, { getCurrentUser } from '../config/api';
 
 function getModalStyle() {
-  const top = 50 ;
-  const left = 50 ;
-
   return {
-    top: `${top}%`,
-    left: `${left}%`,
-    transform: `translate(-${top}%, -${left}%)`,
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
   };
 }
-
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -39,462 +32,264 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function Delivery(){
-  const [data] = useState([])
+function Delivery() {
+  const [data, setData] = useState([]);
+  const [companies, setCompanies] = useState([]);
+  const [leases, setLeases] = useState([]);
+  const [wells, setWells] = useState([]);
   const [open, setOpen] = useState(false);
-  // const [leaselist, setLeaseList] = useState([''])
-  const CLW = getCLW();
   const classes = useStyles();
   const [modalStyle] = useState(getModalStyle);
   const GoogleMapsKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
-  const [position, setPosition] = useState({})
-  var companyid = '';
-  var leaseid = '';
-
+  const [position, setPosition] = useState({});
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const [selectedLeaseId, setSelectedLeaseId] = useState('');
 
+  const handleDateChange = (date) => setSelectedDate(date);
+  const handleClose = () => setOpen(false);
 
-  const handleDateChange = (date) => {
-    console.log(date);
-    setSelectedDate(date);
+  const mapStyles = { height: "400px", width: "100%" };
+  const onLoad = marker => console.log('marker: ', marker);
+
+  const refreshData = async () => {
+    const result = await api.get('/api/deliveries');
+    setData(result);
   };
-
-  
-  const handleClose = () => {
-    setOpen(false);
-  };
-  
-
-  const mapStyles = {        
-    height: "400px",
-    width: "100%"};
-
-
-    const onLoad = marker => {
-      console.log('marker: ', marker)
-    }
-
-
-  const additem = (incoming, resolve) => {
-
-   
-     //validation
-  let errorList = []
-  if(incoming.company.name === undefined){
-    errorList.push("Please enter Company Name")
-  }
-  if(incoming.lease.name === undefined){
-    errorList.push("Please enter a Lease Name")
-  }
-  if(incoming.well.name === undefined){
-    errorList.push("Please enter a Well name")
-  }
-  if(incoming.gps === undefined){
-    errorList.push("Please enter a gps coordinates")
-  }
-  if(incoming.comments === undefined){
-    errorList.push("Please enter a comment")
-  }
-  if(incoming.createdBy === undefined){
-    errorList.push("Please enter a user created name")
-  }
-  if(incoming.invoicenum === undefined){
-    errorList.push("Please enter a invoice Num")
-  }
-  
-  if(errorList.length < 1){
-    let dataToAdd =[];
-    
-    dataToAdd.push(incoming);
-    
-    
-          // fire 
-          // .firestore()
-          // .collection('asset_data').add({
-          //   "company": (dataToAdd[0].company).name,
-          //   "companyid": (dataToAdd[0].company).id,
-          //   "lease": (dataToAdd[0].lease).name,
-          //   "well": (dataToAdd[0].well).name,
-          //   "gps": dataToAdd[0].gps,
-          //   "comments": dataToAdd[0].comments,
-          //   "datanumber": "D-" + Math.round((new Date().getTime() / 1000)),
-          //   "createdBy": dataToAdd[0].createdBy,
-          //   "date": selectedDate,
-          //   "invoicenum": dataToAdd[0].invoicenum,
-          //   type: "delivery",
-          //   active: 0
-          // })
-          // .then(function(){
-          //   resolve()
-          //   console.log("Document successfully written!");
-          // })
-          // .catch(function(error){
-          //   console.error("Error writing document: ", error);
-          //   resolve()
-          // })
-  }
-};
-const updateitem = (oldincoming, incoming, resolve) => {
- 
-  //validation
-let errorList = []
-if(incoming.company.name === undefined){
-    errorList.push("Please enter last 1")
-  }
-  if(incoming.lease.name === undefined){
-    errorList.push("Please enter a valid 2")
-  }
-  if(incoming.well.name === undefined){
-    errorList.push("Please enter a valid 3")
-  }
-  if(incoming.gps === undefined){
-    errorList.push("Please enter a valid 4")
-  }
-  if(incoming.comments === undefined){
-    errorList.push("Please enter a valid 5")
-  }
-  if(incoming.createdBy === undefined){
-    errorList.push("Please enter a valid 6")
-  }
- 
- console.log(errorList);
-if(errorList.length < 1){
- let dataToAdd =[];
- console.log(incoming)
- dataToAdd.push(incoming);
-
- 
-      //  fire 
-      //  .firestore()
-      //  .collection('asset_data').doc(oldincoming.id).update({
-      //   "company": (dataToAdd[0].company).name,
-      //   "companyid": (dataToAdd[0].company).id,
-      //   "lease": dataToAdd[0].lease.name,
-      //   "well": dataToAdd[0].well.name,
-      //   "gps": dataToAdd[0].gps,
-      //   "comments": dataToAdd[0].comments,
-      //   "createdBy": dataToAdd[0].createdBy,
-      //   "date": selectedDate,
-      //   "invoicenum": dataToAdd[0].invoicenum,
-      //   type: "delivery",
-      //   active: dataToAdd[0].active
-      //  })
-      //  .then(function(){
-      //    resolve()
-      //    console.log("Document successfully written!");
-      //  })
-      //  .catch(function(error){
-      //    console.error("Error writing document: ", error);
-      //    resolve()
-      //  })
-}
-};
-
-
-const removeitem = (incoming, resolve) => {
-  
-
-  // fire 
-  //     .firestore()
-  //     .collection('asset_data').doc(incoming.id).delete()
-  //     .then(function(){
-  //       resolve()
-  //       console.log("Document successfully written!");
-  //     })
-  //     .catch(function(error){
-  //       resolve()
-  //       console.error("Error writing document: ", error);
-  //     });
-};
-
-  function getCLW(){
-        
-    var info = [];
-
-    // fire
-    // .firestore()
-    // .collection('assets').where('type', 'in', ['company', 'lease', 'well'])
-    // .onSnapshot((snapshot) => {
-    //   const companies = snapshot.docs.map(((doc) => ({
-    //     id: doc.id,
-    //     ...doc.data()
-    //   })))
-      
-    //   for (var key in companies) {
-    //     info.push(companies[key]);
-    //   }
-    // })
-
-  return info;
-
-  }
-
-  const openmap = (event, rowData) => {
-    var gpsdat = (rowData.gps).split(',');
-  setPosition({
-    lat: parseFloat(gpsdat[0]),
-    lng: parseFloat(gpsdat[1])
-  })
-  
-   
-    
-  
-   if(position !== undefined){
-    setOpen(true);
-  
-   }
-    
-   
-   
-  };
-
-  
 
   useEffect(() => {
-    
-    // fire
-    //   .firestore()
-    //   .collection('asset_data').where('type', '==', 'delivery')
-    //   .onSnapshot((snapshot) => {
-    //     var newTimes = snapshot.docs.map(((doc) => ({
-    //       id: doc.id,
-    //       ...doc.data()
-    //     })))
+    refreshData();
+    Promise.all([
+      api.get('/api/companies'),
+      api.get('/api/leases'),
+      api.get('/api/wells'),
+    ]).then(([c, l, w]) => {
+      setCompanies(c);
+      setLeases(l);
+      setWells(w);
+    }).catch(console.error);
+  }, []);
 
-        
-    //     for (var key in newTimes) {
+  const getIdFromField = (val) => (val && typeof val === 'object') ? val.id : val;
 
-          
-    //       newTimes[key].date = moment(newTimes[key].date.toDate()).format("MM/DD/YY");
-    //     }
-
-    //     // newTimes.date = moment(newTimes.date).format("MM/DD/YY"); 
-    //     // console.log(moment(newTimes[0].date.toDate()).format("MM/DD/YY"));return;
-    //     setData(newTimes)
-    //   })
-      
-      
-  }, [])
-
-    //console.log(data)
-  
-    const history = useHistory(); 
-    function test(data, rowdata) {
-      
-      
-      
-      history.push({
-        pathname: '/delivery/editdelivery',
-        state: rowdata
-        
+  const additem = async (incoming, resolve) => {
+    const companyId = getIdFromField(incoming.company);
+    const leaseId = getIdFromField(incoming.lease);
+    const wellId = getIdFromField(incoming.well);
+    if (!companyId || !leaseId || !wellId) { resolve(); return; }
+    const currentUser = getCurrentUser();
+    try {
+      await api.post('/api/deliveries', {
+        company: companyId,
+        lease: leaseId,
+        well: wellId,
+        date: selectedDate,
+        gps: incoming.gps,
+        comments: incoming.comments,
+        createdBy: currentUser?.id,
+        invoicenum: incoming.invoicenum,
+        active: 0,
       });
-      
+      await refreshData();
+    } catch (err) {
+      console.error(err);
     }
+    resolve();
+  };
 
-    const body = (
-      <div style={modalStyle} className={classes.paper}>
-       {GoogleMapsKey ? (
-         <LoadScript
-         id= "Deliveries"
-           googleMapsApiKey={GoogleMapsKey}>
-            <GoogleMap
+  const updateitem = async (oldincoming, incoming, resolve) => {
+    const companyId = getIdFromField(incoming.company);
+    const leaseId = getIdFromField(incoming.lease);
+    const wellId = getIdFromField(incoming.well);
+    try {
+      await api.put(`/api/deliveries/${oldincoming.id}`, {
+        company: companyId,
+        lease: leaseId,
+        well: wellId,
+        date: selectedDate,
+        gps: incoming.gps,
+        comments: incoming.comments,
+        invoicenum: incoming.invoicenum,
+        active: incoming.active,
+      });
+      await refreshData();
+    } catch (err) {
+      console.error(err);
+    }
+    resolve();
+  };
+
+  const removeitem = async (incoming, resolve) => {
+    try {
+      await api.delete(`/api/deliveries/${incoming.id}`);
+      await refreshData();
+    } catch (err) {
+      console.error(err);
+    }
+    resolve();
+  };
+
+  const openmap = (event, rowData) => {
+    if (!rowData.gps) return;
+    const gpsdat = rowData.gps.split(',');
+    setPosition({ lat: parseFloat(gpsdat[0]), lng: parseFloat(gpsdat[1]) });
+    setOpen(true);
+  };
+
+  const history = useHistory();
+  function goToChemicals(event, rowData) {
+    history.push({ pathname: '/delivery/editdelivery', state: rowData });
+  }
+
+  const body = (
+    <div style={modalStyle} className={classes.paper}>
+      {GoogleMapsKey ? (
+        <LoadScript id="Deliveries" googleMapsApiKey={GoogleMapsKey}>
+          <GoogleMap
             id="marker-example"
             mapContainerStyle={mapStyles}
             zoom={13}
             center={position}
           >
-            <Marker
-              onLoad={onLoad}
-              position={position}
-            />
+            <Marker onLoad={onLoad} position={position} />
           </GoogleMap>
-         </LoadScript>
-       ) : (
-         <div style={{...mapStyles, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e0e0e0'}}>
-           <span>Map unavailable – no API key configured</span>
-         </div>
-       )}
-      </div>
-    );
- 
-  
-    const [state] = React.useState({
-        columns: [
-          {title: "id", field: "id", hidden: true},
-          {title: "Data Number", field: "datanumber", editable: 'never'},
-          {
-            title: "Date",
-            field: "date",
-            editComponent: ({ value, onRowDataChange, rowData}) => (
-              <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <KeyboardDatePicker
-          disableToolbar
-          variant="inline"
-          format="MM/dd/yyyy"
-          margin="normal"
-          id="date-picker-inline"
-          label="Date picker inline"
-          value={selectedDate}
-          onChange={handleDateChange}
-          KeyboardButtonProps={{
-            'aria-label': 'change date',
-          }}
-        />
+        </LoadScript>
+      ) : (
+        <div style={{ ...mapStyles, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e0e0e0' }}>
+          <span>Map unavailable – no API key configured</span>
+        </div>
+      )}
+    </div>
+  );
+
+  const columns = [
+    { title: "id", field: "id", hidden: true },
+    { title: "Data Number", field: "datanumber", editable: 'never' },
+    {
+      title: "Date",
+      field: "date",
+      render: rowData => rowData.date ? moment(rowData.date).format("MM/DD/YY") : '',
+      editComponent: () => (
+        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+          <KeyboardDatePicker
+            disableToolbar
+            variant="inline"
+            format="MM/dd/yyyy"
+            margin="normal"
+            id="date-picker-inline"
+            label="Date picker inline"
+            value={selectedDate}
+            onChange={handleDateChange}
+            KeyboardButtonProps={{ 'aria-label': 'change date' }}
+          />
         </MuiPickersUtilsProvider>
-            ),
-          },
-         
-          {
-            title: "Company",
-            field: "company",
-            editComponent: ({ value, onRowDataChange, rowData}) => (
-              <Select
-              
-                value={value}
-                // onClose = {(event) => {
-                //   handleClose(event);
-                // }}
-                onChange={(event) => {
-                  event.preventDefault();
-                  if(event.target.value.id){
-                    companyid = event.target.value.id;
-                    leaseid = '';
-                  }
-                  
-                  onRowDataChange({
-                    ...rowData,
-                    company: (event.target.value)
-                    
-                  }); 
-                }}
-              >
-                {CLW.filter(type => type.type === 'company').map((companyinfo) => (
-                  
-                  <MenuItem key={companyinfo.id} value={companyinfo}>
-                    {companyinfo.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            ),
-          },
-          {
-            title: "Lease",
-            field: "lease",
-            editComponent: ({ value, onRowDataChange, rowData}) => (
-              <Select
-              
-                value={value}
-                
-                onChange={(event) => {
-                  if(event.target.value.id){
-                    leaseid = event.target.value.id;
-                  }
-                  onRowDataChange({
-                    ...rowData,
-                    lease: (event.target.value)
-                    
-                  });
-                }}
-              >
-                { CLW.filter(type => type.company === companyid).map((companyinfo) => (
-                  
-                  <MenuItem key={companyinfo.id} value={companyinfo}>
-                    {companyinfo.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            ),
-          },
-         
-          {
-            title: "Well",
-            field: "well",
-            editComponent: ({ value, onRowDataChange, rowData}) => (
-              <Select
-              
-                value={value}
-                
-                onChange={(event) => {
-                  onRowDataChange({
-                    ...rowData,
-                    well: (event.target.value)
-                    
-                  });
-                }}
-              >
-                { CLW.filter(type => type.lease === leaseid).map((companyinfo) => (
-                  
-                  <MenuItem key={companyinfo.id} value={companyinfo}>
-                    {companyinfo.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            ),
-          },
-          {title: "GPS", field: "gps"},
-          {title: "Comments", field: "comments"},
-          {title: "Created By", field: "createdBy"},
-          {title: "Invoice Number", field: "invoicenum"},
-          {
-            title: 'Completed',
-            field: 'active',
-            lookup: { 1: 'Completed', 0: 'Non-Completed' },
-          }
+      ),
+    },
+    {
+      title: "Company",
+      field: "company",
+      render: rowData => rowData.company?.name || '',
+      editComponent: ({ value, onRowDataChange, rowData }) => (
+        <Select
+          value={getIdFromField(value) || ''}
+          onChange={(event) => {
+            setSelectedCompanyId(event.target.value);
+            setSelectedLeaseId('');
+            onRowDataChange({ ...rowData, company: event.target.value, lease: '', well: '' });
+          }}
+        >
+          {companies.map((c) => (
+            <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+          ))}
+        </Select>
+      ),
+    },
+    {
+      title: "Lease",
+      field: "lease",
+      render: rowData => rowData.lease?.name || '',
+      editComponent: ({ value, onRowDataChange, rowData }) => {
+        const compId = getIdFromField(rowData.company) || selectedCompanyId;
+        return (
+          <Select
+            value={getIdFromField(value) || ''}
+            onChange={(event) => {
+              setSelectedLeaseId(event.target.value);
+              onRowDataChange({ ...rowData, lease: event.target.value, well: '' });
+            }}
+          >
+            {leases.filter(l => getIdFromField(l.company) === compId).map((l) => (
+              <MenuItem key={l.id} value={l.id}>{l.name}</MenuItem>
+            ))}
+          </Select>
+        );
+      },
+    },
+    {
+      title: "Well",
+      field: "well",
+      render: rowData => rowData.well?.name || '',
+      editComponent: ({ value, onRowDataChange, rowData }) => {
+        const leaseId = getIdFromField(rowData.lease) || selectedLeaseId;
+        return (
+          <Select
+            value={getIdFromField(value) || ''}
+            onChange={(event) => {
+              onRowDataChange({ ...rowData, well: event.target.value });
+            }}
+          >
+            {wells.filter(w => getIdFromField(w.lease) === leaseId).map((w) => (
+              <MenuItem key={w.id} value={w.id}>{w.name}</MenuItem>
+            ))}
+          </Select>
+        );
+      },
+    },
+    { title: "GPS", field: "gps" },
+    { title: "Comments", field: "comments" },
+    {
+      title: "Created By",
+      field: "createdBy",
+      editable: 'never',
+      render: rowData => rowData.createdBy?.username || rowData.createdBy?.name || '',
+    },
+    { title: "Invoice Number", field: "invoicenum" },
+    {
+      title: 'Completed',
+      field: 'active',
+      lookup: { 1: 'Completed', 0: 'Non-Completed' },
+    },
+  ];
 
-        ]
-        
-      });
-
-
-    return (
-      <div>
-        <MaterialTable
-       onRowClick={openmap} 
-      title="Delivery"
-      columns={state.columns}
-      data={data}
-      options={{
-        filtering: true
-      }}
-      editable={{
-        onRowAdd: (newData) =>
-        new Promise((resolve) => {
-         additem(newData,resolve);
-    }),
-        onRowUpdate: (newData, oldData) =>
-          new Promise((resolve) => {
-            
-            updateitem(oldData, newData,resolve);
-            
-          }),
-        onRowDelete: (oldData) =>
-          
-          new Promise((resolve) => {
-            
-            removeitem(oldData,resolve);
-          }),
-      }}
-
-      actions={[
-        {
+  return (
+    <div>
+      <MaterialTable
+        onRowClick={openmap}
+        title="Delivery"
+        columns={columns}
+        data={data}
+        options={{ filtering: true }}
+        editable={{
+          onRowAdd: (newData) => new Promise((resolve) => additem(newData, resolve)),
+          onRowUpdate: (newData, oldData) => new Promise((resolve) => updateitem(oldData, newData, resolve)),
+          onRowDelete: (oldData) => new Promise((resolve) => removeitem(oldData, resolve)),
+        }}
+        actions={[{
           icon: 'science',
           tooltip: 'Manage Chemicals',
-          onClick: (event, rowData) => test(event, rowData)
-      
+          onClick: (event, rowData) => goToChemicals(event, rowData),
         }]}
-    />
+      />
       <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="simple-modal-title"
-          aria-describedby="simple-modal-description"
-            >
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+      >
         {body}
       </Modal>
     </div>
-
-
-    );
+  );
 }
 
 export default Delivery;

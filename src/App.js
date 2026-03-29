@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
-import fire from './config/fire';
+import { isAuthenticated } from './config/api';
 import Login from './Login'
 import Home from './Home'
 import { APP_TITLE } from './config/appInfo';
@@ -11,37 +11,19 @@ class App extends Component{
   {
     super(props);
     this.state={
-      user : {}
+      user : isAuthenticated() ? {} : null
     }
   }
   componentDidMount()
   {
     document.title = APP_TITLE;
-    this.authListener();
-  }
-  authListener(){
-    fire.auth().onAuthStateChanged((user)=>{
-      if(user)
-      {
-        this.setState({user})
-      }
-      else{
-        this.setState({user : null})
-      }
-    })
   }
 
   render(){
     return (
-      
-        
       <div className="App">
         {this.state.user ? (<Home/>) : (<Login/>)}
       </div>
-      
-
-
-      
     );
   }
 }
