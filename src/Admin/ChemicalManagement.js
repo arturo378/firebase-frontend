@@ -1,18 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import MaterialTable from 'material-table';
 import api from '../config/api';
 
 function ChemicalManagement(){
-  const [data, setData] = useState([]);
+  const tableRef = useRef();
 
-  const refreshData = async () => {
-    const result = await api.get('/api/chemicals');
-    setData(result);
+  const fetchData = (query) => {
+    const page = query.page + 1;
+    const limit = query.pageSize;
+    return api.get(`/api/chemicals?page=${page}&limit=${limit}`)
+      .then((result) => ({
+        data: result.data,
+        page: query.page,
+        totalCount: result.totalItems,
+      }))
+      .catch((err) => {
+        console.error(err);
+        return { data: [], page: 0, totalCount: 0 };
+      });
   };
 
-  useEffect(() => {
-    refreshData();
-  }, []);
+  const refreshTable = () => {
+    tableRef.current && tableRef.current.onQueryChange();
+  };
 
   const additem = async (incoming, resolve) => {
     let errorList = [];
@@ -27,7 +37,6 @@ function ChemicalManagement(){
         dottag: incoming.dottag,
         weight: incoming.weight,
       });
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -41,7 +50,6 @@ function ChemicalManagement(){
         dottag: incoming.dottag,
         weight: incoming.weight,
       });
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -51,7 +59,6 @@ function ChemicalManagement(){
   const removeitem = async (incoming, resolve) => {
     try {
       await api.delete(`/api/chemicals/${incoming.id}`);
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -67,9 +74,15 @@ function ChemicalManagement(){
 
   return (
     <MaterialTable
+      tableRef={tableRef}
       title="Product Management"
       columns={columns}
-      data={data}
+      data={fetchData}
+      options={{
+        pageSize: 10,
+        pageSizeOptions: [5, 10, 20],
+        search: false,
+      }}
       editable={{
         onRowAdd: (newData) => new Promise((resolve) => additem(newData, resolve)),
         onRowUpdate: (newData, oldData) => new Promise((resolve) => updateitem(oldData, newData, resolve)),

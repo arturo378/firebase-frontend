@@ -14,7 +14,8 @@ export default function Chart() {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    api.get('/api/deliveries').then((deliveries) => {
+    api.get('/api/deliveries?limit=100').then((result) => {
+      const deliveries = result.data;
       const today = new Date();
       const chartData = [];
       for (let i = 6; i >= 0; i--) {

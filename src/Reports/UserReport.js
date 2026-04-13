@@ -77,7 +77,7 @@ function UserReport() {
   };
 
   useEffect(() => {
-    api.get('/api/users').then(res => setUsers(res.data)).catch(console.error);
+    api.get('/api/users?limit=100').then(res => setUsers(res.data)).catch(console.error);
   }, []);
 
   return (

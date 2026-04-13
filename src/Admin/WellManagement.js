@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import MaterialTable, { MTableToolbar } from 'material-table';
 import { useHistory, useLocation } from "react-router-dom";
 import Button from '@material-ui/core/Button';
@@ -6,19 +6,28 @@ import api from '../config/api';
 
 function WellManagement(){
   const location = useLocation();
-  const [data, setData] = useState([]);
   const leaseid = location.state.leaseid;
   const companyid = location.state.companyid;
+  const tableRef = useRef();
 
-  const refreshData = async () => {
-    const result = await api.get(`/api/wells?lease=${leaseid}`);
-    setData(result);
+  const fetchData = (query) => {
+    const page = query.page + 1;
+    const limit = query.pageSize;
+    return api.get(`/api/wells?lease=${leaseid}&page=${page}&limit=${limit}`)
+      .then((result) => ({
+        data: result.data,
+        page: query.page,
+        totalCount: result.totalItems,
+      }))
+      .catch((err) => {
+        console.error(err);
+        return { data: [], page: 0, totalCount: 0 };
+      });
   };
 
-  useEffect(() => {
-    refreshData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leaseid]);
+  const refreshTable = () => {
+    tableRef.current && tableRef.current.onQueryChange();
+  };
 
   const additem = async (incoming, resolve) => {
     if (!incoming.name) { resolve(); return; }
@@ -30,7 +39,6 @@ function WellManagement(){
         lease: leaseid,
         company: companyid,
       });
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -47,7 +55,6 @@ function WellManagement(){
         lease: leaseid,
         company: companyid,
       });
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -57,7 +64,6 @@ function WellManagement(){
   const removeitem = async (incoming, resolve) => {
     try {
       await api.delete(`/api/wells/${incoming.id}`);
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -78,9 +84,16 @@ function WellManagement(){
 
   return (
     <MaterialTable
+      tableRef={tableRef}
       title="Well Management"
       columns={columns}
-      data={data}
+      data={fetchData}
+      options={{
+        pageSize: 10,
+        pageSizeOptions: [5, 10, 20],
+        search: false,
+        actionsColumnIndex: -1,
+      }}
       components={{
         Toolbar: props => (
           <div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import MaterialTable from 'material-table';
 import { useHistory } from "react-router-dom";
 import { makeStyles } from '@material-ui/core/styles';
@@ -32,13 +32,13 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function ShippingPaper() {
-  const [data, setData] = useState([]);
   const [modalStyle] = useState(getModalStyle);
   const [open, setOpen] = useState(false);
   const classes = useStyles();
   const GoogleMapsKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
   const [position, setPosition] = useState({});
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const tableRef = useRef();
 
   const handleDateChange = (date) => setSelectedDate(date);
   const handleClose = () => setOpen(false);
@@ -46,14 +46,24 @@ function ShippingPaper() {
   const mapStyles = { height: "400px", width: "100%" };
   const onLoad = marker => console.log('marker: ', marker);
 
-  const refreshData = async () => {
-    const result = await api.get('/api/shipping-papers');
-    setData(result);
+  const fetchData = (query) => {
+    const page = query.page + 1;
+    const limit = query.pageSize;
+    return api.get(`/api/shipping-papers?page=${page}&limit=${limit}`)
+      .then((result) => ({
+        data: result.data,
+        page: query.page,
+        totalCount: result.totalItems,
+      }))
+      .catch((err) => {
+        console.error(err);
+        return { data: [], page: 0, totalCount: 0 };
+      });
   };
 
-  useEffect(() => {
-    refreshData();
-  }, []);
+  const refreshTable = () => {
+    tableRef.current && tableRef.current.onQueryChange();
+  };
 
   const additem = async (incoming, resolve) => {
     if (!incoming.originwarehousenumber || !incoming.destinationwarehousenumber || !incoming.trucknumber || !incoming.gps) {
@@ -71,7 +81,6 @@ function ShippingPaper() {
         gps: incoming.gps,
         active: 1,
       });
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -89,7 +98,6 @@ function ShippingPaper() {
         gps: incoming.gps,
         active: incoming.active,
       });
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -99,7 +107,6 @@ function ShippingPaper() {
   const removeitem = async (incoming, resolve) => {
     try {
       await api.delete(`/api/shipping-papers/${incoming.id}`);
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -183,11 +190,17 @@ function ShippingPaper() {
   return (
     <div>
       <MaterialTable
+        tableRef={tableRef}
         onRowClick={openmap}
         title="Shipping Papers"
         columns={columns}
-        data={data}
-        options={{ filtering: true }}
+        data={fetchData}
+        options={{
+          pageSize: 10,
+          pageSizeOptions: [5, 10, 20],
+          search: false,
+          actionsColumnIndex: -1,
+        }}
         editable={{
           onRowAdd: (newData) => new Promise((resolve) => additem(newData, resolve)),
           onRowUpdate: (newData, oldData) => new Promise((resolve) => updateitem(oldData, newData, resolve)),

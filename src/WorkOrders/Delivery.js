@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import MaterialTable from 'material-table';
 import { useHistory } from "react-router-dom";
 import { Select, MenuItem } from "@material-ui/core";
@@ -33,7 +33,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Delivery() {
-  const [data, setData] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [leases, setLeases] = useState([]);
   const [wells, setWells] = useState([]);
@@ -45,6 +44,7 @@ function Delivery() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [selectedLeaseId, setSelectedLeaseId] = useState('');
+  const tableRef = useRef();
 
   const handleDateChange = (date) => setSelectedDate(date);
   const handleClose = () => setOpen(false);
@@ -52,21 +52,34 @@ function Delivery() {
   const mapStyles = { height: "400px", width: "100%" };
   const onLoad = marker => console.log('marker: ', marker);
 
-  const refreshData = async () => {
-    const result = await api.get('/api/deliveries');
-    setData(result);
+  const fetchData = (query) => {
+    const page = query.page + 1;
+    const limit = query.pageSize;
+    return api.get(`/api/deliveries?page=${page}&limit=${limit}`)
+      .then((result) => ({
+        data: result.data,
+        page: query.page,
+        totalCount: result.totalItems,
+      }))
+      .catch((err) => {
+        console.error(err);
+        return { data: [], page: 0, totalCount: 0 };
+      });
+  };
+
+  const refreshTable = () => {
+    tableRef.current && tableRef.current.onQueryChange();
   };
 
   useEffect(() => {
-    refreshData();
     Promise.all([
-      api.get('/api/companies'),
-      api.get('/api/leases'),
-      api.get('/api/wells'),
+      api.get('/api/companies?limit=100'),
+      api.get('/api/leases?limit=100'),
+      api.get('/api/wells?limit=100'),
     ]).then(([c, l, w]) => {
-      setCompanies(c);
-      setLeases(l);
-      setWells(w);
+      setCompanies(c.data);
+      setLeases(l.data);
+      setWells(w.data);
     }).catch(console.error);
   }, []);
 
@@ -90,7 +103,6 @@ function Delivery() {
         invoicenum: incoming.invoicenum,
         active: 0,
       });
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -112,7 +124,6 @@ function Delivery() {
         invoicenum: incoming.invoicenum,
         active: incoming.active,
       });
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -122,7 +133,6 @@ function Delivery() {
   const removeitem = async (incoming, resolve) => {
     try {
       await api.delete(`/api/deliveries/${incoming.id}`);
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -264,11 +274,17 @@ function Delivery() {
   return (
     <div>
       <MaterialTable
+        tableRef={tableRef}
         onRowClick={openmap}
         title="Delivery"
         columns={columns}
-        data={data}
-        options={{ filtering: true }}
+        data={fetchData}
+        options={{
+          pageSize: 10,
+          pageSizeOptions: [5, 10, 20],
+          search: false,
+          actionsColumnIndex: -1,
+        }}
         editable={{
           onRowAdd: (newData) => new Promise((resolve) => additem(newData, resolve)),
           onRowUpdate: (newData, oldData) => new Promise((resolve) => updateitem(oldData, newData, resolve)),

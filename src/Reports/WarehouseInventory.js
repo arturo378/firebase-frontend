@@ -52,7 +52,7 @@ function WarehouseInventory() {
   };
 
   useEffect(() => {
-    api.get('/api/warehouses').then(setWarehouses).catch(console.error);
+    api.get('/api/warehouses?limit=100').then(res => setWarehouses(res.data)).catch(console.error);
   }, []);
 
   return (

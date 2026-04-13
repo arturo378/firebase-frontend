@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import MaterialTable, { MTableToolbar } from 'material-table';
 import { useHistory, useLocation } from "react-router-dom";
 import Button from '@material-ui/core/Button';
@@ -6,24 +6,32 @@ import api from '../config/api';
 
 function LeaseManagement(){
   const location = useLocation();
-  const [data, setData] = useState([]);
   const companyid = location.state.id;
+  const tableRef = useRef();
 
-  const refreshData = async () => {
-    const result = await api.get(`/api/leases?company=${companyid}`);
-    setData(result);
+  const fetchData = (query) => {
+    const page = query.page + 1;
+    const limit = query.pageSize;
+    return api.get(`/api/leases?company=${companyid}&page=${page}&limit=${limit}`)
+      .then((result) => ({
+        data: result.data,
+        page: query.page,
+        totalCount: result.totalItems,
+      }))
+      .catch((err) => {
+        console.error(err);
+        return { data: [], page: 0, totalCount: 0 };
+      });
   };
 
-  useEffect(() => {
-    refreshData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [companyid]);
+  const refreshTable = () => {
+    tableRef.current && tableRef.current.onQueryChange();
+  };
 
   const additem = async (incoming, resolve) => {
     if (!incoming.name) { resolve(); return; }
     try {
       await api.post('/api/leases', { name: incoming.name, company: companyid });
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -34,7 +42,6 @@ function LeaseManagement(){
     if (!incoming.name) { resolve(); return; }
     try {
       await api.put(`/api/leases/${oldincoming.id}`, { name: incoming.name, company: companyid });
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -44,7 +51,6 @@ function LeaseManagement(){
   const removeitem = async (incoming, resolve) => {
     try {
       await api.delete(`/api/leases/${incoming.id}`);
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -67,9 +73,16 @@ function LeaseManagement(){
 
   return (
     <MaterialTable
+      tableRef={tableRef}
       title="Lease Management"
       columns={columns}
-      data={data}
+      data={fetchData}
+      options={{
+        pageSize: 10,
+        pageSizeOptions: [5, 10, 20],
+        search: false,
+        actionsColumnIndex: -1,
+      }}
       components={{
         Toolbar: props => (
           <div>

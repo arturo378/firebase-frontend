@@ -73,7 +73,7 @@ function WeeklyEarnings() {
   };
 
   useEffect(() => {
-    api.get('/api/companies').then(setCompanies).catch(console.error);
+    api.get('/api/companies?limit=100').then(res => setCompanies(res.data)).catch(console.error);
   }, []);
 
   return (

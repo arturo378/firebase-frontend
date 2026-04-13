@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import MaterialTable, { MTableToolbar } from 'material-table';
 import { useHistory, useLocation } from "react-router-dom";
 import Button from '@material-ui/core/Button';
@@ -7,18 +7,31 @@ import api from '../config/api';
 
 function Pricing() {
   const location = useLocation();
-  const [data, setData] = useState([]);
   const [chemicals, setChemicals] = useState([]);
   const companyid = location.state.id;
+  const tableRef = useRef();
 
-  const refreshData = async () => {
-    const result = await api.get(`/api/pricing?company=${companyid}`);
-    setData(result);
+  const fetchData = (query) => {
+    const page = query.page + 1;
+    const limit = query.pageSize;
+    return api.get(`/api/pricing?company=${companyid}&page=${page}&limit=${limit}`)
+      .then((result) => ({
+        data: result.data,
+        page: query.page,
+        totalCount: result.totalItems,
+      }))
+      .catch((err) => {
+        console.error(err);
+        return { data: [], page: 0, totalCount: 0 };
+      });
+  };
+
+  const refreshTable = () => {
+    tableRef.current && tableRef.current.onQueryChange();
   };
 
   useEffect(() => {
-    refreshData();
-    api.get('/api/chemicals').then(setChemicals).catch(console.error);
+    api.get('/api/chemicals?limit=100').then(res => setChemicals(res.data)).catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyid]);
 
@@ -30,7 +43,6 @@ function Pricing() {
         price: incoming.price,
         company: companyid,
       });
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -44,7 +56,6 @@ function Pricing() {
         price: incoming.price,
         company: companyid,
       });
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -54,7 +65,6 @@ function Pricing() {
   const removeitem = async (incoming, resolve) => {
     try {
       await api.delete(`/api/pricing/${incoming.id}`);
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -92,9 +102,15 @@ function Pricing() {
 
   return (
     <MaterialTable
+      tableRef={tableRef}
       title="Pricing"
       columns={columns}
-      data={data}
+      data={fetchData}
+      options={{
+        pageSize: 10,
+        pageSizeOptions: [5, 10, 20],
+        search: false,
+      }}
       components={{
         Toolbar: props => (
           <div>

@@ -1,19 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import MaterialTable from 'material-table';
 import { useHistory } from "react-router-dom";
 import api from '../config/api';
 
 function WarehouseManagement(){
-  const [data, setData] = useState([]);
+  const tableRef = useRef();
 
-  const refreshData = async () => {
-    const result = await api.get('/api/warehouses');
-    setData(result);
+  const fetchData = (query) => {
+    const page = query.page + 1;
+    const limit = query.pageSize;
+    return api.get(`/api/warehouses?page=${page}&limit=${limit}`)
+      .then((result) => ({
+        data: result.data,
+        page: query.page,
+        totalCount: result.totalItems,
+      }))
+      .catch((err) => {
+        console.error(err);
+        return { data: [], page: 0, totalCount: 0 };
+      });
   };
 
-  useEffect(() => {
-    refreshData();
-  }, []);
+  const refreshTable = () => {
+    tableRef.current && tableRef.current.onQueryChange();
+  };
 
   const additem = async (incoming, resolve) => {
     let errorList = [];
@@ -28,7 +38,6 @@ function WarehouseManagement(){
         name: incoming.name,
         areamanager: incoming.areamanager,
       });
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -42,7 +51,6 @@ function WarehouseManagement(){
         name: incoming.name,
         areamanager: incoming.areamanager,
       });
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -52,7 +60,6 @@ function WarehouseManagement(){
   const removeitem = async (incoming, resolve) => {
     try {
       await api.delete(`/api/warehouses/${incoming.id}`);
-      await refreshData();
     } catch (err) {
       console.error(err);
     }
@@ -73,9 +80,16 @@ function WarehouseManagement(){
 
   return (
     <MaterialTable
+      tableRef={tableRef}
       title="Warehouses"
       columns={columns}
-      data={data}
+      data={fetchData}
+      options={{
+        pageSize: 10,
+        pageSizeOptions: [5, 10, 20],
+        search: false,
+        actionsColumnIndex: -1,
+      }}
       editable={{
         onRowAdd: (newData) => new Promise((resolve) => additem(newData, resolve)),
         onRowUpdate: (newData, oldData) => new Promise((resolve) => updateitem(oldData, newData, resolve)),
