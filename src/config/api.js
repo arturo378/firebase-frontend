@@ -18,7 +18,42 @@ function normalizeIds(data) {
   return data;
 }
 
-async function request(method, path, body) {
+function forceLogout() {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('currentUser');
+  window.location.reload();
+}
+
+let refreshPromise = null;
+
+async function refreshAccessToken() {
+  // Deduplicate concurrent refresh attempts so multiple 401s don't race
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include', // sends the httpOnly refresh token cookie
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (data.accessToken) {
+        localStorage.setItem('accessToken', data.accessToken);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
+async function request(method, path, body, _isRetry = false) {
   const headers = { 'Content-Type': 'application/json' };
   const token = localStorage.getItem('accessToken');
   if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -29,6 +64,17 @@ async function request(method, path, body) {
     credentials: 'include', // sends the httpOnly refresh token cookie
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
+
+  // On 401, attempt a token refresh once, then retry the original request
+  if (res.status === 401 && !_isRetry) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      return request(method, path, body, true);
+    }
+    // Refresh failed — force user back to login
+    forceLogout();
+    return; // forceLogout reloads the page; this line is just a safeguard
+  }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: res.statusText }));
