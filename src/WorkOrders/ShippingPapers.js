@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import MaterialTable from 'material-table';
+import MaterialTable from '../config/MaterialTable';
 import { useHistory } from "react-router-dom";
 import { makeStyles } from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';

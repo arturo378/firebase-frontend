@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import MaterialTable, { MTableToolbar } from 'material-table';
+import MaterialTable, { MTableToolbar } from '../config/MaterialTable';
 import { useHistory, useLocation } from "react-router-dom";
 import Button from '@material-ui/core/Button';
 import api from '../config/api';

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import MaterialTable from 'material-table';
+import MaterialTable from '../config/MaterialTable';
 import { useHistory } from "react-router-dom";
 import { Select, MenuItem } from "@material-ui/core";
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';

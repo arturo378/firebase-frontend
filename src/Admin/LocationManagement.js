@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import MaterialTable from 'material-table';
+import MaterialTable from '../config/MaterialTable';
 import { useHistory } from "react-router-dom";
 import api from '../config/api';
 

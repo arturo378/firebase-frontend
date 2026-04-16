@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import MaterialTable, { MTableToolbar } from 'material-table';
+import MaterialTable, { MTableToolbar } from '../config/MaterialTable';
 import { useHistory, useLocation } from "react-router-dom";
 import { Select, MenuItem } from "@material-ui/core";
 import Button from '@material-ui/core/Button';

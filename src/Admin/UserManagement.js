@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import MaterialTable from 'material-table';
+import MaterialTable from '../config/MaterialTable';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';

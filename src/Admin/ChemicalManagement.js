@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import MaterialTable from 'material-table';
+import MaterialTable from '../config/MaterialTable';
 import api from '../config/api';
 
 function ChemicalManagement(){
