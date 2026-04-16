@@ -14,7 +14,9 @@ export default function Chart() {
   const [data, setData] = useState([]);
 
   useEffect(() => {
+    let cancelled = false;
     api.get('/api/deliveries?limit=100').then((result) => {
+      if (cancelled) return;
       const deliveries = result.data;
       const today = new Date();
       const chartData = [];
@@ -28,7 +30,10 @@ export default function Chart() {
         chartData.push(createData(dayStr, count));
       }
       setData(chartData);
-    }).catch(console.error);
+    }).catch((err) => {
+      if (!cancelled) console.error(err);
+    });
+    return () => { cancelled = true; };
   }, []);
 
   return (
