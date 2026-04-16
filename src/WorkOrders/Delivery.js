@@ -67,10 +67,6 @@ function Delivery() {
       });
   };
 
-  const refreshTable = () => {
-    tableRef.current && tableRef.current.onQueryChange();
-  };
-
   useEffect(() => {
     Promise.all([
       api.get('/api/companies?limit=100'),

@@ -25,10 +25,6 @@ function WellManagement(){
       });
   };
 
-  const refreshTable = () => {
-    tableRef.current && tableRef.current.onQueryChange();
-  };
-
   const additem = async (incoming, resolve) => {
     if (!incoming.name) { resolve(); return; }
     try {

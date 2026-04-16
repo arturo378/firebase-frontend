@@ -61,10 +61,6 @@ function ShippingPaper() {
       });
   };
 
-  const refreshTable = () => {
-    tableRef.current && tableRef.current.onQueryChange();
-  };
-
   const additem = async (incoming, resolve) => {
     if (!incoming.originwarehousenumber || !incoming.destinationwarehousenumber || !incoming.trucknumber || !incoming.gps) {
       resolve(); return;

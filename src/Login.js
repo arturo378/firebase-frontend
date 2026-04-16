@@ -37,7 +37,7 @@ export default function Login() {
 
         <form className="login-form" onSubmit={handleSubmit}>
           {error && <p style={{ color: 'red', marginBottom: 8 }}>{error}</p>}
-          <FormGroup className="login-field" controlId="email" bsSize="large">
+          <FormGroup className="login-field" controlId="email">
             <FormLabel>Email</FormLabel>
             <FormControl
               className="login-input"
@@ -47,7 +47,7 @@ export default function Login() {
               onChange={e => setEmail(e.target.value)}
             />
           </FormGroup>
-          <FormGroup className="login-field" controlId="password" bsSize="large">
+          <FormGroup className="login-field" controlId="password">
             <FormLabel>Password</FormLabel>
             <FormControl
               className="login-input"
@@ -56,7 +56,7 @@ export default function Login() {
               type="password"
             />
           </FormGroup>
-          <Button className="login-button" variant="primary" block bsSize="large" disabled={!validateForm()} type="submit">
+          <Button className="login-button" variant="primary" block size="lg" disabled={!validateForm()} type="submit">
             Login
           </Button>
         </form>

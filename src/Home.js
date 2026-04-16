@@ -176,11 +176,9 @@ export default function Home() {
           <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
             {APP_TITLE}
           </Typography>
-          <IconButton color="inherit">
           <Button onClick={logout} variant="contained" color="secondary" className={classes.signOutButton}>
-        SignOut
-      </Button>
-          </IconButton>
+            SignOut
+          </Button>
         </Toolbar>
       </AppBar>
       <Drawer

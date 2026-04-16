@@ -20,10 +20,6 @@ function ChemicalManagement(){
       });
   };
 
-  const refreshTable = () => {
-    tableRef.current && tableRef.current.onQueryChange();
-  };
-
   const additem = async (incoming, resolve) => {
     let errorList = [];
     if (!incoming.tradename) errorList.push("Please enter trade name");

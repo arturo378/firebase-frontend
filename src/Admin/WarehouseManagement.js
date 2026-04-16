@@ -21,10 +21,6 @@ function WarehouseManagement(){
       });
   };
 
-  const refreshTable = () => {
-    tableRef.current && tableRef.current.onQueryChange();
-  };
-
   const additem = async (incoming, resolve) => {
     let errorList = [];
     if (!incoming.name) errorList.push("Please enter name");

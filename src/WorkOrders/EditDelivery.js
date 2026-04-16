@@ -26,10 +26,6 @@ function DeliveryEdit() {
       });
   };
 
-  const refreshTable = () => {
-    tableRef.current && tableRef.current.onQueryChange();
-  };
-
   useEffect(() => {
     api.get('/api/chemicals?limit=100').then(res => setChemicals(res.data)).catch(console.error);
   }, [deliveryid]);
