@@ -1,97 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import MapView, { parseGps } from '../config/MapView';
+import api from '../config/api';
 
 const defaultCenter = {
   lat: 31.9686,
   lng: -99.9018,
 };
 
+const mapStyles = {
+  width: '100%',
+  height: 'clamp(260px, 42vh, 420px)',
+  borderRadius: '12px',
+};
 
 export default function Orders() {
-  
-  const GoogleMapsKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
-  const [marks] = useState([])
+  const [marks, setMarks] = useState([]);
 
   useEffect(() => {
-    // fire
-    //   .firestore()
-    //   .collection('assets').where('type', '==', 'well')
-    //   .onSnapshot((snapshot) => {
-    //     var newTimes = snapshot.docs.map(((doc) => ({
-    //       id: doc.id,
-    //       ...doc.data()
-    //     })))
-    //     for (var key in newTimes) {
-          
-    //       var gpsdat = (newTimes[key].gps).split(',');
-
-    //       locations[key] = {
-    //         lat: parseFloat(gpsdat[0]),
-    //         lng: parseFloat(gpsdat[1])
-    //       };
-    //     }
-    //     if(locations){
-    //       setLocations(locations)
-    //     }
-        
-        
-        
-    //   })
-      
-      
-  }, [])
-
-
-
-
-
-
-
-
-  const mapStyles = {
-    width: '100%',
-    height: 'clamp(260px, 42vh, 420px)',
-    borderRadius: '12px',
-  };
-
+    api.get('/api/wells?limit=500')
+      .then((result) => {
+        const rows = Array.isArray(result?.data) ? result.data : [];
+        const points = rows
+          .map((w) => {
+            const p = parseGps(w.gps);
+            return p ? { ...p, key: w.id, title: w.name } : null;
+          })
+          .filter(Boolean);
+        setMarks(points);
+      })
+      .catch((err) => console.error(err));
+  }, []);
 
   return (
-    <React.Fragment>
-      {GoogleMapsKey ? (
-        <LoadScript
-         id= "Deliveries"
-           googleMapsApiKey={GoogleMapsKey}>
-            <GoogleMap
-            id="marker-example"
-            mapContainerStyle={mapStyles}
-            zoom={5}
-             center={defaultCenter}
-             options={{
-              fullscreenControl: false,
-              mapTypeControl: false,
-              streetViewControl: false,
-            }}
-          >
-
-            { marks.map((mark, index) => (
-
-                    <Marker
-                    key = {index}
-                    position={mark}
-                    />
-
-
-                  ))}
-
-          </GoogleMap>
-
-
-         </LoadScript>
-      ) : (
-        <div style={{...mapStyles, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e0e0e0'}}>
-          <span>Map unavailable – no API key configured</span>
-        </div>
-      )}
-    </React.Fragment>
+    <MapView
+      center={defaultCenter}
+      zoom={5}
+      markers={marks}
+      style={mapStyles}
+    />
   );
 }

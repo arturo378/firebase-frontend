@@ -3,7 +3,7 @@ import MaterialTable from '../config/MaterialTable';
 import { useHistory } from "react-router-dom";
 import { makeStyles } from '@material-ui/core/styles';
 import Modal from '@material-ui/core/Modal';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import MapView, { parseGps } from '../config/MapView';
 import DateFnsUtils from '@date-io/date-fns';
 import {
   MuiPickersUtilsProvider,
@@ -35,8 +35,7 @@ function ShippingPaper() {
   const [modalStyle] = useState(getModalStyle);
   const [open, setOpen] = useState(false);
   const classes = useStyles();
-  const GoogleMapsKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
-  const [position, setPosition] = useState({});
+  const [position, setPosition] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const tableRef = useRef();
 
@@ -44,7 +43,6 @@ function ShippingPaper() {
   const handleClose = () => setOpen(false);
 
   const mapStyles = { height: "400px", width: "100%" };
-  const onLoad = marker => console.log('marker: ', marker);
 
   const fetchData = (query) => {
     const page = query.page + 1;
@@ -110,9 +108,9 @@ function ShippingPaper() {
   };
 
   const openmap = (event, rowData) => {
-    if (!rowData.gps) return;
-    const gpsdat = rowData.gps.split(',');
-    setPosition({ lat: parseFloat(gpsdat[0]), lng: parseFloat(gpsdat[1]) });
+    const p = parseGps(rowData.gps);
+    if (!p) return;
+    setPosition(p);
     setOpen(true);
   };
 
@@ -123,22 +121,7 @@ function ShippingPaper() {
 
   const body = (
     <div style={modalStyle} className={classes.paper}>
-      {GoogleMapsKey ? (
-        <LoadScript id="Deliveries" googleMapsApiKey={GoogleMapsKey}>
-          <GoogleMap
-            id="marker-example"
-            mapContainerStyle={mapStyles}
-            zoom={13}
-            center={position}
-          >
-            <Marker onLoad={onLoad} position={position} />
-          </GoogleMap>
-        </LoadScript>
-      ) : (
-        <div style={{ ...mapStyles, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e0e0e0' }}>
-          <span>Map unavailable – no API key configured</span>
-        </div>
-      )}
+      <MapView center={position} zoom={13} markers={position ? [position] : []} style={mapStyles} />
     </div>
   );
 

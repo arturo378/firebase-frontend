@@ -16,7 +16,6 @@ Chemical Management System (CMS) frontend — a Create React App project using R
 
 - Requires Node >= 23
 - `REACT_APP_API_URL` — Backend API base URL (defaults to `http://localhost:3001`)
-- `REACT_APP_GOOGLE_MAPS_API_KEY` — Optional, for Google Maps in delivery views
 - `.env` file at project root sets defaults; CRA `.env.local` overrides are gitignored
 
 ## Architecture
@@ -46,7 +45,7 @@ Admin and report components follow a consistent pattern: `MaterialTable` with in
 ### Key Libraries
 - `material-table` for data grids
 - `recharts` for charts
-- `google-maps-react` for maps
+- `react-leaflet` + `leaflet` for maps (OpenStreetMap tiles)
 - `xlsx` for Excel export
 - `react-date-range` / `moment` / `date-fns` for date handling
 
