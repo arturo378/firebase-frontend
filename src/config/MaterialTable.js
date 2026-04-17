@@ -4,14 +4,35 @@ import { TablePagination, CircularProgress } from '@material-ui/core';
 import { alpha } from '@material-ui/core/styles';
 
 // Patch: material-table passes deprecated `onChangePage`/`onChangeRowsPerPage`
-// to MUI's TablePagination. Remap them to the current prop names.
+// to MUI's TablePagination, which warns and requires the new `onPageChange`
+// name. Remap to new names, then wrap ActionsComponent (material-table's
+// MTablePagination) so it still receives `onChangePage` as it expects.
 function PatchedPagination(props) {
-  const { onChangePage, onChangeRowsPerPage, ...rest } = props;
+  const {
+    onChangePage,
+    onChangeRowsPerPage,
+    ActionsComponent,
+    ...rest
+  } = props;
+
+  const WrappedActions = ActionsComponent
+    ? function WrappedActionsComponent(actionProps) {
+        const { onPageChange, ...actionRest } = actionProps;
+        return (
+          <ActionsComponent
+            {...actionRest}
+            onChangePage={onPageChange}
+          />
+        );
+      }
+    : undefined;
+
   return (
     <TablePagination
       {...rest}
       onPageChange={onChangePage}
       onRowsPerPageChange={onChangeRowsPerPage}
+      ActionsComponent={WrappedActions}
     />
   );
 }
