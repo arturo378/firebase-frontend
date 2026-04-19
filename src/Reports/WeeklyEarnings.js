@@ -23,9 +23,9 @@ import BusinessIcon from '@material-ui/icons/Business';
 import MaterialTable from 'material-table';
 import moment from 'moment';
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from 'date-fns';
-import * as XLSX from 'xlsx';
 import PageTitle from '../components/PageTitle';
 import api from '../config/api';
+import { exportAoaToXlsx } from '../config/excelExport';
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -235,7 +235,7 @@ function WeeklyEarnings() {
     setPreset('custom');
   };
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     const selectedCompany = companies.find(c => c.id === company);
     const rows = [
       ['Data Number', 'Date', 'Company', 'Lease', 'Well', 'GPS Coordinate', 'Chemical', 'Price', 'Quantity', 'Total'],
@@ -254,10 +254,7 @@ function WeeklyEarnings() {
       [],
       ['', '', '', '', '', '', 'Totals', '', totals.totalQuantity, totals.totalRevenue],
     ];
-    const worksheet = XLSX.utils.aoa_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-    XLSX.writeFile(workbook, 'Weekly_Report.xlsx');
+    await exportAoaToXlsx(rows, 'Weekly_Report.xlsx');
   };
 
   const columns = [

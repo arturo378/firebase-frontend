@@ -15,9 +15,9 @@ import RefreshIcon from '@material-ui/icons/Refresh';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import StorageIcon from '@material-ui/icons/Storage';
 import MaterialTable from 'material-table';
-import * as XLSX from 'xlsx';
 import PageTitle from '../components/PageTitle';
 import api from '../config/api';
+import { exportAoaToXlsx } from '../config/excelExport';
 
 function PatchedPagination(props) {
   const { onChangePage, onChangeRowsPerPage, ...rest } = props;
@@ -152,7 +152,7 @@ function WarehouseInventory() {
     return { totalQuantity, uniqueChemicals, rowCount: data.length };
   }, [data]);
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     const rows = [
       ['Warehouse', 'Chemical', 'Quantity', 'Area Manager'],
       ...data.map((row) => [
@@ -164,10 +164,7 @@ function WarehouseInventory() {
       [],
       ['', 'Totals', totals.totalQuantity, ''],
     ];
-    const worksheet = XLSX.utils.aoa_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-    XLSX.writeFile(workbook, 'Warehouse_Inventory_Report.xlsx');
+    await exportAoaToXlsx(rows, 'Warehouse_Inventory_Report.xlsx');
   };
 
   const columns = [

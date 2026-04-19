@@ -23,9 +23,9 @@ import PersonIcon from '@material-ui/icons/Person';
 import MaterialTable from 'material-table';
 import moment from 'moment';
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from 'date-fns';
-import * as XLSX from 'xlsx';
 import PageTitle from '../components/PageTitle';
 import api from '../config/api';
+import { exportAoaToXlsx } from '../config/excelExport';
 
 function PatchedPagination(props) {
   const { onChangePage, onChangeRowsPerPage, ...rest } = props;
@@ -224,7 +224,7 @@ function UserReport() {
     setPreset('custom');
   };
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     const rows = [
       ['Data Number', 'Date', 'Type', 'Company', 'Lease', 'Well', 'GPS Coordinate', 'Comments', 'Origin Warehouse', 'Destination Warehouse', 'Truck Number'],
       ...data.map((row) => [
@@ -241,10 +241,7 @@ function UserReport() {
         row.trucknumber,
       ]),
     ];
-    const worksheet = XLSX.utils.aoa_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-    XLSX.writeFile(workbook, 'User_Report.xlsx');
+    await exportAoaToXlsx(rows, 'User_Report.xlsx');
   };
 
   const columns = [
