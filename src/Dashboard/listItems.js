@@ -19,46 +19,59 @@ import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 
 const useStyles = makeStyles(() => ({
+  section: {
+    marginBottom: 4,
+  },
+  sectionHeader: {
+    lineHeight: '20px',
+    fontSize: 10.5,
+    fontWeight: 700,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    color: '#64748b',
+    backgroundColor: 'transparent',
+    padding: '14px 24px 6px',
+  },
   navItem: {
     position: 'relative',
     borderRadius: 10,
-    margin: '2px 8px',
-    minHeight: 44,
-    transition: 'background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease',
+    margin: '3px 12px',
+    minHeight: 42,
+    padding: '0 12px',
+    color: '#cbd5e1',
+    transition: 'background-color 200ms ease, color 200ms ease, transform 200ms ease',
     '&:hover': {
-      backgroundColor: 'rgba(30, 64, 175, 0.08)',
+      backgroundColor: 'rgba(148, 163, 184, 0.10)',
+      color: '#f8fafc',
       transform: 'translateX(2px)',
     },
   },
   navItemSelected: {
-    backgroundColor: 'rgba(30, 64, 175, 0.14) !important',
-    boxShadow: 'inset 0 0 0 1px rgba(30, 64, 175, 0.18)',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      left: 0,
-      top: 8,
-      bottom: 8,
-      width: 3,
-      borderRadius: 999,
-      backgroundColor: '#1e40af',
+    background: 'linear-gradient(90deg, #3b82f6 0%, #6366f1 100%) !important',
+    color: '#ffffff !important',
+    boxShadow: '0 8px 20px rgba(59, 130, 246, 0.35)',
+    '&:hover': {
+      background: 'linear-gradient(90deg, #3b82f6 0%, #6366f1 100%) !important',
+      transform: 'translateX(2px)',
     },
   },
   navIcon: {
-    color: '#475569',
-    transition: 'color 180ms ease',
+    color: '#94a3b8',
+    minWidth: 36,
+    transition: 'color 200ms ease',
   },
   navIconSelected: {
-    color: '#1e40af',
+    color: '#ffffff',
   },
   navLabel: {
-    fontSize: 14,
+    fontSize: 13.5,
     fontWeight: 500,
-    color: '#334155',
-    transition: 'color 180ms ease, font-weight 180ms ease',
+    letterSpacing: 0.1,
+    color: 'inherit',
+    transition: 'font-weight 200ms ease',
   },
   navLabelSelected: {
-    color: '#0f172a',
+    color: '#ffffff',
     fontWeight: 600,
   },
 }));
@@ -145,24 +158,14 @@ function SidebarItem({ item, isCollapsed, isSelected }) {
 
 export function MainListItems({ isCollapsed }) {
   const location = useLocation();
+  const classes = useStyles();
 
   return (
     <div>
       {menuSections.map((section) => (
-        <div key={section.header || 'main'}>
+        <div key={section.header || 'main'} className={classes.section}>
           {!isCollapsed && section.header && (
-            <ListSubheader
-              inset
-              disableSticky
-              style={{
-                lineHeight: '28px',
-                fontSize: 11,
-                letterSpacing: 0.8,
-                textTransform: 'uppercase',
-                color: '#64748b',
-                backgroundColor: 'transparent',
-              }}
-            >
+            <ListSubheader disableSticky className={classes.sectionHeader}>
               {section.header}
             </ListSubheader>
           )}

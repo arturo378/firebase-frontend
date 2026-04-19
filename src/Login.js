@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button, FormGroup, FormControl, FormLabel } from "react-bootstrap";
 import api from "./config/api";
 import { APP_TITLE } from "./config/appInfo";
+import LogoMark from "./components/LogoMark";
 
 import "./styles/login/Login.css";
 
@@ -31,6 +32,9 @@ export default function Login() {
     <div className="Login">
       <div className="login-card">
         <div className="login-header">
+          <div className="login-logo">
+            <LogoMark size={64} glow />
+          </div>
           <h1>{APP_TITLE}</h1>
           <p>Sign in to continue</p>
         </div>

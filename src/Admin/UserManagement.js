@@ -6,6 +6,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import TextField from '@material-ui/core/TextField';
+import PageTitle from '../components/PageTitle';
 import api from '../config/api';
 
 const columns = [
@@ -68,9 +69,9 @@ export default function UserManagement() {
 
   return (
     <div>
+      <PageTitle>User Management</PageTitle>
       <MaterialTable
         tableRef={tableRef}
-        title="User Management"
         columns={columns}
         data={fetchUsers}
         options={{

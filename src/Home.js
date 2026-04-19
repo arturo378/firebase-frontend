@@ -8,14 +8,13 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { MainListItems } from './Dashboard/listItems.js';
 import Button from '@material-ui/core/Button';
 import api from './config/api.js';
-import { BrowserRouter as Router, Switch as Switcher, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Switch as Switcher, Route, useLocation } from 'react-router-dom';
 import UserManagement from './Admin/UserManagement';
 import LocationManagement from './Admin/LocationManagement.js';
 import LeaseManagement from './Admin/LeaseManagement.js';
@@ -32,8 +31,37 @@ import WeeklyEarnings from './Reports/WeeklyEarnings.js';
 import WarehouseInventory from './Reports/WarehouseInventory.js';
 import WarehouseChemical from './Admin/WarehouseChemical.js';
 import UserReport from './Reports/UserReport.js';
-import { APP_TITLE } from './config/appInfo';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import LogoMark from './components/LogoMark';
+
+const PAGE_TITLES = [
+  { match: (p) => p === '/', label: 'Dashboard' },
+  { match: (p) => p.startsWith('/usermanagement'), label: 'User Management' },
+  { match: (p) => p.startsWith('/locationmanagment/leasemanagment/wellmanagment'), label: 'Well Management' },
+  { match: (p) => p.startsWith('/locationmanagment/leasemanagment'), label: 'Lease Management' },
+  { match: (p) => p.startsWith('/locationmanagment'), label: 'Location Management' },
+  { match: (p) => p.startsWith('/warehousemanagement'), label: 'Warehouse Management' },
+  { match: (p) => p.startsWith('/warehousechemical'), label: 'Warehouse Chemicals' },
+  { match: (p) => p.startsWith('/chemicalmanagement'), label: 'Product Management' },
+  { match: (p) => p.startsWith('/pricing'), label: 'Pricing' },
+  { match: (p) => p.startsWith('/shippingpapers'), label: 'Shipping Papers' },
+  { match: (p) => p.startsWith('/shippingchemicals'), label: 'Shipping Chemicals' },
+  { match: (p) => p.startsWith('/delivery/editdelivery'), label: 'Edit Delivery' },
+  { match: (p) => p.startsWith('/delivery'), label: 'Delivery' },
+  { match: (p) => p.startsWith('/weeklyearnings'), label: 'Earnings Report' },
+  { match: (p) => p.startsWith('/warehouseInventory'), label: 'Inventory Levels' },
+  { match: (p) => p.startsWith('/userReport'), label: 'User Report' },
+];
+
+function PageTitle({ className }) {
+  const { pathname } = useLocation();
+  const entry = PAGE_TITLES.find((t) => t.match(pathname));
+  return (
+    <Typography component="h1" variant="h6" color="inherit" noWrap className={className}>
+      {entry ? entry.label : 'Chemical Management System'}
+    </Typography>
+  );
+}
 
 async function logout() {
   try {
@@ -45,7 +73,7 @@ async function logout() {
 }
 
 
-const drawerWidth = 240;
+const drawerWidth = 260;
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -62,9 +90,24 @@ const useStyles = makeStyles((theme) => ({
   toolbarIcon: {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'flex-end',
-    padding: '0 8px',
+    justifyContent: 'space-between',
+    padding: '0 12px 0 16px',
+    borderBottom: '1px solid rgba(148, 163, 184, 0.12)',
     ...theme.mixins.toolbar,
+  },
+  brand: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    overflow: 'hidden',
+  },
+  drawerToggle: {
+    color: '#94a3b8',
+    padding: 6,
+    '&:hover': {
+      color: '#f8fafc',
+      backgroundColor: 'rgba(148, 163, 184, 0.12)',
+    },
   },
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
@@ -101,9 +144,12 @@ const useStyles = makeStyles((theme) => ({
     position: 'relative',
     whiteSpace: 'nowrap',
     width: drawerWidth,
-    borderRight: '1px solid #e2e8f0',
-    backgroundColor: '#ffffff',
+    border: 'none',
+    overflowX: 'hidden',
+    background: 'linear-gradient(180deg, #0b1220 0%, #0f172a 55%, #111827 100%)',
+    color: '#e2e8f0',
     boxSizing: 'border-box',
+    boxShadow: '4px 0 24px rgba(2, 6, 23, 0.25)',
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -173,9 +219,7 @@ export default function Home() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-            {APP_TITLE}
-          </Typography>
+          <PageTitle className={classes.title} />
           <Button onClick={logout} variant="contained" color="secondary" className={classes.signOutButton}>
             SignOut
           </Button>
@@ -192,12 +236,16 @@ export default function Home() {
         }}
         open={open}
       >
-        <div className={classes.toolbarIcon}>
-          <IconButton onClick={handleDrawerClose}>
-            <ChevronLeftIcon />
+        <div className={classes.toolbarIcon} style={{ justifyContent: open ? 'space-between' : 'center' }}>
+          {open && (
+            <div className={classes.brand}>
+              <LogoMark size={38} glow />
+            </div>
+          )}
+          <IconButton onClick={handleDrawerClose} className={classes.drawerToggle}>
+            <ChevronLeftIcon fontSize="small" />
           </IconButton>
         </div>
-        <Divider />
         <List className={classes.drawerList}>
           <MainListItems isCollapsed={!isSmallScreen && !open} />
         </List>

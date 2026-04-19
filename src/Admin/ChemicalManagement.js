@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import MaterialTable from '../config/MaterialTable';
+import PageTitle from '../components/PageTitle';
 import api from '../config/api';
 
 function ChemicalManagement(){
@@ -69,10 +70,11 @@ function ChemicalManagement(){
   ];
 
   return (
-    <MaterialTable
-      tableRef={tableRef}
-      title="Product Management"
-      columns={columns}
+    <div>
+      <PageTitle>Product Management</PageTitle>
+      <MaterialTable
+        tableRef={tableRef}
+        columns={columns}
       data={fetchData}
       options={{
         pageSize: 10,
@@ -85,6 +87,7 @@ function ChemicalManagement(){
         onRowDelete: (oldData) => new Promise((resolve) => removeitem(oldData, resolve)),
       }}
     />
+    </div>
   );
 }
 

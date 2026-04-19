@@ -1,76 +1,87 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { useTheme } from '@material-ui/core/styles';
-import { BarChart, Tooltip, Bar, XAxis, YAxis, Label, ResponsiveContainer } from 'recharts';
+import { BarChart, Tooltip, Bar, XAxis, YAxis, Label, ResponsiveContainer, CartesianGrid } from 'recharts';
 import Title from './Title';
-import { subDays, format } from 'date-fns';
-import api from '../config/api';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Typography from '@material-ui/core/Typography';
+import { addDays, format, differenceInCalendarDays, startOfDay } from 'date-fns';
+import useDashboardData from './useDashboardData';
 
-function createData(time, amount) {
-  return { time, amount };
+function bucketDeliveries(rows, startDate, endDate) {
+  const start = startOfDay(startDate);
+  const end = startOfDay(endDate);
+  const dayCount = Math.max(1, differenceInCalendarDays(end, start) + 1);
+  const buckets = [];
+  for (let i = 0; i < dayCount; i++) {
+    const day = addDays(start, i);
+    buckets.push({ time: format(day, 'MM/dd'), day, amount: 0 });
+  }
+  for (const d of rows) {
+    if (!d.date) continue;
+    const t = new Date(d.date).getTime();
+    const idx = differenceInCalendarDays(startOfDay(new Date(t)), start);
+    if (idx >= 0 && idx < dayCount) buckets[idx].amount += 1;
+  }
+  return buckets;
 }
 
-export default function Chart() {
+export default function Chart({ dateRange, companyId, refreshNonce }) {
   const theme = useTheme();
-  const [data, setData] = useState([]);
+  const companyQ = companyId ? `&company=${companyId}` : '';
+  const { data, loading, error } = useDashboardData(
+    `/api/deliveries?limit=500${companyQ}`,
+    [refreshNonce]
+  );
 
-  useEffect(() => {
-    let cancelled = false;
-    api.get('/api/deliveries?limit=100').then((result) => {
-      if (cancelled) return;
-      const deliveries = result.data;
-      const today = new Date();
-      const chartData = [];
-      for (let i = 6; i >= 0; i--) {
-        const day = subDays(today, i);
-        const dayStr = format(day, 'MM/dd/yyyy');
-        const count = deliveries.filter(d => {
-          if (!d.date) return false;
-          return format(new Date(d.date), 'MM/dd/yyyy') === dayStr;
-        }).length;
-        chartData.push(createData(dayStr, count));
-      }
-      setData(chartData);
-    }).catch((err) => {
-      if (!cancelled) console.error(err);
-    });
-    return () => { cancelled = true; };
-  }, []);
+  const chartData = useMemo(() => {
+    const rows = Array.isArray(data?.data) ? data.data : [];
+    if (!dateRange) return [];
+    return bucketDeliveries(rows, dateRange.startDate, dateRange.endDate);
+  }, [data, dateRange]);
+
+  const dayCount = dateRange
+    ? Math.max(1, differenceInCalendarDays(dateRange.endDate, dateRange.startDate) + 1)
+    : 0;
 
   return (
     <React.Fragment>
-      <Title>Weekly Delivery Count</Title>
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart
-          data={data}
-          margin={{
-            top: 16,
-            right: 16,
-            bottom: 0,
-            left: 24,
-          }}
-        >
-          <XAxis dataKey="time" stroke={theme.palette.text.secondary} />
-          <YAxis stroke={theme.palette.text.secondary}>
-            <Label
-              angle={270}
-              position="left"
-              style={{ textAnchor: 'middle', fill: theme.palette.text.primary }}
-            >
-              Deliveries (Count)
-            </Label>
-          </YAxis>
-          <Tooltip
-            wrapperStyle={{ borderRadius: 8 }}
-            contentStyle={{
-              borderRadius: 8,
-              border: '1px solid #cbd5e1',
-              backgroundColor: '#ffffff',
-            }}
-            labelStyle={{ color: '#334155' }}
-          />
-          <Bar dataKey="amount" fill="#1e40af" barSize={28} radius={[6, 6, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
+      <Title>{`Delivery Count — last ${dayCount} day${dayCount === 1 ? '' : 's'}`}</Title>
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}>
+          <CircularProgress size={28} />
+        </div>
+      ) : error ? (
+        <Typography variant="body2" color="error">Failed to load deliveries.</Typography>
+      ) : (
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart
+            data={chartData}
+            margin={{ top: 16, right: 16, bottom: 0, left: 24 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+            <XAxis dataKey="time" stroke={theme.palette.text.secondary} />
+            <YAxis stroke={theme.palette.text.secondary} allowDecimals={false}>
+              <Label
+                angle={270}
+                position="left"
+                style={{ textAnchor: 'middle', fill: theme.palette.text.primary }}
+              >
+                Deliveries (Count)
+              </Label>
+            </YAxis>
+            <Tooltip
+              wrapperStyle={{ borderRadius: 8 }}
+              contentStyle={{
+                borderRadius: 8,
+                border: '1px solid #cbd5e1',
+                backgroundColor: '#ffffff',
+              }}
+              labelStyle={{ color: '#334155' }}
+            />
+            <Bar dataKey="amount" fill="#1e40af" barSize={28} radius={[6, 6, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      )}
     </React.Fragment>
   );
 }

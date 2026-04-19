@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import MapView, { parseGps } from '../config/MapView';
-import api from '../config/api';
+import useDashboardData from './useDashboardData';
 
 const defaultCenter = {
   lat: 31.9686,
@@ -13,23 +13,22 @@ const mapStyles = {
   borderRadius: '12px',
 };
 
-export default function Orders() {
-  const [marks, setMarks] = useState([]);
+export default function Orders({ companyId, refreshNonce }) {
+  const companyQ = companyId ? `&company=${companyId}` : '';
+  const { data } = useDashboardData(
+    `/api/wells?limit=500${companyQ}`,
+    [refreshNonce]
+  );
 
-  useEffect(() => {
-    api.get('/api/wells?limit=500')
-      .then((result) => {
-        const rows = Array.isArray(result?.data) ? result.data : [];
-        const points = rows
-          .map((w) => {
-            const p = parseGps(w.gps);
-            return p ? { ...p, key: w.id, title: w.name } : null;
-          })
-          .filter(Boolean);
-        setMarks(points);
+  const marks = useMemo(() => {
+    const rows = Array.isArray(data?.data) ? data.data : [];
+    return rows
+      .map((w) => {
+        const p = parseGps(w.gps);
+        return p ? { ...p, key: w.id, title: w.name } : null;
       })
-      .catch((err) => console.error(err));
-  }, []);
+      .filter(Boolean);
+  }, [data]);
 
   return (
     <MapView

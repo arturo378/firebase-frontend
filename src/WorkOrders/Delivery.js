@@ -11,6 +11,7 @@ import {
 } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
 import moment from 'moment';
+import PageTitle from '../components/PageTitle';
 import api, { getCurrentUser } from '../config/api';
 
 function getModalStyle() {
@@ -252,10 +253,10 @@ function Delivery() {
 
   return (
     <div>
+      <PageTitle>Delivery</PageTitle>
       <MaterialTable
         tableRef={tableRef}
         onRowClick={openmap}
-        title="Delivery"
         columns={columns}
         data={fetchData}
         options={{

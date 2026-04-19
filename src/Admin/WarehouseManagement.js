@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import MaterialTable from '../config/MaterialTable';
 import { useHistory } from "react-router-dom";
+import PageTitle from '../components/PageTitle';
 import api from '../config/api';
 
 function WarehouseManagement(){
@@ -75,10 +76,11 @@ function WarehouseManagement(){
   ];
 
   return (
-    <MaterialTable
-      tableRef={tableRef}
-      title="Warehouses"
-      columns={columns}
+    <div>
+      <PageTitle>Warehouses</PageTitle>
+      <MaterialTable
+        tableRef={tableRef}
+        columns={columns}
       data={fetchData}
       options={{
         pageSize: 10,
@@ -99,6 +101,7 @@ function WarehouseManagement(){
         },
       ]}
     />
+    </div>
   );
 }
 

@@ -3,6 +3,7 @@ import MaterialTable, { MTableToolbar } from '../config/MaterialTable';
 import { useHistory, useLocation } from "react-router-dom";
 import Button from '@material-ui/core/Button';
 import { Select, MenuItem } from "@material-ui/core";
+import PageTitle from '../components/PageTitle';
 import api from '../config/api';
 
 function Pricing() {
@@ -97,10 +98,11 @@ function Pricing() {
   ];
 
   return (
-    <MaterialTable
-      tableRef={tableRef}
-      title="Pricing"
-      columns={columns}
+    <div>
+      <PageTitle>Pricing</PageTitle>
+      <MaterialTable
+        tableRef={tableRef}
+        columns={columns}
       data={fetchData}
       options={{
         pageSize: 10,
@@ -123,6 +125,7 @@ function Pricing() {
         onRowDelete: (oldData) => new Promise((resolve) => removeitem(oldData, resolve)),
       }}
     />
+    </div>
   );
 }
 

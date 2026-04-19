@@ -1,0 +1,83 @@
+import React from 'react';
+
+let uid = 0;
+const nextId = () => `cmsLogo-${++uid}`;
+
+export default function LogoMark({ size = 36, glow = false, className, style }) {
+  const gradId = React.useMemo(nextId, []);
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 64 64"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="Chemical Management System logo"
+      className={className}
+      style={{
+        filter: glow ? 'drop-shadow(0 6px 14px rgba(59, 130, 246, 0.45))' : undefined,
+        ...style,
+      }}
+    >
+      <defs>
+        <linearGradient id={gradId} x1="10%" y1="0%" x2="90%" y2="100%">
+          <stop offset="0%" stopColor="#60a5fa" />
+          <stop offset="55%" stopColor="#3b82f6" />
+          <stop offset="100%" stopColor="#6366f1" />
+        </linearGradient>
+      </defs>
+
+      <g strokeLinecap="round" strokeLinejoin="round" fill="none">
+        <line
+          x1="6"
+          y1="55"
+          x2="58"
+          y2="55"
+          stroke={`url(#${gradId})`}
+          strokeWidth="2"
+          strokeOpacity="0.35"
+        />
+
+        <path
+          d="M 32 24 L 42 52 M 32 24 L 22 52"
+          stroke={`url(#${gradId})`}
+          strokeWidth="3.5"
+        />
+
+        <line
+          x1="26.5"
+          y1="40"
+          x2="37.5"
+          y2="40"
+          stroke={`url(#${gradId})`}
+          strokeWidth="2.25"
+          strokeOpacity="0.55"
+        />
+
+        <line
+          x1="8"
+          y1="28"
+          x2="54"
+          y2="17"
+          stroke={`url(#${gradId})`}
+          strokeWidth="4"
+        />
+      </g>
+
+      <circle cx="54" cy="17" r="5" fill={`url(#${gradId})`} />
+
+      <path
+        d="M 8 28 L 2 33 L 10 34 Z"
+        fill={`url(#${gradId})`}
+      />
+
+      <circle cx="32" cy="24" r="2.5" fill="#ffffff" />
+
+      <path
+        d="M 6 39 C 9.5 44, 12 47.5, 12 50 A 5.5 5.5 0 1 1 0 50 C 0 47.5, 2.5 44, 6 39 Z"
+        fill={`url(#${gradId})`}
+      />
+    </svg>
+  );
+}

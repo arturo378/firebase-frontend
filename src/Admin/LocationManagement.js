@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import MaterialTable from '../config/MaterialTable';
 import { useHistory } from "react-router-dom";
+import PageTitle from '../components/PageTitle';
 import api from '../config/api';
 
 function LocationManagement(){
@@ -90,10 +91,11 @@ function LocationManagement(){
   ];
 
   return (
-    <MaterialTable
-      tableRef={tableRef}
-      title="Company Management"
-      columns={columns}
+    <div>
+      <PageTitle>Company Management</PageTitle>
+      <MaterialTable
+        tableRef={tableRef}
+        columns={columns}
       data={fetchData}
       options={{
         pageSize: 10,
@@ -119,6 +121,7 @@ function LocationManagement(){
         },
       ]}
     />
+    </div>
   );
 }
 

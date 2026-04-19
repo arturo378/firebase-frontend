@@ -10,6 +10,7 @@ import {
   KeyboardDatePicker,
 } from '@material-ui/pickers';
 import moment from 'moment';
+import PageTitle from '../components/PageTitle';
 import api, { getCurrentUser } from '../config/api';
 
 function getModalStyle() {
@@ -168,10 +169,10 @@ function ShippingPaper() {
 
   return (
     <div>
+      <PageTitle>Shipping Papers</PageTitle>
       <MaterialTable
         tableRef={tableRef}
         onRowClick={openmap}
-        title="Shipping Papers"
         columns={columns}
         data={fetchData}
         options={{

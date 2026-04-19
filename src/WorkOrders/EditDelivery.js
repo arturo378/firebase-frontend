@@ -3,6 +3,7 @@ import MaterialTable, { MTableToolbar } from '../config/MaterialTable';
 import { useHistory, useLocation } from "react-router-dom";
 import { Select, MenuItem } from "@material-ui/core";
 import Button from '@material-ui/core/Button';
+import PageTitle from '../components/PageTitle';
 import api from '../config/api';
 
 function DeliveryEdit() {
@@ -96,10 +97,11 @@ function DeliveryEdit() {
   ];
 
   return (
-    <MaterialTable
-      tableRef={tableRef}
-      title="Delivery: Chemicals"
-      columns={columns}
+    <div>
+      <PageTitle>Delivery: Chemicals</PageTitle>
+      <MaterialTable
+        tableRef={tableRef}
+        columns={columns}
       data={fetchData}
       options={{
         pageSize: 10,
@@ -122,6 +124,7 @@ function DeliveryEdit() {
         onRowDelete: (oldData) => new Promise((resolve) => removeitem(oldData, resolve)),
       }}
     />
+    </div>
   );
 }
 

@@ -1,12 +1,22 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
+import { subDays, startOfDay, endOfDay } from 'date-fns';
+import PageTitle from '../components/PageTitle';
 import Chart from './Chart';
 import Orders from './Orders';
+import DashboardFilters from './DashboardFilters';
+import KpiRow from './KpiRow';
+import RevenueTrend from './RevenueTrend';
+import DeliveriesByCompany from './DeliveriesByCompany';
+import TopChemicals from './TopChemicals';
+import WarehouseInventory from './WarehouseInventory';
+import RecentActivity from './RecentActivity';
+import PendingDeliveries from './PendingDeliveries';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -15,24 +25,6 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.up('md')]: {
       paddingTop: theme.spacing(4),
     },
-  },
-  heroCard: {
-    padding: theme.spacing(2.5, 3),
-    borderRadius: 16,
-    marginBottom: theme.spacing(3),
-    background: 'linear-gradient(120deg, #0f172a 0%, #1e3a8a 100%)',
-    color: '#f8fafc',
-    [theme.breakpoints.down('sm')]: {
-      padding: theme.spacing(2.25),
-    },
-  },
-  heroTitle: {
-    fontWeight: 700,
-    letterSpacing: 0.2,
-  },
-  heroSubtitle: {
-    marginTop: theme.spacing(0.75),
-    color: 'rgba(248, 250, 252, 0.86)',
   },
   paperBase: {
     padding: theme.spacing(2.5),
@@ -57,36 +49,144 @@ const useStyles = makeStyles((theme) => ({
     color: '#0f172a',
     fontWeight: 600,
   },
+  rowSpacer: {
+    marginTop: theme.spacing(3),
+  },
 }));
+
+const DEFAULT_RANGE = {
+  startDate: startOfDay(subDays(new Date(), 29)),
+  endDate: endOfDay(new Date()),
+};
 
 export default function Main() {
   const classes = useStyles();
   const chartPaperClass = clsx(classes.paperBase, classes.chartPaper);
 
+  const [dateRange, setDateRange] = useState(DEFAULT_RANGE);
+  const [companyId, setCompanyId] = useState(null);
+  const [focusedCompany, setFocusedCompany] = useState({ id: null, name: null });
+  const [refreshNonce, setRefreshNonce] = useState(0);
+
+  const handleDateRangeChange = useCallback((next) => {
+    setDateRange({
+      startDate: startOfDay(next.startDate),
+      endDate: endOfDay(next.endDate),
+    });
+  }, []);
+
+  const handleCompanyChange = useCallback((id) => {
+    setCompanyId(id || null);
+    setFocusedCompany({ id: null, name: null });
+  }, []);
+
+  const handleRefresh = useCallback(() => {
+    setRefreshNonce((n) => n + 1);
+  }, []);
+
+  const handleSliceClick = useCallback((id, name) => {
+    if (!id) return;
+    setFocusedCompany((prev) => (prev.id === id ? { id: null, name: null } : { id, name }));
+  }, []);
+
+  const clearFocus = useCallback(() => setFocusedCompany({ id: null, name: null }), []);
+
   return (
     <Container maxWidth="xl" className={classes.container}>
-      <Paper elevation={0} className={classes.heroCard}>
-        <Typography variant="h5" className={classes.heroTitle}>
-          Dashboard Overview
-        </Typography>
-        <Typography variant="body2" className={classes.heroSubtitle}>
-          Monitor deliveries and well activity in real time across all screen sizes.
-        </Typography>
-      </Paper>
+      <PageTitle>Dashboard Overview</PageTitle>
 
-      <Grid container spacing={3}>
+      <DashboardFilters
+        dateRange={dateRange}
+        onDateRangeChange={handleDateRangeChange}
+        companyId={companyId}
+        onCompanyChange={handleCompanyChange}
+        onRefresh={handleRefresh}
+      />
+
+      <KpiRow
+        dateRange={dateRange}
+        companyId={companyId}
+        refreshNonce={refreshNonce}
+      />
+
+      <Grid container spacing={3} className={classes.rowSpacer}>
         <Grid item xs={12} lg={8}>
           <Paper className={chartPaperClass}>
-            <Chart />
+            <RevenueTrend
+              dateRange={dateRange}
+              companyId={companyId}
+              refreshNonce={refreshNonce}
+            />
           </Paper>
         </Grid>
-
         <Grid item xs={12} lg={4}>
+          <Paper className={chartPaperClass}>
+            <DeliveriesByCompany
+              dateRange={dateRange}
+              companyId={companyId}
+              focusedCompanyId={focusedCompany.id}
+              onSliceClick={handleSliceClick}
+              refreshNonce={refreshNonce}
+            />
+          </Paper>
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={3} className={classes.rowSpacer}>
+        <Grid item xs={12} lg={6}>
+          <Paper className={chartPaperClass}>
+            <Chart
+              dateRange={dateRange}
+              companyId={companyId}
+              refreshNonce={refreshNonce}
+            />
+          </Paper>
+        </Grid>
+        <Grid item xs={12} lg={6}>
+          <Paper className={chartPaperClass}>
+            <TopChemicals
+              dateRange={dateRange}
+              companyId={companyId}
+              refreshNonce={refreshNonce}
+            />
+          </Paper>
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={3} className={classes.rowSpacer}>
+        <Grid item xs={12} lg={6}>
           <Paper className={classes.paperBase}>
             <Typography variant="h6" className={classes.mapHeader}>
               Active Wells
             </Typography>
-            <Orders />
+            <Orders companyId={companyId} refreshNonce={refreshNonce} />
+          </Paper>
+        </Grid>
+        <Grid item xs={12} lg={6}>
+          <Paper className={chartPaperClass}>
+            <WarehouseInventory refreshNonce={refreshNonce} />
+          </Paper>
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={3} className={classes.rowSpacer}>
+        <Grid item xs={12} lg={5}>
+          <Paper className={classes.paperBase}>
+            <PendingDeliveries
+              companyId={companyId}
+              refreshNonce={refreshNonce}
+            />
+          </Paper>
+        </Grid>
+        <Grid item xs={12} lg={7}>
+          <Paper className={classes.paperBase}>
+            <RecentActivity
+              companyId={companyId}
+              focusedCompanyId={focusedCompany.id}
+              focusedCompanyName={focusedCompany.name}
+              onClearFocus={clearFocus}
+              refreshNonce={refreshNonce}
+            />
           </Paper>
         </Grid>
       </Grid>

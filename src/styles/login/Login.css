@@ -19,6 +19,13 @@
 
 .Login .login-header {
   margin-bottom: 22px;
+  text-align: center;
+}
+
+.Login .login-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
 }
 
 .Login .login-header h1 {
