@@ -1,113 +1,119 @@
-import React, { useRef } from 'react';
+import React from 'react';
+import { useDispatch } from 'react-redux';
 import MaterialTable, { MTableToolbar } from '../config/MaterialTable';
 import { useHistory, useLocation } from "react-router-dom";
 import Button from '@material-ui/core/Button';
 import PageTitle from '../components/PageTitle';
-import api from '../config/api';
+import {
+  useGetWellsQuery,
+  useAddWellMutation,
+  useUpdateWellMutation,
+  useDeleteWellMutation,
+} from '../store/api/wellsApi';
+import { showToast } from '../store/slices/uiSlice';
 
-function WellManagement(){
-  const location = useLocation();
-  const leaseid = location.state.leaseid;
-  const companyid = location.state.companyid;
-  const tableRef = useRef();
+const columns = [
+  { title: "id", field: "id", hidden: true },
+  { title: "Name", field: "name" },
+  { title: "GPS Coordinates", field: "gps" },
+  { title: "Description", field: "description" },
+];
 
-  const fetchData = (query) => {
-    const page = query.page + 1;
-    const limit = query.pageSize;
-    return api.get(`/api/wells?lease=${leaseid}&page=${page}&limit=${limit}`)
-      .then((result) => ({
-        data: result.data,
-        page: query.page,
-        totalCount: result.totalItems,
-      }))
-      .catch((err) => {
-        console.error(err);
-        return { data: [], page: 0, totalCount: 0 };
-      });
-  };
-
-  const additem = async (incoming, resolve) => {
-    if (!incoming.name) { resolve(); return; }
-    try {
-      await api.post('/api/wells', {
-        name: incoming.name,
-        gps: incoming.gps,
-        description: incoming.description,
-        lease: leaseid,
-        company: companyid,
-      });
-    } catch (err) {
-      console.error(err);
-    }
-    resolve();
-  };
-
-  const updateitem = async (oldincoming, incoming, resolve) => {
-    if (!incoming.name) { resolve(); return; }
-    try {
-      await api.put(`/api/wells/${oldincoming.id}`, {
-        name: incoming.name,
-        gps: incoming.gps,
-        description: incoming.description,
-        lease: leaseid,
-        company: companyid,
-      });
-    } catch (err) {
-      console.error(err);
-    }
-    resolve();
-  };
-
-  const removeitem = async (incoming, resolve) => {
-    try {
-      await api.delete(`/api/wells/${incoming.id}`);
-    } catch (err) {
-      console.error(err);
-    }
-    resolve();
-  };
-
+function WellManagement() {
+  const dispatch = useDispatch();
   const history = useHistory();
-  function back() {
-    history.push({ pathname: '/locationmanagment/leasemanagment', state: { id: companyid } });
-  }
+  const location = useLocation();
+  const { leaseid, companyid } = location.state;
 
-  const columns = [
-    { title: "id", field: "id", hidden: true },
-    { title: "Name", field: "name" },
-    { title: "GPS Coordinates", field: "gps" },
-    { title: "Description", field: "description" },
-  ];
+  const { data, isFetching } = useGetWellsQuery({ lease: leaseid, limit: 1000 });
+  const [addWell] = useAddWellMutation();
+  const [updateWell] = useUpdateWellMutation();
+  const [deleteWell] = useDeleteWellMutation();
+
+  const rows = data?.data ?? [];
+
+  const additem = async (incoming) => {
+    if (!incoming.name) {
+      dispatch(showToast({ severity: 'warning', message: 'Please enter well name' }));
+      return;
+    }
+    try {
+      await addWell({
+        name: incoming.name,
+        gps: incoming.gps,
+        description: incoming.description,
+        lease: leaseid,
+        company: companyid,
+      }).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Well added' }));
+    } catch (err) {
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to add well' }));
+    }
+  };
+
+  const updateitem = async (oldData, incoming) => {
+    if (!incoming.name) {
+      dispatch(showToast({ severity: 'warning', message: 'Please enter well name' }));
+      return;
+    }
+    try {
+      await updateWell({
+        id: oldData.id,
+        name: incoming.name,
+        gps: incoming.gps,
+        description: incoming.description,
+        lease: leaseid,
+        company: companyid,
+      }).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Well updated' }));
+    } catch (err) {
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to update well' }));
+    }
+  };
+
+  const removeitem = async (row) => {
+    try {
+      await deleteWell(row.id).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Well deleted' }));
+    } catch (err) {
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to delete well' }));
+    }
+  };
+
+  const back = () => history.push({
+    pathname: '/locationmanagment/leasemanagment',
+    state: { id: companyid },
+  });
 
   return (
     <div>
       <PageTitle>Well Management</PageTitle>
       <MaterialTable
-        tableRef={tableRef}
         columns={columns}
-      data={fetchData}
-      options={{
-        pageSize: 10,
-        pageSizeOptions: [5, 10, 20],
-        search: false,
-        actionsColumnIndex: -1,
-      }}
-      components={{
-        Toolbar: props => (
-          <div>
-            <MTableToolbar {...props} />
-            <div style={{ padding: '0px 10px' }}>
-              <Button variant="contained" onClick={back}>Back</Button>
+        data={rows}
+        isLoading={isFetching}
+        options={{
+          pageSize: 10,
+          pageSizeOptions: [5, 10, 20],
+          search: false,
+          actionsColumnIndex: -1,
+        }}
+        components={{
+          Toolbar: props => (
+            <div>
+              <MTableToolbar {...props} />
+              <div style={{ padding: '0px 10px' }}>
+                <Button variant="contained" onClick={back}>Back</Button>
+              </div>
             </div>
-          </div>
-        ),
-      }}
-      editable={{
-        onRowAdd: (newData) => new Promise((resolve) => additem(newData, resolve)),
-        onRowUpdate: (newData, oldData) => new Promise((resolve) => updateitem(oldData, newData, resolve)),
-        onRowDelete: (oldData) => new Promise((resolve) => removeitem(oldData, resolve)),
-      }}
-    />
+          ),
+        }}
+        editable={{
+          onRowAdd: (newData) => additem(newData),
+          onRowUpdate: (newData, oldData) => updateitem(oldData, newData),
+          onRowDelete: (oldData) => removeitem(oldData),
+        }}
+      />
     </div>
   );
 }

@@ -1,11 +1,18 @@
 import React, { useMemo } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import Typography from '@material-ui/core/Typography';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import Title from './Title';
-import useDashboardData from './useDashboardData';
+import { useGetDeliveriesQuery } from '../store/api/deliveriesApi';
+import {
+  selectDateRange,
+  selectCompanyId,
+  selectFocusedCompany,
+  setFocusedCompany,
+} from '../store/slices/dashboardFiltersSlice';
 
 const COLORS = ['#1e40af', '#0891b2', '#16a34a', '#ea580c', '#7c3aed', '#db2777', '#0f766e', '#ca8a04', '#2563eb', '#14b8a6'];
 const OTHERS_COLOR = '#94a3b8';
@@ -18,17 +25,13 @@ function withinRange(iso, start, end) {
   return t >= start.getTime() && t <= end.getTime();
 }
 
-export default function DeliveriesByCompany({
-  dateRange,
-  companyId,
-  focusedCompanyId,
-  onSliceClick,
-  refreshNonce,
-}) {
-  const { data, loading, error } = useDashboardData(
-    '/api/deliveries?limit=500',
-    [refreshNonce]
-  );
+export default function DeliveriesByCompany() {
+  const dispatch = useDispatch();
+  const dateRange = useSelector(selectDateRange);
+  const companyId = useSelector(selectCompanyId);
+  const focusedCompany = useSelector(selectFocusedCompany);
+
+  const { data, isFetching, error } = useGetDeliveriesQuery({ limit: 500 });
 
   const { chartData, totalCompanies, totalDeliveries, othersBreakdown } = useMemo(() => {
     const rows = Array.isArray(data?.data) ? data.data : [];
@@ -72,9 +75,8 @@ export default function DeliveriesByCompany({
   }
 
   const handleSliceClick = (slice) => {
-    if (!onSliceClick) return;
     if (!slice || slice.id === OTHERS_ID) return;
-    onSliceClick(slice.id, slice.name);
+    dispatch(setFocusedCompany({ id: slice.id, name: slice.name }));
   };
 
   const renderTooltip = ({ active, payload }) => {
@@ -98,7 +100,7 @@ export default function DeliveriesByCompany({
   return (
     <React.Fragment>
       <Title>Deliveries by Company</Title>
-      {loading ? (
+      {isFetching ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}>
           <CircularProgress size={28} />
         </div>
@@ -121,15 +123,15 @@ export default function DeliveriesByCompany({
                   outerRadius={95}
                   paddingAngle={1}
                   onClick={handleSliceClick}
-                  style={{ cursor: onSliceClick ? 'pointer' : 'default' }}
+                  style={{ cursor: 'pointer' }}
                   isAnimationActive={false}
                 >
                   {chartData.map((entry, idx) => (
                     <Cell
                       key={entry.id}
                       fill={entry.id === OTHERS_ID ? OTHERS_COLOR : COLORS[idx % COLORS.length]}
-                      stroke={focusedCompanyId === entry.id ? '#0f172a' : '#ffffff'}
-                      strokeWidth={focusedCompanyId === entry.id ? 3 : 1}
+                      stroke={focusedCompany.id === entry.id ? '#0f172a' : '#ffffff'}
+                      strokeWidth={focusedCompany.id === entry.id ? 3 : 1}
                     />
                   ))}
                 </Pie>
@@ -150,7 +152,7 @@ export default function DeliveriesByCompany({
             {chartData.map((entry, idx) => {
               const pct = totalDeliveries ? ((entry.value / totalDeliveries) * 100).toFixed(1) : 0;
               const isOthers = entry.id === OTHERS_ID;
-              const isFocused = focusedCompanyId === entry.id;
+              const isFocused = focusedCompany.id === entry.id;
               return (
                 <div
                   key={entry.id}
@@ -161,7 +163,7 @@ export default function DeliveriesByCompany({
                     alignItems: 'center',
                     padding: '4px 6px',
                     borderRadius: 4,
-                    cursor: (!isOthers && onSliceClick) ? 'pointer' : 'default',
+                    cursor: !isOthers ? 'pointer' : 'default',
                     backgroundColor: isFocused ? '#f1f5f9' : 'transparent',
                     fontSize: 12,
                   }}

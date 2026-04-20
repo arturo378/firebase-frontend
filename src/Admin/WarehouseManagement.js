@@ -1,106 +1,107 @@
-import React, { useRef } from 'react';
+import React from 'react';
+import { useDispatch } from 'react-redux';
 import MaterialTable from '../config/MaterialTable';
 import { useHistory } from "react-router-dom";
 import PageTitle from '../components/PageTitle';
-import api from '../config/api';
+import {
+  useGetWarehousesQuery,
+  useAddWarehouseMutation,
+  useUpdateWarehouseMutation,
+  useDeleteWarehouseMutation,
+} from '../store/api/warehousesApi';
+import { showToast } from '../store/slices/uiSlice';
 
-function WarehouseManagement(){
-  const tableRef = useRef();
+const columns = [
+  { title: "id", field: "id", hidden: true },
+  { title: "Warehouse Number", field: "warehousenumber" },
+  { title: "Name", field: "name" },
+  { title: "Area Manager", field: "areamanager" },
+];
 
-  const fetchData = (query) => {
-    const page = query.page + 1;
-    const limit = query.pageSize;
-    return api.get(`/api/warehouses?page=${page}&limit=${limit}`)
-      .then((result) => ({
-        data: result.data,
-        page: query.page,
-        totalCount: result.totalItems,
-      }))
-      .catch((err) => {
-        console.error(err);
-        return { data: [], page: 0, totalCount: 0 };
-      });
-  };
-
-  const additem = async (incoming, resolve) => {
-    let errorList = [];
-    if (!incoming.name) errorList.push("Please enter name");
-    if (!incoming.warehousenumber) errorList.push("Please enter warehouse number");
-    if (!incoming.areamanager) errorList.push("Please enter area manager");
-    if (errorList.length > 0) { resolve(); return; }
-
-    try {
-      await api.post('/api/warehouses', {
-        warehousenumber: incoming.warehousenumber,
-        name: incoming.name,
-        areamanager: incoming.areamanager,
-      });
-    } catch (err) {
-      console.error(err);
-    }
-    resolve();
-  };
-
-  const updateitem = async (oldincoming, incoming, resolve) => {
-    try {
-      await api.put(`/api/warehouses/${oldincoming.id}`, {
-        warehousenumber: incoming.warehousenumber,
-        name: incoming.name,
-        areamanager: incoming.areamanager,
-      });
-    } catch (err) {
-      console.error(err);
-    }
-    resolve();
-  };
-
-  const removeitem = async (incoming, resolve) => {
-    try {
-      await api.delete(`/api/warehouses/${incoming.id}`);
-    } catch (err) {
-      console.error(err);
-    }
-    resolve();
-  };
-
+function WarehouseManagement() {
+  const dispatch = useDispatch();
   const history = useHistory();
-  function goToInventory(data, rowdata) {
-    history.push({ pathname: '/warehousechemical', state: rowdata });
-  }
+  const { data, isFetching } = useGetWarehousesQuery({ limit: 1000 });
+  const [addWarehouse] = useAddWarehouseMutation();
+  const [updateWarehouse] = useUpdateWarehouseMutation();
+  const [deleteWarehouse] = useDeleteWarehouseMutation();
 
-  const columns = [
-    { title: "id", field: "id", hidden: true },
-    { title: "Warehouse Number", field: "warehousenumber" },
-    { title: "Name", field: "name" },
-    { title: "Area Manager", field: "areamanager" },
-  ];
+  const rows = data?.data ?? [];
+
+  const additem = async (incoming) => {
+    const errors = [];
+    if (!incoming.name) errors.push("name");
+    if (!incoming.warehousenumber) errors.push("warehouse number");
+    if (!incoming.areamanager) errors.push("area manager");
+    if (errors.length > 0) {
+      dispatch(showToast({ severity: 'warning', message: `Please enter ${errors.join(', ')}` }));
+      return;
+    }
+    try {
+      await addWarehouse({
+        warehousenumber: incoming.warehousenumber,
+        name: incoming.name,
+        areamanager: incoming.areamanager,
+      }).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Warehouse added' }));
+    } catch (err) {
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to add warehouse' }));
+    }
+  };
+
+  const updateitem = async (oldData, incoming) => {
+    try {
+      await updateWarehouse({
+        id: oldData.id,
+        warehousenumber: incoming.warehousenumber,
+        name: incoming.name,
+        areamanager: incoming.areamanager,
+      }).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Warehouse updated' }));
+    } catch (err) {
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to update warehouse' }));
+    }
+  };
+
+  const removeitem = async (row) => {
+    try {
+      await deleteWarehouse(row.id).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Warehouse deleted' }));
+    } catch (err) {
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to delete warehouse' }));
+    }
+  };
+
+  const goToInventory = (event, rowData) => {
+    history.push({ pathname: '/warehousechemical', state: rowData });
+  };
 
   return (
     <div>
       <PageTitle>Warehouses</PageTitle>
       <MaterialTable
-        tableRef={tableRef}
         columns={columns}
-      data={fetchData}
-      options={{
-        pageSize: 10,
-        pageSizeOptions: [5, 10, 20],
-        search: false,
-        actionsColumnIndex: -1,
-      }}
-      editable={{
-        onRowAdd: (newData) => new Promise((resolve) => additem(newData, resolve)),
-        onRowUpdate: (newData, oldData) => new Promise((resolve) => updateitem(oldData, newData, resolve)),
-        onRowDelete: (oldData) => new Promise((resolve) => removeitem(oldData, resolve)),
-      }}
-      actions={[
-        {
-          icon: 'science',
-          tooltip: 'Manage Inventory',
-          onClick: (event, rowData) => goToInventory(event, rowData),
-        },
-      ]}
-    />
+        data={rows}
+        isLoading={isFetching}
+        options={{
+          pageSize: 10,
+          pageSizeOptions: [5, 10, 20],
+          search: false,
+          actionsColumnIndex: -1,
+        }}
+        editable={{
+          onRowAdd: (newData) => additem(newData),
+          onRowUpdate: (newData, oldData) => updateitem(oldData, newData),
+          onRowDelete: (oldData) => removeitem(oldData),
+        }}
+        actions={[
+          {
+            icon: 'science',
+            tooltip: 'Manage Inventory',
+            onClick: (event, rowData) => goToInventory(event, rowData),
+          },
+        ]}
+      />
     </div>
   );
 }

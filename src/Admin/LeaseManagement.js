@@ -1,109 +1,114 @@
-import React, { useRef } from 'react';
+import React from 'react';
+import { useDispatch } from 'react-redux';
 import MaterialTable, { MTableToolbar } from '../config/MaterialTable';
 import { useHistory, useLocation } from "react-router-dom";
 import Button from '@material-ui/core/Button';
 import PageTitle from '../components/PageTitle';
-import api from '../config/api';
+import {
+  useGetLeasesQuery,
+  useAddLeaseMutation,
+  useUpdateLeaseMutation,
+  useDeleteLeaseMutation,
+} from '../store/api/leasesApi';
+import { showToast } from '../store/slices/uiSlice';
 
-function LeaseManagement(){
+const columns = [
+  { title: "id", field: "id", hidden: true },
+  { title: "Name", field: "name" },
+];
+
+function LeaseManagement() {
+  const dispatch = useDispatch();
+  const history = useHistory();
   const location = useLocation();
   const companyid = location.state.id;
-  const tableRef = useRef();
 
-  const fetchData = (query) => {
-    const page = query.page + 1;
-    const limit = query.pageSize;
-    return api.get(`/api/leases?company=${companyid}&page=${page}&limit=${limit}`)
-      .then((result) => ({
-        data: result.data,
-        page: query.page,
-        totalCount: result.totalItems,
-      }))
-      .catch((err) => {
-        console.error(err);
-        return { data: [], page: 0, totalCount: 0 };
-      });
-  };
+  const { data, isFetching } = useGetLeasesQuery({ company: companyid, limit: 1000 });
+  const [addLease] = useAddLeaseMutation();
+  const [updateLease] = useUpdateLeaseMutation();
+  const [deleteLease] = useDeleteLeaseMutation();
 
-  const additem = async (incoming, resolve) => {
-    if (!incoming.name) { resolve(); return; }
-    try {
-      await api.post('/api/leases', { name: incoming.name, company: companyid });
-    } catch (err) {
-      console.error(err);
+  const rows = data?.data ?? [];
+
+  const additem = async (incoming) => {
+    if (!incoming.name) {
+      dispatch(showToast({ severity: 'warning', message: 'Please enter lease name' }));
+      return;
     }
-    resolve();
-  };
-
-  const updateitem = async (oldincoming, incoming, resolve) => {
-    if (!incoming.name) { resolve(); return; }
     try {
-      await api.put(`/api/leases/${oldincoming.id}`, { name: incoming.name, company: companyid });
+      await addLease({ name: incoming.name, company: companyid }).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Lease added' }));
     } catch (err) {
-      console.error(err);
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to add lease' }));
     }
-    resolve();
   };
 
-  const removeitem = async (incoming, resolve) => {
+  const updateitem = async (oldData, incoming) => {
+    if (!incoming.name) {
+      dispatch(showToast({ severity: 'warning', message: 'Please enter lease name' }));
+      return;
+    }
     try {
-      await api.delete(`/api/leases/${incoming.id}`);
+      await updateLease({ id: oldData.id, name: incoming.name, company: companyid }).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Lease updated' }));
     } catch (err) {
-      console.error(err);
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to update lease' }));
     }
-    resolve();
   };
 
-  const history = useHistory();
-  function goToWells(data, rowdata) {
-    const leaseid = rowdata.id;
-    history.push({ pathname: '/locationmanagment/leasemanagment/wellmanagment', state: { leaseid, companyid } });
-  }
-  function back() {
-    history.push("/locationmanagment/");
-  }
+  const removeitem = async (row) => {
+    try {
+      await deleteLease(row.id).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Lease deleted' }));
+    } catch (err) {
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to delete lease' }));
+    }
+  };
 
-  const columns = [
-    { title: "id", field: "id", hidden: true },
-    { title: "Name", field: "name" },
-  ];
+  const goToWells = (event, rowData) => {
+    history.push({
+      pathname: '/locationmanagment/leasemanagment/wellmanagment',
+      state: { leaseid: rowData.id, companyid },
+    });
+  };
+  const back = () => history.push("/locationmanagment/");
 
   return (
     <div>
       <PageTitle>Lease Management</PageTitle>
       <MaterialTable
-        tableRef={tableRef}
         columns={columns}
-      data={fetchData}
-      options={{
-        pageSize: 10,
-        pageSizeOptions: [5, 10, 20],
-        search: false,
-        actionsColumnIndex: -1,
-      }}
-      components={{
-        Toolbar: props => (
-          <div>
-            <MTableToolbar {...props} />
-            <div style={{ padding: '0px 10px' }}>
-              <Button variant="contained" onClick={back}>Back</Button>
+        data={rows}
+        isLoading={isFetching}
+        options={{
+          pageSize: 10,
+          pageSizeOptions: [5, 10, 20],
+          search: false,
+          actionsColumnIndex: -1,
+        }}
+        components={{
+          Toolbar: props => (
+            <div>
+              <MTableToolbar {...props} />
+              <div style={{ padding: '0px 10px' }}>
+                <Button variant="contained" onClick={back}>Back</Button>
+              </div>
             </div>
-          </div>
-        ),
-      }}
-      editable={{
-        onRowAdd: (newData) => new Promise((resolve) => additem(newData, resolve)),
-        onRowUpdate: (newData, oldData) => new Promise((resolve) => updateitem(oldData, newData, resolve)),
-        onRowDelete: (oldData) => new Promise((resolve) => removeitem(oldData, resolve)),
-      }}
-      actions={[
-        {
-          icon: 'sort',
-          tooltip: 'Manage Wells',
-          onClick: (event, rowData) => goToWells(event, rowData),
-        },
-      ]}
-    />
+          ),
+        }}
+        editable={{
+          onRowAdd: (newData) => additem(newData),
+          onRowUpdate: (newData, oldData) => updateitem(oldData, newData),
+          onRowDelete: (oldData) => removeitem(oldData),
+        }}
+        actions={[
+          {
+            icon: 'sort',
+            tooltip: 'Manage Wells',
+            onClick: (event, rowData) => goToWells(event, rowData),
+          },
+        ]}
+      />
     </div>
   );
 }

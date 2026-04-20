@@ -1,31 +1,27 @@
 import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Button, FormGroup, FormControl, FormLabel } from "react-bootstrap";
-import api from "./config/api";
 import { APP_TITLE } from "./config/appInfo";
 import LogoMark from "./components/LogoMark";
+import { login, selectAuthError, selectAuthStatus, clearAuthError } from "./store/slices/authSlice";
 
 import "./styles/login/Login.css";
 
 export default function Login() {
+  const dispatch = useDispatch();
+  const authError = useSelector(selectAuthError);
+  const authStatus = useSelector(selectAuthStatus);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
   function validateForm() {
     return email.length > 0 && password.length > 0;
   }
 
-  async function handleSubmit(event) {
+  function handleSubmit(event) {
     event.preventDefault();
-    setError("");
-    try {
-      const res = await api.post('/api/auth/login', { email, password });
-      localStorage.setItem('accessToken', res.accessToken);
-      localStorage.setItem('currentUser', JSON.stringify(res.user));
-      window.location.reload();
-    } catch (err) {
-      setError(err.message || 'Login failed');
-    }
+    dispatch(clearAuthError());
+    dispatch(login({ email, password }));
   }
 
   return (
@@ -40,7 +36,7 @@ export default function Login() {
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
-          {error && <p style={{ color: 'red', marginBottom: 8 }}>{error}</p>}
+          {authError && <p style={{ color: 'red', marginBottom: 8 }}>{authError}</p>}
           <FormGroup className="login-field" controlId="email">
             <FormLabel>Email</FormLabel>
             <FormControl
@@ -60,8 +56,15 @@ export default function Login() {
               type="password"
             />
           </FormGroup>
-          <Button className="login-button" variant="primary" block size="lg" disabled={!validateForm()} type="submit">
-            Login
+          <Button
+            className="login-button"
+            variant="primary"
+            block
+            size="lg"
+            disabled={!validateForm() || authStatus === 'loading'}
+            type="submit"
+          >
+            {authStatus === 'loading' ? 'Signing in…' : 'Login'}
           </Button>
         </form>
       </div>

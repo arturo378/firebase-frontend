@@ -1,11 +1,11 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-import { subDays, startOfDay, endOfDay } from 'date-fns';
 import PageTitle from '../components/PageTitle';
 import Chart from './Chart';
 import Orders from './Orders';
@@ -17,6 +17,7 @@ import TopChemicals from './TopChemicals';
 import WarehouseInventory from './WarehouseInventory';
 import RecentActivity from './RecentActivity';
 import PendingDeliveries from './PendingDeliveries';
+import { baseApi } from '../store/api/baseApi';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -54,80 +55,41 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const DEFAULT_RANGE = {
-  startDate: startOfDay(subDays(new Date(), 29)),
-  endDate: endOfDay(new Date()),
-};
-
 export default function Main() {
   const classes = useStyles();
+  const dispatch = useDispatch();
   const chartPaperClass = clsx(classes.paperBase, classes.chartPaper);
 
-  const [dateRange, setDateRange] = useState(DEFAULT_RANGE);
-  const [companyId, setCompanyId] = useState(null);
-  const [focusedCompany, setFocusedCompany] = useState({ id: null, name: null });
-  const [refreshNonce, setRefreshNonce] = useState(0);
-
-  const handleDateRangeChange = useCallback((next) => {
-    setDateRange({
-      startDate: startOfDay(next.startDate),
-      endDate: endOfDay(next.endDate),
-    });
-  }, []);
-
-  const handleCompanyChange = useCallback((id) => {
-    setCompanyId(id || null);
-    setFocusedCompany({ id: null, name: null });
-  }, []);
-
   const handleRefresh = useCallback(() => {
-    setRefreshNonce((n) => n + 1);
-  }, []);
-
-  const handleSliceClick = useCallback((id, name) => {
-    if (!id) return;
-    setFocusedCompany((prev) => (prev.id === id ? { id: null, name: null } : { id, name }));
-  }, []);
-
-  const clearFocus = useCallback(() => setFocusedCompany({ id: null, name: null }), []);
+    dispatch(
+      baseApi.util.invalidateTags([
+        'Dashboard',
+        'Delivery',
+        'ShippingPaper',
+        'Well',
+        'WarehouseChemical',
+        'Report',
+      ])
+    );
+  }, [dispatch]);
 
   return (
     <Container maxWidth="xl" className={classes.container}>
       <PageTitle>Dashboard Overview</PageTitle>
 
-      <DashboardFilters
-        dateRange={dateRange}
-        onDateRangeChange={handleDateRangeChange}
-        companyId={companyId}
-        onCompanyChange={handleCompanyChange}
-        onRefresh={handleRefresh}
-      />
+      <DashboardFilters onRefresh={handleRefresh} />
 
-      <KpiRow
-        dateRange={dateRange}
-        companyId={companyId}
-        refreshNonce={refreshNonce}
-      />
+      <KpiRow />
 
       <Grid container spacing={3} className={classes.rowSpacer}>
         <Grid item xs={12} lg={8}>
           <Paper className={chartPaperClass}>
-            <RevenueTrend
-              dateRange={dateRange}
-              companyId={companyId}
-              refreshNonce={refreshNonce}
-            />
+            <RevenueTrend />
           </Paper>
         </Grid>
         <Grid item xs={12} lg={4}>
           <Paper className={chartPaperClass}>
-            <DeliveriesByCompany
-              dateRange={dateRange}
-              companyId={companyId}
-              focusedCompanyId={focusedCompany.id}
-              onSliceClick={handleSliceClick}
-              refreshNonce={refreshNonce}
-            />
+            <DeliveriesByCompany />
           </Paper>
         </Grid>
       </Grid>
@@ -135,20 +97,12 @@ export default function Main() {
       <Grid container spacing={3} className={classes.rowSpacer}>
         <Grid item xs={12} lg={6}>
           <Paper className={chartPaperClass}>
-            <Chart
-              dateRange={dateRange}
-              companyId={companyId}
-              refreshNonce={refreshNonce}
-            />
+            <Chart />
           </Paper>
         </Grid>
         <Grid item xs={12} lg={6}>
           <Paper className={chartPaperClass}>
-            <TopChemicals
-              dateRange={dateRange}
-              companyId={companyId}
-              refreshNonce={refreshNonce}
-            />
+            <TopChemicals />
           </Paper>
         </Grid>
       </Grid>
@@ -159,12 +113,12 @@ export default function Main() {
             <Typography variant="h6" className={classes.mapHeader}>
               Active Wells
             </Typography>
-            <Orders companyId={companyId} refreshNonce={refreshNonce} />
+            <Orders />
           </Paper>
         </Grid>
         <Grid item xs={12} lg={6}>
           <Paper className={chartPaperClass}>
-            <WarehouseInventory refreshNonce={refreshNonce} />
+            <WarehouseInventory />
           </Paper>
         </Grid>
       </Grid>
@@ -172,21 +126,12 @@ export default function Main() {
       <Grid container spacing={3} className={classes.rowSpacer}>
         <Grid item xs={12} lg={5}>
           <Paper className={classes.paperBase}>
-            <PendingDeliveries
-              companyId={companyId}
-              refreshNonce={refreshNonce}
-            />
+            <PendingDeliveries />
           </Paper>
         </Grid>
         <Grid item xs={12} lg={7}>
           <Paper className={classes.paperBase}>
-            <RecentActivity
-              companyId={companyId}
-              focusedCompanyId={focusedCompany.id}
-              focusedCompanyName={focusedCompany.name}
-              onClearFocus={clearFocus}
-              refreshNonce={refreshNonce}
-            />
+            <RecentActivity />
           </Paper>
         </Grid>
       </Grid>

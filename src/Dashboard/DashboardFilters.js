@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { makeStyles } from '@material-ui/core/styles';
 import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
@@ -14,7 +15,13 @@ import Tooltip from '@material-ui/core/Tooltip';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import DateRangeIcon from '@material-ui/icons/DateRange';
 import { format } from 'date-fns';
-import api from '../config/api';
+import { useGetCompaniesQuery } from '../store/api/companiesApi';
+import {
+  selectDateRange,
+  selectCompanyId,
+  setDateRange,
+  setCompany,
+} from '../store/slices/dashboardFiltersSlice';
 
 const useStyles = makeStyles((theme) => ({
   bar: {
@@ -50,27 +57,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function DashboardFilters({
-  dateRange,
-  onDateRangeChange,
-  companyId,
-  onCompanyChange,
-  onRefresh,
-}) {
+export default function DashboardFilters({ onRefresh }) {
   const classes = useStyles();
+  const dispatch = useDispatch();
+  const dateRange = useSelector(selectDateRange);
+  const companyId = useSelector(selectCompanyId);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [companies, setCompanies] = useState([]);
 
-  useEffect(() => {
-    let cancelled = false;
-    api.get('/api/companies?limit=100')
-      .then((res) => {
-        if (cancelled) return;
-        setCompanies(Array.isArray(res?.data) ? res.data : []);
-      })
-      .catch(() => { /* silent — dropdown stays empty */ });
-    return () => { cancelled = true; };
-  }, []);
+  const { data: companiesData } = useGetCompaniesQuery({ limit: 100 });
+  const companies = companiesData?.data ?? [];
 
   const label = `${format(dateRange.startDate, 'MMM d, yyyy')} — ${format(dateRange.endDate, 'MMM d, yyyy')}`;
 
@@ -94,10 +89,10 @@ export default function DashboardFilters({
         <div className={classes.pickerBox}>
           <DateRange
             ranges={[{ ...dateRange, key: 'selection' }]}
-            onChange={(item) => onDateRangeChange({
+            onChange={(item) => dispatch(setDateRange({
               startDate: item.selection.startDate,
               endDate: item.selection.endDate,
-            })}
+            }))}
             moveRangeOnFirstSelection={false}
             editableDateInputs
           />
@@ -109,7 +104,7 @@ export default function DashboardFilters({
         <Select
           labelId="dashboard-company-label"
           value={companyId || ''}
-          onChange={(e) => onCompanyChange(e.target.value || null)}
+          onChange={(e) => dispatch(setCompany(e.target.value || null))}
           label="Company"
         >
           <MenuItem value=""><em>All companies</em></MenuItem>

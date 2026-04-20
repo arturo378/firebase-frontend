@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useMemo } from 'react';
 import MaterialTable, { MTablePagination, MTableToolbar } from 'material-table';
 import { TablePagination, CircularProgress } from '@material-ui/core';
 import { alpha } from '@material-ui/core/styles';
@@ -78,17 +78,41 @@ export default function PatchedMaterialTable(props) {
   const wrappedData = useCallback((query) => {
     return new Promise((resolve, reject) => {
       Promise.resolve(dataRef.current(query)).then(result => {
-        if (mountedRef.current) resolve(result);
+        if (mountedRef.current) {
+          // material-table mutates rows to attach `tableData`; clone frozen
+          // RTK Query rows so the assignment doesn't throw.
+          if (result && Array.isArray(result.data)) {
+            resolve({ ...result, data: result.data.map(row => ({ ...row })) });
+          } else {
+            resolve(result);
+          }
+        }
       }).catch(err => {
         if (mountedRef.current) reject(err);
       });
     });
   }, []);
 
+  // RTK Query returns frozen (Immer) objects. material-table adds a
+  // `tableData` field to each row, which fails on frozen objects with
+  // "Cannot add property tableData, object is not extensible". Shallow-clone
+  // each row so it stays extensible. Memoize on the source array identity so
+  // material-table's internal state (sort/filter/page) isn't reset each render.
+  const clonedArrayData = useMemo(() => {
+    if (!Array.isArray(props.data)) return null;
+    return props.data.map(row => (row && typeof row === 'object' ? { ...row } : row));
+  }, [props.data]);
+
+  const dataProp = typeof props.data === 'function'
+    ? wrappedData
+    : clonedArrayData !== null
+      ? clonedArrayData
+      : props.data;
+
   return (
     <MaterialTable
       {...props}
-      data={typeof props.data === 'function' ? wrappedData : props.data}
+      data={dataProp}
       components={{
         Pagination: PatchedPagination,
         OverlayLoading: PatchedOverlayLoading,

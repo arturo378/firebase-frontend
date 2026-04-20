@@ -1,92 +1,93 @@
-import React, { useRef } from 'react';
+import React from 'react';
+import { useDispatch } from 'react-redux';
 import MaterialTable from '../config/MaterialTable';
 import PageTitle from '../components/PageTitle';
-import api from '../config/api';
+import {
+  useGetChemicalsQuery,
+  useAddChemicalMutation,
+  useUpdateChemicalMutation,
+  useDeleteChemicalMutation,
+} from '../store/api/chemicalsApi';
+import { showToast } from '../store/slices/uiSlice';
 
-function ChemicalManagement(){
-  const tableRef = useRef();
+const columns = [
+  { title: "id", field: "id", hidden: true },
+  { title: "Trade Name", field: "tradename" },
+  { title: "DOT Tag", field: "dottag" },
+  { title: "Weight", field: "weight" },
+];
 
-  const fetchData = (query) => {
-    const page = query.page + 1;
-    const limit = query.pageSize;
-    return api.get(`/api/chemicals?page=${page}&limit=${limit}`)
-      .then((result) => ({
-        data: result.data,
-        page: query.page,
-        totalCount: result.totalItems,
-      }))
-      .catch((err) => {
-        console.error(err);
-        return { data: [], page: 0, totalCount: 0 };
-      });
-  };
+function ChemicalManagement() {
+  const dispatch = useDispatch();
+  const { data, isFetching } = useGetChemicalsQuery({ limit: 1000 });
+  const [addChemical] = useAddChemicalMutation();
+  const [updateChemical] = useUpdateChemicalMutation();
+  const [deleteChemical] = useDeleteChemicalMutation();
 
-  const additem = async (incoming, resolve) => {
-    let errorList = [];
-    if (!incoming.tradename) errorList.push("Please enter trade name");
-    if (!incoming.dottag) errorList.push("Please enter DOT tag");
-    if (!incoming.weight) errorList.push("Please enter weight");
-    if (errorList.length > 0) { resolve(); return; }
+  const rows = data?.data ?? [];
 
+  const additem = async (incoming) => {
+    const errors = [];
+    if (!incoming.tradename) errors.push("trade name");
+    if (!incoming.dottag) errors.push("DOT tag");
+    if (!incoming.weight) errors.push("weight");
+    if (errors.length > 0) {
+      dispatch(showToast({ severity: 'warning', message: `Please enter ${errors.join(', ')}` }));
+      return;
+    }
     try {
-      await api.post('/api/chemicals', {
+      await addChemical({
         tradename: incoming.tradename,
         dottag: incoming.dottag,
         weight: incoming.weight,
-      });
+      }).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Chemical added' }));
     } catch (err) {
-      console.error(err);
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to add chemical' }));
     }
-    resolve();
   };
 
-  const updateitem = async (oldincoming, incoming, resolve) => {
+  const updateitem = async (oldData, newData) => {
     try {
-      await api.put(`/api/chemicals/${oldincoming.id}`, {
-        tradename: incoming.tradename,
-        dottag: incoming.dottag,
-        weight: incoming.weight,
-      });
+      await updateChemical({
+        id: oldData.id,
+        tradename: newData.tradename,
+        dottag: newData.dottag,
+        weight: newData.weight,
+      }).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Chemical updated' }));
     } catch (err) {
-      console.error(err);
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to update chemical' }));
     }
-    resolve();
   };
 
-  const removeitem = async (incoming, resolve) => {
+  const removeitem = async (row) => {
     try {
-      await api.delete(`/api/chemicals/${incoming.id}`);
+      await deleteChemical(row.id).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Chemical deleted' }));
     } catch (err) {
-      console.error(err);
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to delete chemical' }));
     }
-    resolve();
   };
-
-  const columns = [
-    { title: "id", field: "id", hidden: true },
-    { title: "Trade Name", field: "tradename" },
-    { title: "DOT Tag", field: "dottag" },
-    { title: "Weight", field: "weight" },
-  ];
 
   return (
     <div>
       <PageTitle>Product Management</PageTitle>
       <MaterialTable
-        tableRef={tableRef}
         columns={columns}
-      data={fetchData}
-      options={{
-        pageSize: 10,
-        pageSizeOptions: [5, 10, 20],
-        search: false,
-      }}
-      editable={{
-        onRowAdd: (newData) => new Promise((resolve) => additem(newData, resolve)),
-        onRowUpdate: (newData, oldData) => new Promise((resolve) => updateitem(oldData, newData, resolve)),
-        onRowDelete: (oldData) => new Promise((resolve) => removeitem(oldData, resolve)),
-      }}
-    />
+        data={rows}
+        isLoading={isFetching}
+        options={{
+          pageSize: 10,
+          pageSizeOptions: [5, 10, 20],
+          search: false,
+        }}
+        editable={{
+          onRowAdd: (newData) => additem(newData),
+          onRowUpdate: (newData, oldData) => updateitem(oldData, newData),
+          onRowDelete: (oldData) => removeitem(oldData),
+        }}
+      />
     </div>
   );
 }

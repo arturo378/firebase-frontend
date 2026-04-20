@@ -1,126 +1,129 @@
-import React, { useRef } from 'react';
+import React from 'react';
+import { useDispatch } from 'react-redux';
 import MaterialTable from '../config/MaterialTable';
 import { useHistory } from "react-router-dom";
 import PageTitle from '../components/PageTitle';
-import api from '../config/api';
+import {
+  useGetCompaniesQuery,
+  useAddCompanyMutation,
+  useUpdateCompanyMutation,
+  useDeleteCompanyMutation,
+} from '../store/api/companiesApi';
+import { showToast } from '../store/slices/uiSlice';
 
-function LocationManagement(){
-  const tableRef = useRef();
+const columns = [
+  { title: "id", field: "id", hidden: true },
+  { title: "Name", field: "name" },
+  { title: "City", field: "city" },
+  { title: "State", field: "state" },
+  { title: "Zip Code", field: "zip" },
+  { title: "Phone Number", field: "phone" },
+];
 
-  const fetchData = (query) => {
-    const page = query.page + 1;
-    const limit = query.pageSize;
-    return api.get(`/api/companies?page=${page}&limit=${limit}`)
-      .then((result) => ({
-        data: result.data,
-        page: query.page,
-        totalCount: result.totalItems,
-      }))
-      .catch((err) => {
-        console.error(err);
-        return { data: [], page: 0, totalCount: 0 };
-      });
-  };
-
-  const additem = async (incoming, resolve) => {
-    let errorList = [];
-    if (!incoming.name) errorList.push("Please enter company name");
-    if (!incoming.city) errorList.push("Please enter city");
-    if (!incoming.state) errorList.push("Please enter state");
-    if (errorList.length > 0) { resolve(); return; }
-
-    try {
-      await api.post('/api/companies', {
-        name: incoming.name,
-        city: incoming.city,
-        state: incoming.state,
-        zip: incoming.zip,
-        phone: incoming.phone,
-      });
-    } catch (err) {
-      console.error(err);
-    }
-    resolve();
-  };
-
-  const updateitem = async (oldincoming, incoming, resolve) => {
-    let errorList = [];
-    if (!incoming.name) errorList.push("Please enter company name");
-    if (!incoming.city) errorList.push("Please enter city");
-    if (!incoming.state) errorList.push("Please enter state");
-    if (errorList.length > 0) { resolve(); return; }
-
-    try {
-      await api.put(`/api/companies/${oldincoming.id}`, {
-        name: incoming.name,
-        city: incoming.city,
-        state: incoming.state,
-        zip: incoming.zip,
-        phone: incoming.phone,
-      });
-    } catch (err) {
-      console.error(err);
-    }
-    resolve();
-  };
-
-  const removeitem = async (incoming, resolve) => {
-    try {
-      await api.delete(`/api/companies/${incoming.id}`);
-    } catch (err) {
-      console.error(err);
-    }
-    resolve();
-  };
-
+function LocationManagement() {
+  const dispatch = useDispatch();
   const history = useHistory();
-  function goToLeases(data, rowdata) {
-    history.push({ pathname: '/locationmanagment/leasemanagment', state: rowdata });
-  }
-  function goToPricing(data, rowdata) {
-    history.push({ pathname: '/pricing', state: rowdata });
-  }
+  const { data, isFetching } = useGetCompaniesQuery({ limit: 1000 });
+  const [addCompany] = useAddCompanyMutation();
+  const [updateCompany] = useUpdateCompanyMutation();
+  const [deleteCompany] = useDeleteCompanyMutation();
 
-  const columns = [
-    { title: "id", field: "id", hidden: true },
-    { title: "Name", field: "name" },
-    { title: "City", field: "city" },
-    { title: "State", field: "state" },
-    { title: "Zip Code", field: "zip" },
-    { title: "Phone Number", field: "phone" },
-  ];
+  const rows = data?.data ?? [];
+
+  const additem = async (incoming) => {
+    const errors = [];
+    if (!incoming.name) errors.push("name");
+    if (!incoming.city) errors.push("city");
+    if (!incoming.state) errors.push("state");
+    if (errors.length > 0) {
+      dispatch(showToast({ severity: 'warning', message: `Please enter ${errors.join(', ')}` }));
+      return;
+    }
+    try {
+      await addCompany({
+        name: incoming.name,
+        city: incoming.city,
+        state: incoming.state,
+        zip: incoming.zip,
+        phone: incoming.phone,
+      }).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Company added' }));
+    } catch (err) {
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to add company' }));
+    }
+  };
+
+  const updateitem = async (oldData, incoming) => {
+    const errors = [];
+    if (!incoming.name) errors.push("name");
+    if (!incoming.city) errors.push("city");
+    if (!incoming.state) errors.push("state");
+    if (errors.length > 0) {
+      dispatch(showToast({ severity: 'warning', message: `Please enter ${errors.join(', ')}` }));
+      return;
+    }
+    try {
+      await updateCompany({
+        id: oldData.id,
+        name: incoming.name,
+        city: incoming.city,
+        state: incoming.state,
+        zip: incoming.zip,
+        phone: incoming.phone,
+      }).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Company updated' }));
+    } catch (err) {
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to update company' }));
+    }
+  };
+
+  const removeitem = async (row) => {
+    try {
+      await deleteCompany(row.id).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Company deleted' }));
+    } catch (err) {
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to delete company' }));
+    }
+  };
+
+  const goToLeases = (event, rowData) => {
+    history.push({ pathname: '/locationmanagment/leasemanagment', state: rowData });
+  };
+  const goToPricing = (event, rowData) => {
+    history.push({ pathname: '/pricing', state: rowData });
+  };
 
   return (
     <div>
       <PageTitle>Company Management</PageTitle>
       <MaterialTable
-        tableRef={tableRef}
         columns={columns}
-      data={fetchData}
-      options={{
-        pageSize: 10,
-        pageSizeOptions: [5, 10, 20],
-        search: false,
-        actionsColumnIndex: -1,
-      }}
-      editable={{
-        onRowAdd: (newData) => new Promise((resolve) => additem(newData, resolve)),
-        onRowUpdate: (newData, oldData) => new Promise((resolve) => updateitem(oldData, newData, resolve)),
-        onRowDelete: (oldData) => new Promise((resolve) => removeitem(oldData, resolve)),
-      }}
-      actions={[
-        {
-          icon: 'sort',
-          tooltip: 'Manage Leases',
-          onClick: (event, rowData) => goToLeases(event, rowData),
-        },
-        {
-          icon: 'attach_money',
-          tooltip: 'Pricing',
-          onClick: (event, rowData) => goToPricing(event, rowData),
-        },
-      ]}
-    />
+        data={rows}
+        isLoading={isFetching}
+        options={{
+          pageSize: 10,
+          pageSizeOptions: [5, 10, 20],
+          search: false,
+          actionsColumnIndex: -1,
+        }}
+        editable={{
+          onRowAdd: (newData) => additem(newData),
+          onRowUpdate: (newData, oldData) => updateitem(oldData, newData),
+          onRowDelete: (oldData) => removeitem(oldData),
+        }}
+        actions={[
+          {
+            icon: 'sort',
+            tooltip: 'Manage Leases',
+            onClick: (event, rowData) => goToLeases(event, rowData),
+          },
+          {
+            icon: 'attach_money',
+            tooltip: 'Pricing',
+            onClick: (event, rowData) => goToPricing(event, rowData),
+          },
+        ]}
+      />
     </div>
   );
 }

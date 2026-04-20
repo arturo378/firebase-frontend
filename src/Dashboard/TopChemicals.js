@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { useTheme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -6,22 +7,28 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer,
 } from 'recharts';
 import Title from './Title';
-import useDashboardData from './useDashboardData';
+import { useGetWeeklyEarningsQuery } from '../store/api/reportsApi';
+import { selectDateRange, selectCompanyId } from '../store/slices/dashboardFiltersSlice';
 
-function buildPath(dateRange, companyId) {
-  if (!companyId) return null;
-  const startDate = dateRange.startDate.toISOString();
-  const endDate = dateRange.endDate.toISOString();
-  return `/api/reports/weekly-earnings?startDate=${startDate}&endDate=${endDate}&company=${companyId}`;
-}
-
-export default function TopChemicals({ dateRange, companyId, refreshNonce }) {
+export default function TopChemicals() {
   const theme = useTheme();
-  const path = buildPath(dateRange, companyId);
-  const { data, loading, error } = useDashboardData(path, [refreshNonce]);
+  const dateRange = useSelector(selectDateRange);
+  const companyId = useSelector(selectCompanyId);
+
+  const queryArgs = companyId
+    ? {
+        startDate: dateRange.startDate.toISOString(),
+        endDate: dateRange.endDate.toISOString(),
+        company: companyId,
+      }
+    : undefined;
+
+  const { data, isFetching, error } = useGetWeeklyEarningsQuery(queryArgs, {
+    skip: !companyId,
+  });
 
   const chartData = useMemo(() => {
-    const rows = Array.isArray(data) ? data : [];
+    const rows = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
     const totals = new Map();
     for (const r of rows) {
       const chem = r.chemical || 'Unknown';
@@ -41,7 +48,7 @@ export default function TopChemicals({ dateRange, companyId, refreshNonce }) {
         <Typography variant="body2" color="textSecondary" style={{ marginTop: 24 }}>
           Select a company to see top chemicals.
         </Typography>
-      ) : loading ? (
+      ) : isFetching ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}>
           <CircularProgress size={28} />
         </div>

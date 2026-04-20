@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Chip from '@material-ui/core/Chip';
@@ -12,7 +13,13 @@ import LocalShippingIcon from '@material-ui/icons/LocalShipping';
 import DescriptionIcon from '@material-ui/icons/Description';
 import { format } from 'date-fns';
 import Title from './Title';
-import useDashboardData from './useDashboardData';
+import { useGetDeliveriesQuery } from '../store/api/deliveriesApi';
+import { useGetShippingPapersQuery } from '../store/api/shippingPapersApi';
+import {
+  selectCompanyId,
+  selectFocusedCompany,
+  clearFocusedCompany,
+} from '../store/slices/dashboardFiltersSlice';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -40,31 +47,21 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function RecentActivity({
-  companyId,
-  focusedCompanyId,
-  focusedCompanyName,
-  onClearFocus,
-  refreshNonce,
-}) {
+export default function RecentActivity() {
   const classes = useStyles();
-  const companyQ = companyId ? `&company=${companyId}` : '';
+  const dispatch = useDispatch();
+  const companyId = useSelector(selectCompanyId);
+  const focusedCompany = useSelector(selectFocusedCompany);
 
-  const deliveries = useDashboardData(
-    `/api/deliveries?limit=20${companyQ}`,
-    [refreshNonce]
-  );
-  const shipping = useDashboardData(
-    `/api/shipping-papers?limit=20`,
-    [refreshNonce]
-  );
+  const deliveries = useGetDeliveriesQuery({ limit: 20, company: companyId || undefined });
+  const shipping = useGetShippingPapersQuery({ limit: 20 });
 
   const items = useMemo(() => {
     const dRows = Array.isArray(deliveries.data?.data) ? deliveries.data.data : [];
     const sRows = Array.isArray(shipping.data?.data) ? shipping.data.data : [];
     const merged = [
       ...dRows
-        .filter((d) => !focusedCompanyId || d.company?.id === focusedCompanyId)
+        .filter((d) => !focusedCompany.id || d.company?.id === focusedCompany.id)
         .map((d) => ({
           kind: 'delivery',
           id: d.id,
@@ -88,18 +85,18 @@ export default function RecentActivity({
       return bt - at;
     });
     return merged.slice(0, 10);
-  }, [deliveries.data, shipping.data, focusedCompanyId]);
+  }, [deliveries.data, shipping.data, focusedCompany]);
 
-  const loading = deliveries.loading || shipping.loading;
+  const loading = deliveries.isFetching || shipping.isFetching;
 
   return (
     <React.Fragment>
       <div className={classes.header}>
         <Title>Recent Activity</Title>
-        {focusedCompanyId && (
+        {focusedCompany.id && (
           <Chip
-            label={`Filtered: ${focusedCompanyName || 'company'}`}
-            onDelete={onClearFocus}
+            label={`Filtered: ${focusedCompany.name || 'company'}`}
+            onDelete={() => dispatch(clearFocusedCompany())}
             className={classes.chip}
             size="small"
           />

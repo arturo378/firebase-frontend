@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -16,7 +16,8 @@ import GetAppIcon from '@material-ui/icons/GetApp';
 import StorageIcon from '@material-ui/icons/Storage';
 import MaterialTable from 'material-table';
 import PageTitle from '../components/PageTitle';
-import api from '../config/api';
+import { useGetWarehousesQuery } from '../store/api/warehousesApi';
+import { useGetWarehouseInventoryReportQuery } from '../store/api/reportsApi';
 import { exportAoaToXlsx } from '../config/excelExport';
 
 function PatchedPagination(props) {
@@ -91,60 +92,22 @@ const useStyles = makeStyles((theme) => ({
 
 function WarehouseInventory() {
   const classes = useStyles();
-  const [data, setData] = useState([]);
-  const [warehouses, setWarehouses] = useState([]);
   const [warehouse, setWarehouse] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [hasRun, setHasRun] = useState(false);
 
-  const requestIdRef = useRef(0);
-  const debounceRef = useRef(null);
+  const { data: warehousesData } = useGetWarehousesQuery({ limit: 100 });
+  const warehouses = warehousesData?.data ?? [];
 
-  useEffect(() => {
-    api.get('/api/warehouses?limit=100')
-      .then(res => setWarehouses(Array.isArray(res?.data) ? res.data : []))
-      .catch(console.error);
-  }, []);
+  const { data: reportData, isFetching, error, isSuccess, refetch } =
+    useGetWarehouseInventoryReportQuery(
+      warehouse ? { warehouse } : undefined,
+      { skip: !warehouse }
+    );
 
-  const runReport = useCallback(async () => {
-    if (!warehouse) return;
-    const reqId = ++requestIdRef.current;
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await api.get(`/api/reports/warehouse-inventory?warehouse=${warehouse}`);
-      if (reqId !== requestIdRef.current) return;
-      const rows = Array.isArray(result)
-        ? result
-        : Array.isArray(result?.data)
-          ? result.data
-          : [];
-      setData(rows);
-      setHasRun(true);
-    } catch (err) {
-      if (reqId !== requestIdRef.current) return;
-      console.error(err);
-      setError(err?.message || 'Failed to load report');
-      setData([]);
-      setHasRun(true);
-    } finally {
-      if (reqId === requestIdRef.current) setLoading(false);
-    }
-  }, [warehouse]);
-
-  useEffect(() => {
-    if (!warehouse) {
-      setData([]);
-      setHasRun(false);
-      return undefined;
-    }
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => { runReport(); }, 350);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [warehouse, runReport]);
+  const data = useMemo(() => {
+    if (Array.isArray(reportData)) return reportData;
+    if (Array.isArray(reportData?.data)) return reportData.data;
+    return [];
+  }, [reportData]);
 
   const totals = useMemo(() => {
     const totalQuantity = data.reduce((s, r) => s + (Number(r.quantity) || 0), 0);
@@ -187,9 +150,9 @@ function WarehouseInventory() {
       );
     }
     if (error) {
-      return <Paper className={classes.errorBanner}>{error}</Paper>;
+      return <Paper className={classes.errorBanner}>{error.message || 'Failed to load report'}</Paper>;
     }
-    if (!loading && hasRun && data.length === 0) {
+    if (!isFetching && isSuccess && data.length === 0) {
       return (
         <div className={classes.emptyState}>
           <Typography variant="h6">No inventory records for this warehouse</Typography>
@@ -197,7 +160,7 @@ function WarehouseInventory() {
         </div>
       );
     }
-    if (loading && data.length === 0) {
+    if (isFetching && data.length === 0) {
       return (
         <div className={classes.emptyState}>
           <CircularProgress size={28} />
@@ -283,7 +246,7 @@ function WarehouseInventory() {
         </FormControl>
 
         <span className={classes.statusSlot}>
-          {loading && <CircularProgress size={18} />}
+          {isFetching && <CircularProgress size={18} />}
         </span>
 
         <div className={classes.spacer} />
@@ -292,8 +255,8 @@ function WarehouseInventory() {
           <span>
             <IconButton
               className={classes.refresh}
-              onClick={runReport}
-              disabled={!warehouse || loading}
+              onClick={() => refetch()}
+              disabled={!warehouse || isFetching}
               aria-label="Refresh"
             >
               <RefreshIcon />

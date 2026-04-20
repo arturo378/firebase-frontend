@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import MaterialTable from '../config/MaterialTable';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
@@ -7,7 +8,14 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import TextField from '@material-ui/core/TextField';
 import PageTitle from '../components/PageTitle';
-import api from '../config/api';
+import {
+  useGetUsersQuery,
+  useAddUserMutation,
+  useUpdateUserMutation,
+  useResetUserPasswordMutation,
+  useDeactivateUserMutation,
+} from '../store/api/usersApi';
+import { showToast } from '../store/slices/uiSlice';
 
 const columns = [
   { title: 'id', field: 'id', hidden: true },
@@ -17,13 +25,21 @@ const columns = [
 ];
 
 export default function UserManagement() {
-  const tableRef = useRef();
+  const dispatch = useDispatch();
+  const { data, isFetching } = useGetUsersQuery({ limit: 1000 });
+  const [addUser] = useAddUserMutation();
+  const [updateUser] = useUpdateUserMutation();
+  const [resetPassword] = useResetUserPasswordMutation();
+  const [deactivateUser] = useDeactivateUserMutation();
+
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [username, setUsername] = useState('');
   const [fullname, setFullname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  const rows = data?.data ?? [];
 
   const resetCreateForm = () => {
     setUsername('');
@@ -33,37 +49,18 @@ export default function UserManagement() {
     setConfirmPassword('');
   };
 
-  const refreshTable = () => {
-    tableRef.current && tableRef.current.onQueryChange();
-  };
-
-  const fetchUsers = (query) => {
-    const page = query.page + 1;
-    const limit = query.pageSize;
-    return api.get(`/api/users/?page=${page}&limit=${limit}`)
-      .then((result) => ({
-        data: result.data,
-        page: query.page,
-        totalCount: result.totalItems,
-      }))
-      .catch((err) => {
-        console.error(err);
-        return { data: [], page: 0, totalCount: 0 };
-      });
-  };
-
   const handleCreateUser = async () => {
     if (password !== confirmPassword) {
-      alert("Passwords don't match");
+      dispatch(showToast({ severity: 'error', message: "Passwords don't match" }));
       return;
     }
     try {
-      await api.post('/api/users', { username, fullname, name: fullname, email, password });
+      await addUser({ username, fullname, name: fullname, email, password }).unwrap();
       setCreateDialogOpen(false);
       resetCreateForm();
-      refreshTable();
+      dispatch(showToast({ severity: 'success', message: 'User created' }));
     } catch (err) {
-      console.error(err);
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to create user' }));
     }
   };
 
@@ -71,9 +68,9 @@ export default function UserManagement() {
     <div>
       <PageTitle>User Management</PageTitle>
       <MaterialTable
-        tableRef={tableRef}
         columns={columns}
-        data={fetchUsers}
+        data={rows}
+        isLoading={isFetching}
         options={{
           pageSize: 10,
           pageSizeOptions: [5, 10, 20],
@@ -96,10 +93,10 @@ export default function UserManagement() {
             onClick: async (event, rowData) => {
               if (window.confirm(`Send password reset for ${rowData.fullname}?`)) {
                 try {
-                  await api.post(`/api/users/${rowData.id}/reset-password`);
-                  alert('Password reset initiated.');
+                  await resetPassword(rowData.id).unwrap();
+                  dispatch(showToast({ severity: 'success', message: 'Password reset initiated' }));
                 } catch (err) {
-                  console.error(err);
+                  dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to reset password' }));
                 }
               }
             },
@@ -110,72 +107,39 @@ export default function UserManagement() {
             onClick: async (event, rowData) => {
               if (window.confirm(`Deactivate user ${rowData.fullname}?`)) {
                 try {
-                  await api.patch(`/api/users/${rowData.id}/deactivate`);
-                  refreshTable();
+                  await deactivateUser(rowData.id).unwrap();
+                  dispatch(showToast({ severity: 'success', message: 'User deactivated' }));
                 } catch (err) {
-                  console.error(err);
+                  dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to deactivate user' }));
                 }
               }
             },
           },
         ]}
         editable={{
-          onRowUpdate: (newData, oldData) =>
-            new Promise(async (resolve) => {
-              try {
-                await api.patch(`/api/users/${oldData.id}`, {
-                  username: newData.username,
-                  fullname: newData.fullname,
-                });
-              } catch (err) {
-                console.error(err);
-              }
-              resolve();
-            }),
+          onRowUpdate: async (newData, oldData) => {
+            try {
+              await updateUser({
+                id: oldData.id,
+                username: newData.username,
+                fullname: newData.fullname,
+              }).unwrap();
+              dispatch(showToast({ severity: 'success', message: 'User updated' }));
+            } catch (err) {
+              dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to update user' }));
+            }
+          },
         }}
       />
 
       <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)}>
         <DialogTitle>Create New User</DialogTitle>
         <DialogContent>
-          <TextField
-            label="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            fullWidth
-            margin="dense"
-          />
-          <TextField
-            label="Full Name"
-            value={fullname}
-            onChange={(e) => setFullname(e.target.value)}
-            fullWidth
-            margin="dense"
-          />
-          <TextField
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            fullWidth
-            margin="dense"
-          />
-          <TextField
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            fullWidth
-            margin="dense"
-          />
-          <TextField
-            label="Confirm Password"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            fullWidth
-            margin="dense"
-          />
+          <TextField label="Username" value={username} onChange={(e) => setUsername(e.target.value)} fullWidth margin="dense" />
+          <TextField label="Full Name" value={fullname} onChange={(e) => setFullname(e.target.value)} fullWidth margin="dense" />
+          <TextField label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} fullWidth margin="dense" />
+          <TextField label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} fullWidth margin="dense" />
+          <TextField label="Confirm Password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} fullWidth margin="dense" />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>

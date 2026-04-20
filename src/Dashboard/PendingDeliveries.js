@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -8,7 +9,8 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Chip from '@material-ui/core/Chip';
 import { formatDistanceToNow } from 'date-fns';
 import Title from './Title';
-import useDashboardData from './useDashboardData';
+import { useGetDeliveriesQuery } from '../store/api/deliveriesApi';
+import { selectCompanyId } from '../store/slices/dashboardFiltersSlice';
 
 const useStyles = makeStyles((theme) => ({
   row: {
@@ -33,13 +35,15 @@ function ageBucket(iso) {
   return 'stale';
 }
 
-export default function PendingDeliveries({ companyId, refreshNonce }) {
+export default function PendingDeliveries() {
   const classes = useStyles();
-  const companyQ = companyId ? `&company=${companyId}` : '';
-  const { data, loading, error } = useDashboardData(
-    `/api/deliveries?active=0&limit=10${companyQ}`,
-    [refreshNonce]
-  );
+  const companyId = useSelector(selectCompanyId);
+
+  const { data, isFetching, error } = useGetDeliveriesQuery({
+    limit: 10,
+    active: 0,
+    company: companyId || undefined,
+  });
 
   const items = useMemo(() => {
     const rows = Array.isArray(data?.data) ? data.data : [];
@@ -49,7 +53,7 @@ export default function PendingDeliveries({ companyId, refreshNonce }) {
   return (
     <React.Fragment>
       <Title>Pending Deliveries</Title>
-      {loading ? (
+      {isFetching ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: 16 }}>
           <CircularProgress size={24} />
         </div>

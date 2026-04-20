@@ -1,76 +1,76 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
+import { useDispatch } from 'react-redux';
 import MaterialTable, { MTableToolbar } from '../config/MaterialTable';
 import { useHistory, useLocation } from "react-router-dom";
 import { Select, MenuItem } from "@material-ui/core";
 import Button from '@material-ui/core/Button';
 import PageTitle from '../components/PageTitle';
-import api from '../config/api';
+import { useGetChemicalsQuery } from '../store/api/chemicalsApi';
+import {
+  useGetShippingChemicalsQuery,
+  useAddShippingChemicalMutation,
+  useUpdateShippingChemicalMutation,
+  useDeleteShippingChemicalMutation,
+} from '../store/api/shippingPapersApi';
+import { showToast } from '../store/slices/uiSlice';
 
 function ShippingChemicals() {
-  const location = useLocation();
-  const [chemicals, setChemicals] = useState([]);
-  const shippingPaperid = location.state.id;
-  const tableRef = useRef();
-
-  const fetchData = (query) => {
-    const page = query.page + 1;
-    const limit = query.pageSize;
-    return api.get(`/api/shipping-chemicals?shippingPaper=${shippingPaperid}&page=${page}&limit=${limit}`)
-      .then((result) => ({
-        data: result.data,
-        page: query.page,
-        totalCount: result.totalItems,
-      }))
-      .catch((err) => {
-        console.error(err);
-        return { data: [], page: 0, totalCount: 0 };
-      });
-  };
-
-  useEffect(() => {
-    api.get('/api/chemicals?limit=100').then(res => setChemicals(res.data)).catch(console.error);
-  }, [shippingPaperid]);
-
-  const additem = async (incoming, resolve) => {
-    if (!incoming.chemical) { resolve(); return; }
-    try {
-      await api.post('/api/shipping-chemicals', {
-        chemical: incoming.chemical,
-        quantity: incoming.quantity,
-        shippingPaper: shippingPaperid,
-      });
-    } catch (err) {
-      console.error(err);
-    }
-    resolve();
-  };
-
-  const updateitem = async (oldincoming, incoming, resolve) => {
-    try {
-      await api.put(`/api/shipping-chemicals/${oldincoming.id}`, {
-        chemical: incoming.chemical,
-        quantity: incoming.quantity,
-        shippingPaper: shippingPaperid,
-      });
-    } catch (err) {
-      console.error(err);
-    }
-    resolve();
-  };
-
-  const removeitem = async (incoming, resolve) => {
-    try {
-      await api.delete(`/api/shipping-chemicals/${incoming.id}`);
-    } catch (err) {
-      console.error(err);
-    }
-    resolve();
-  };
-
+  const dispatch = useDispatch();
   const history = useHistory();
-  function back() {
-    history.push({ pathname: '/shippingpapers' });
-  }
+  const location = useLocation();
+  const shippingPaperid = location.state.id;
+
+  const { data: chemicalsData } = useGetChemicalsQuery({ limit: 100 });
+  const chemicals = chemicalsData?.data ?? [];
+
+  const { data, isFetching } = useGetShippingChemicalsQuery({ shippingPaper: shippingPaperid, limit: 1000 });
+  const [addShippingChemical] = useAddShippingChemicalMutation();
+  const [updateShippingChemical] = useUpdateShippingChemicalMutation();
+  const [deleteShippingChemical] = useDeleteShippingChemicalMutation();
+
+  const rows = data?.data ?? [];
+
+  const additem = async (incoming) => {
+    if (!incoming.chemical) {
+      dispatch(showToast({ severity: 'warning', message: 'Please select a chemical' }));
+      return;
+    }
+    try {
+      await addShippingChemical({
+        chemical: incoming.chemical,
+        quantity: incoming.quantity,
+        shippingPaper: shippingPaperid,
+      }).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Chemical added' }));
+    } catch (err) {
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to add chemical' }));
+    }
+  };
+
+  const updateitem = async (oldData, incoming) => {
+    try {
+      await updateShippingChemical({
+        id: oldData.id,
+        chemical: incoming.chemical,
+        quantity: incoming.quantity,
+        shippingPaper: shippingPaperid,
+      }).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Chemical updated' }));
+    } catch (err) {
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to update chemical' }));
+    }
+  };
+
+  const removeitem = async (row) => {
+    try {
+      await deleteShippingChemical(row.id).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Chemical removed' }));
+    } catch (err) {
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to remove chemical' }));
+    }
+  };
+
+  const back = () => history.push({ pathname: '/shippingpapers' });
 
   const columns = [
     { title: "id", field: "id", hidden: true },
@@ -100,30 +100,30 @@ function ShippingChemicals() {
     <div>
       <PageTitle>Shipping Paper: Chemicals</PageTitle>
       <MaterialTable
-        tableRef={tableRef}
         columns={columns}
-      data={fetchData}
-      options={{
-        pageSize: 10,
-        pageSizeOptions: [5, 10, 20],
-        search: false,
-      }}
-      components={{
-        Toolbar: props => (
-          <div>
-            <MTableToolbar {...props} />
-            <div style={{ padding: '0px 10px' }}>
-              <Button variant="contained" onClick={back}>Back</Button>
+        data={rows}
+        isLoading={isFetching}
+        options={{
+          pageSize: 10,
+          pageSizeOptions: [5, 10, 20],
+          search: false,
+        }}
+        components={{
+          Toolbar: props => (
+            <div>
+              <MTableToolbar {...props} />
+              <div style={{ padding: '0px 10px' }}>
+                <Button variant="contained" onClick={back}>Back</Button>
+              </div>
             </div>
-          </div>
-        ),
-      }}
-      editable={{
-        onRowAdd: (newData) => new Promise((resolve) => additem(newData, resolve)),
-        onRowUpdate: (newData, oldData) => new Promise((resolve) => updateitem(oldData, newData, resolve)),
-        onRowDelete: (oldData) => new Promise((resolve) => removeitem(oldData, resolve)),
-      }}
-    />
+          ),
+        }}
+        editable={{
+          onRowAdd: (newData) => additem(newData),
+          onRowUpdate: (newData, oldData) => updateitem(oldData, newData),
+          onRowDelete: (oldData) => removeitem(oldData),
+        }}
+      />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { DateRange } from 'react-date-range';
 import { makeStyles } from '@material-ui/core/styles';
 import 'react-date-range/dist/styles.css';
@@ -24,7 +24,8 @@ import MaterialTable from 'material-table';
 import moment from 'moment';
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from 'date-fns';
 import PageTitle from '../components/PageTitle';
-import api from '../config/api';
+import { useGetUsersQuery } from '../store/api/usersApi';
+import { useGetUserActivityQuery } from '../store/api/reportsApi';
 import { exportAoaToXlsx } from '../config/excelExport';
 
 function PatchedPagination(props) {
@@ -145,62 +146,26 @@ function mergeActivity(result) {
 
 function UserReport() {
   const classes = useStyles();
-  const [data, setData] = useState([]);
-  const [users, setUsers] = useState([]);
   const [userId, setUserId] = useState('');
   const [preset, setPreset] = useState('last7');
   const [range, setRange] = useState(() => rangeForPreset('last7'));
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [hasRun, setHasRun] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
 
-  const requestIdRef = useRef(0);
-  const debounceRef = useRef(null);
+  const { data: usersData } = useGetUsersQuery({ limit: 100 });
+  const users = usersData?.data ?? [];
 
-  useEffect(() => {
-    api.get('/api/users?limit=100')
-      .then(res => setUsers(Array.isArray(res?.data) ? res.data : []))
-      .catch(console.error);
-  }, []);
+  const queryArgs = userId
+    ? {
+        startDate: range.startDate.toISOString(),
+        endDate: range.endDate.toISOString(),
+        userId,
+      }
+    : undefined;
 
-  const runReport = useCallback(async () => {
-    if (!userId) return;
-    const reqId = ++requestIdRef.current;
-    setLoading(true);
-    setError(null);
-    try {
-      const startDate = range.startDate.toISOString();
-      const endDate = range.endDate.toISOString();
-      const result = await api.get(
-        `/api/reports/user-activity?startDate=${startDate}&endDate=${endDate}&userId=${userId}`
-      );
-      if (reqId !== requestIdRef.current) return;
-      setData(mergeActivity(result));
-      setHasRun(true);
-    } catch (err) {
-      if (reqId !== requestIdRef.current) return;
-      console.error(err);
-      setError(err?.message || 'Failed to load report');
-      setData([]);
-      setHasRun(true);
-    } finally {
-      if (reqId === requestIdRef.current) setLoading(false);
-    }
-  }, [userId, range]);
+  const { data: reportData, isFetching, error, isSuccess, refetch } =
+    useGetUserActivityQuery(queryArgs, { skip: !userId });
 
-  useEffect(() => {
-    if (!userId) {
-      setData([]);
-      setHasRun(false);
-      return undefined;
-    }
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => { runReport(); }, 350);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [userId, range, runReport]);
+  const data = useMemo(() => mergeActivity(reportData), [reportData]);
 
   const totals = useMemo(() => {
     const deliveries = data.filter(r => r._recordType === 'Delivery').length;
@@ -274,9 +239,9 @@ function UserReport() {
       );
     }
     if (error) {
-      return <Paper className={classes.errorBanner}>{error}</Paper>;
+      return <Paper className={classes.errorBanner}>{error.message || 'Failed to load report'}</Paper>;
     }
-    if (!loading && hasRun && data.length === 0) {
+    if (!isFetching && isSuccess && data.length === 0) {
       return (
         <div className={classes.emptyState}>
           <Typography variant="h6">No activity in this range</Typography>
@@ -284,7 +249,7 @@ function UserReport() {
         </div>
       );
     }
-    if (loading && data.length === 0) {
+    if (isFetching && data.length === 0) {
       return (
         <div className={classes.emptyState}>
           <CircularProgress size={28} />
@@ -409,7 +374,7 @@ function UserReport() {
         </FormControl>
 
         <span className={classes.statusSlot}>
-          {loading && <CircularProgress size={18} />}
+          {isFetching && <CircularProgress size={18} />}
         </span>
 
         <div className={classes.spacer} />
@@ -418,8 +383,8 @@ function UserReport() {
           <span>
             <IconButton
               className={classes.refresh}
-              onClick={runReport}
-              disabled={!userId || loading}
+              onClick={() => refetch()}
+              disabled={!userId || isFetching}
               aria-label="Refresh"
             >
               <RefreshIcon />

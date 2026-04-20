@@ -1,31 +1,21 @@
-import React, { Component } from 'react';
+import React, { useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import './App.css';
-import { isAuthenticated } from './config/api';
-import Login from './Login'
-import Home from './Home'
+import Login from './Login';
+import Home from './Home';
 import { APP_TITLE } from './config/appInfo';
+import { selectIsAuthenticated } from './store/slices/authSlice';
 
+export default function App() {
+  const isAuthenticated = useSelector(selectIsAuthenticated);
 
-class App extends Component{
-  constructor(props)
-  {
-    super(props);
-    this.state={
-      user : isAuthenticated() ? {} : null
-    }
-  }
-  componentDidMount()
-  {
+  useEffect(() => {
     document.title = APP_TITLE;
-  }
+  }, []);
 
-  render(){
-    return (
-      <div className="App">
-        {this.state.user ? (<Home/>) : (<Login/>)}
-      </div>
-    );
-  }
+  return (
+    <div className="App">
+      {isAuthenticated ? <Home /> : <Login />}
+    </div>
+  );
 }
-
-export default App;

@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import MapView, { parseGps } from '../config/MapView';
-import useDashboardData from './useDashboardData';
+import { useGetWellsQuery } from '../store/api/wellsApi';
+import { selectCompanyId } from '../store/slices/dashboardFiltersSlice';
 
 const defaultCenter = {
   lat: 31.9686,
@@ -13,12 +15,9 @@ const mapStyles = {
   borderRadius: '12px',
 };
 
-export default function Orders({ companyId, refreshNonce }) {
-  const companyQ = companyId ? `&company=${companyId}` : '';
-  const { data } = useDashboardData(
-    `/api/wells?limit=500${companyQ}`,
-    [refreshNonce]
-  );
+export default function Orders() {
+  const companyId = useSelector(selectCompanyId);
+  const { data } = useGetWellsQuery({ limit: 500, company: companyId || undefined });
 
   const marks = useMemo(() => {
     const rows = Array.isArray(data?.data) ? data.data : [];

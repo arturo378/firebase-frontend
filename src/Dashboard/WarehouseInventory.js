@@ -9,36 +9,33 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer,
 } from 'recharts';
-import api from '../config/api';
 import Title from './Title';
-import useDashboardData from './useDashboardData';
+import { useGetWarehousesQuery } from '../store/api/warehousesApi';
+import { useGetWarehouseInventoryReportQuery } from '../store/api/reportsApi';
 
-export default function WarehouseInventory({ refreshNonce }) {
+export default function WarehouseInventory() {
   const theme = useTheme();
-  const [warehouses, setWarehouses] = useState([]);
   const [warehouseId, setWarehouseId] = useState('');
 
-  useEffect(() => {
-    let cancelled = false;
-    api.get('/api/warehouses?limit=100')
-      .then((res) => {
-        if (cancelled) return;
-        const list = Array.isArray(res?.data) ? res.data : [];
-        setWarehouses(list);
-        if (!warehouseId && list.length > 0) setWarehouseId(list[0].id);
-      })
-      .catch(() => { /* silent */ });
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { data: warehousesData } = useGetWarehousesQuery({ limit: 100 });
+  const warehouses = useMemo(
+    () => warehousesData?.data ?? [],
+    [warehousesData]
+  );
 
-  const path = warehouseId
-    ? `/api/reports/warehouse-inventory?warehouse=${warehouseId}`
-    : null;
-  const { data, loading, error } = useDashboardData(path, [refreshNonce]);
+  useEffect(() => {
+    if (!warehouseId && warehouses.length > 0) {
+      setWarehouseId(warehouses[0].id);
+    }
+  }, [warehouses, warehouseId]);
+
+  const { data, isFetching, error } = useGetWarehouseInventoryReportQuery(
+    warehouseId ? { warehouse: warehouseId } : undefined,
+    { skip: !warehouseId }
+  );
 
   const chartData = useMemo(() => {
-    const rows = Array.isArray(data) ? data : [];
+    const rows = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
     return rows
       .map((r) => ({ name: r.chemical, quantity: Number(r.quantity) || 0 }))
       .sort((a, b) => b.quantity - a.quantity)
@@ -68,7 +65,7 @@ export default function WarehouseInventory({ refreshNonce }) {
 
       {!warehouseId ? (
         <Typography variant="body2" color="textSecondary">No warehouses available.</Typography>
-      ) : loading ? (
+      ) : isFetching ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}>
           <CircularProgress size={28} />
         </div>

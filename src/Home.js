@@ -1,5 +1,6 @@
 import React from 'react';
 import clsx from 'clsx';
+import { useDispatch, useSelector } from 'react-redux';
 import { makeStyles } from '@material-ui/core/styles';
 import { useTheme } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -13,7 +14,6 @@ import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { MainListItems } from './Dashboard/listItems.js';
 import Button from '@material-ui/core/Button';
-import api from './config/api.js';
 import { BrowserRouter as Router, Switch as Switcher, Route, useLocation } from 'react-router-dom';
 import UserManagement from './Admin/UserManagement';
 import LocationManagement from './Admin/LocationManagement.js';
@@ -33,6 +33,9 @@ import WarehouseChemical from './Admin/WarehouseChemical.js';
 import UserReport from './Reports/UserReport.js';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import LogoMark from './components/LogoMark';
+import ToastProvider from './components/ToastProvider';
+import { logout } from './store/slices/authSlice';
+import { selectSidebarOpen, setSidebar } from './store/slices/uiSlice';
 
 const PAGE_TITLES = [
   { match: (p) => p === '/', label: 'Dashboard' },
@@ -62,16 +65,6 @@ function PageTitle({ className }) {
     </Typography>
   );
 }
-
-async function logout() {
-  try {
-    await api.post('/api/auth/logout');
-  } catch (e) {}
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('currentUser');
-  window.location.reload();
-}
-
 
 const drawerWidth = 260;
 
@@ -190,24 +183,23 @@ const useStyles = makeStyles((theme) => ({
 export default function Home() {
   const classes = useStyles();
   const theme = useTheme();
+  const dispatch = useDispatch();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
-  const [open, setOpen] = React.useState(!isSmallScreen);
+  const open = useSelector(selectSidebarOpen);
 
   React.useEffect(() => {
-    setOpen(!isSmallScreen);
-  }, [isSmallScreen]);
+    dispatch(setSidebar(!isSmallScreen));
+  }, [isSmallScreen, dispatch]);
 
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
-  const handleDrawerClose = () => {
-    setOpen(false);
-  };
+  const handleDrawerOpen = () => dispatch(setSidebar(true));
+  const handleDrawerClose = () => dispatch(setSidebar(false));
+  const handleLogout = () => dispatch(logout());
 
   return (
     <Router>
     <div className={classes.root}>
       <CssBaseline />
+      <ToastProvider />
       <AppBar position="absolute" className={clsx(classes.appBar, !isSmallScreen && open && classes.appBarShift)}>
         <Toolbar className={classes.toolbar}>
           <IconButton
@@ -220,7 +212,7 @@ export default function Home() {
             <MenuIcon />
           </IconButton>
           <PageTitle className={classes.title} />
-          <Button onClick={logout} variant="contained" color="secondary" className={classes.signOutButton}>
+          <Button onClick={handleLogout} variant="contained" color="secondary" className={classes.signOutButton}>
             SignOut
           </Button>
         </Toolbar>

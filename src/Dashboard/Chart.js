@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { useTheme } from '@material-ui/core/styles';
 import { BarChart, Tooltip, Bar, XAxis, YAxis, Label, ResponsiveContainer, CartesianGrid } from 'recharts';
 import Title from './Title';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
 import { addDays, format, differenceInCalendarDays, startOfDay } from 'date-fns';
-import useDashboardData from './useDashboardData';
+import { useGetDeliveriesQuery } from '../store/api/deliveriesApi';
+import { selectDateRange, selectCompanyId } from '../store/slices/dashboardFiltersSlice';
 
 function bucketDeliveries(rows, startDate, endDate) {
   const start = startOfDay(startDate);
@@ -25,13 +27,15 @@ function bucketDeliveries(rows, startDate, endDate) {
   return buckets;
 }
 
-export default function Chart({ dateRange, companyId, refreshNonce }) {
+export default function Chart() {
   const theme = useTheme();
-  const companyQ = companyId ? `&company=${companyId}` : '';
-  const { data, loading, error } = useDashboardData(
-    `/api/deliveries?limit=500${companyQ}`,
-    [refreshNonce]
-  );
+  const dateRange = useSelector(selectDateRange);
+  const companyId = useSelector(selectCompanyId);
+
+  const { data, isFetching, error } = useGetDeliveriesQuery({
+    limit: 500,
+    company: companyId || undefined,
+  });
 
   const chartData = useMemo(() => {
     const rows = Array.isArray(data?.data) ? data.data : [];
@@ -46,7 +50,7 @@ export default function Chart({ dateRange, companyId, refreshNonce }) {
   return (
     <React.Fragment>
       <Title>{`Delivery Count — last ${dayCount} day${dayCount === 1 ? '' : 's'}`}</Title>
-      {loading ? (
+      {isFetching ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}>
           <CircularProgress size={28} />
         </div>

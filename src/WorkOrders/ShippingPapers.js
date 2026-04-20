@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import MaterialTable from '../config/MaterialTable';
 import { useHistory } from "react-router-dom";
 import { makeStyles } from '@material-ui/core/styles';
@@ -11,7 +12,14 @@ import {
 } from '@material-ui/pickers';
 import moment from 'moment';
 import PageTitle from '../components/PageTitle';
-import api, { getCurrentUser } from '../config/api';
+import { selectCurrentUser } from '../store/slices/authSlice';
+import { showToast } from '../store/slices/uiSlice';
+import {
+  useGetShippingPapersQuery,
+  useAddShippingPaperMutation,
+  useUpdateShippingPaperMutation,
+  useDeleteShippingPaperMutation,
+} from '../store/api/shippingPapersApi';
 
 function getModalStyle() {
   return {
@@ -33,40 +41,35 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function ShippingPaper() {
+  const classes = useStyles();
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const currentUser = useSelector(selectCurrentUser);
+
+  const { data, isFetching } = useGetShippingPapersQuery({ limit: 1000 });
+  const [addShippingPaper] = useAddShippingPaperMutation();
+  const [updateShippingPaper] = useUpdateShippingPaperMutation();
+  const [deleteShippingPaper] = useDeleteShippingPaperMutation();
+
+  const rows = data?.data ?? [];
+
   const [modalStyle] = useState(getModalStyle);
   const [open, setOpen] = useState(false);
-  const classes = useStyles();
   const [position, setPosition] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const tableRef = useRef();
 
   const handleDateChange = (date) => setSelectedDate(date);
   const handleClose = () => setOpen(false);
 
   const mapStyles = { height: "400px", width: "100%" };
 
-  const fetchData = (query) => {
-    const page = query.page + 1;
-    const limit = query.pageSize;
-    return api.get(`/api/shipping-papers?page=${page}&limit=${limit}`)
-      .then((result) => ({
-        data: result.data,
-        page: query.page,
-        totalCount: result.totalItems,
-      }))
-      .catch((err) => {
-        console.error(err);
-        return { data: [], page: 0, totalCount: 0 };
-      });
-  };
-
-  const additem = async (incoming, resolve) => {
+  const additem = async (incoming) => {
     if (!incoming.originwarehousenumber || !incoming.destinationwarehousenumber || !incoming.trucknumber || !incoming.gps) {
-      resolve(); return;
+      dispatch(showToast({ severity: 'warning', message: 'Fill in origin, destination, truck number, and GPS' }));
+      return;
     }
-    const currentUser = getCurrentUser();
     try {
-      await api.post('/api/shipping-papers', {
+      await addShippingPaper({
         date: selectedDate,
         createdBy: currentUser?.id,
         originwarehousenumber: incoming.originwarehousenumber,
@@ -75,16 +78,17 @@ function ShippingPaper() {
         comments: incoming.comments,
         gps: incoming.gps,
         active: 1,
-      });
+      }).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Shipping paper added' }));
     } catch (err) {
-      console.error(err);
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to add shipping paper' }));
     }
-    resolve();
   };
 
-  const updateitem = async (oldincoming, incoming, resolve) => {
+  const updateitem = async (oldData, incoming) => {
     try {
-      await api.put(`/api/shipping-papers/${oldincoming.id}`, {
+      await updateShippingPaper({
+        id: oldData.id,
         date: selectedDate,
         originwarehousenumber: incoming.originwarehousenumber,
         destinationwarehousenumber: incoming.destinationwarehousenumber,
@@ -92,20 +96,20 @@ function ShippingPaper() {
         comments: incoming.comments,
         gps: incoming.gps,
         active: incoming.active,
-      });
+      }).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Shipping paper updated' }));
     } catch (err) {
-      console.error(err);
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to update shipping paper' }));
     }
-    resolve();
   };
 
-  const removeitem = async (incoming, resolve) => {
+  const removeitem = async (row) => {
     try {
-      await api.delete(`/api/shipping-papers/${incoming.id}`);
+      await deleteShippingPaper(row.id).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Shipping paper deleted' }));
     } catch (err) {
-      console.error(err);
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to delete shipping paper' }));
     }
-    resolve();
   };
 
   const openmap = (event, rowData) => {
@@ -115,10 +119,9 @@ function ShippingPaper() {
     setOpen(true);
   };
 
-  const history = useHistory();
-  function goToChemicals(event, rowData) {
+  const goToChemicals = (event, rowData) => {
     history.push({ pathname: '/shippingchemicals', state: rowData });
-  }
+  };
 
   const body = (
     <div style={modalStyle} className={classes.paper}>
@@ -171,10 +174,10 @@ function ShippingPaper() {
     <div>
       <PageTitle>Shipping Papers</PageTitle>
       <MaterialTable
-        tableRef={tableRef}
         onRowClick={openmap}
         columns={columns}
-        data={fetchData}
+        data={rows}
+        isLoading={isFetching}
         options={{
           pageSize: 10,
           pageSizeOptions: [5, 10, 20],
@@ -182,9 +185,9 @@ function ShippingPaper() {
           actionsColumnIndex: -1,
         }}
         editable={{
-          onRowAdd: (newData) => new Promise((resolve) => additem(newData, resolve)),
-          onRowUpdate: (newData, oldData) => new Promise((resolve) => updateitem(oldData, newData, resolve)),
-          onRowDelete: (oldData) => new Promise((resolve) => removeitem(oldData, resolve)),
+          onRowAdd: (newData) => additem(newData),
+          onRowUpdate: (newData, oldData) => updateitem(oldData, newData),
+          onRowDelete: (oldData) => removeitem(oldData),
         }}
         actions={[{
           icon: 'science',

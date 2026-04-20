@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { DateRange } from 'react-date-range';
 import { makeStyles } from '@material-ui/core/styles';
 import 'react-date-range/dist/styles.css';
@@ -24,7 +24,8 @@ import MaterialTable from 'material-table';
 import moment from 'moment';
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from 'date-fns';
 import PageTitle from '../components/PageTitle';
-import api from '../config/api';
+import { useGetCompaniesQuery } from '../store/api/companiesApi';
+import { useGetWeeklyEarningsQuery } from '../store/api/reportsApi';
 import { exportAoaToXlsx } from '../config/excelExport';
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
@@ -32,8 +33,6 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
   currency: 'USD',
 });
 
-// material-table 1.69 still uses deprecated MUI pagination prop names.
-// Translate them so @material-ui/core 4.11's TablePagination stops warning.
 function PatchedPagination(props) {
   const { onChangePage, onChangeRowsPerPage, ...rest } = props;
   return (
@@ -94,12 +93,8 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(0.75, 1.5),
     backgroundColor: '#f8fafc',
   },
-  select: {
-    minWidth: 160,
-  },
-  companySelect: {
-    minWidth: 220,
-  },
+  select: { minWidth: 160 },
+  companySelect: { minWidth: 220 },
   spacer: { flexGrow: 1 },
   statusSlot: {
     display: 'inline-flex',
@@ -147,68 +142,30 @@ const useStyles = makeStyles((theme) => ({
 
 function WeeklyEarnings() {
   const classes = useStyles();
-  const [data, setData] = useState([]);
-  const [companies, setCompanies] = useState([]);
   const [company, setCompany] = useState('');
   const [preset, setPreset] = useState('last7');
   const [range, setRange] = useState(() => rangeForPreset('last7'));
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [hasRun, setHasRun] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
 
-  const requestIdRef = useRef(0);
-  const debounceRef = useRef(null);
+  const { data: companiesData } = useGetCompaniesQuery({ limit: 100 });
+  const companies = companiesData?.data ?? [];
 
-  useEffect(() => {
-    api.get('/api/companies?limit=100')
-      .then(res => setCompanies(Array.isArray(res?.data) ? res.data : []))
-      .catch(console.error);
-  }, []);
+  const queryArgs = company
+    ? {
+        startDate: range.startDate.toISOString(),
+        endDate: range.endDate.toISOString(),
+        company,
+      }
+    : undefined;
 
-  const runReport = useCallback(async () => {
-    if (!company) return;
-    const reqId = ++requestIdRef.current;
-    setLoading(true);
-    setError(null);
-    try {
-      const startDate = range.startDate.toISOString();
-      const endDate = range.endDate.toISOString();
-      const result = await api.get(
-        `/api/reports/weekly-earnings?startDate=${startDate}&endDate=${endDate}&company=${company}`
-      );
-      if (reqId !== requestIdRef.current) return;
-      const rows = Array.isArray(result)
-        ? result
-        : Array.isArray(result?.data)
-          ? result.data
-          : [];
-      setData(rows);
-      setHasRun(true);
-    } catch (err) {
-      if (reqId !== requestIdRef.current) return;
-      console.error(err);
-      setError(err?.message || 'Failed to load report');
-      setData([]);
-      setHasRun(true);
-    } finally {
-      if (reqId === requestIdRef.current) setLoading(false);
-    }
-  }, [company, range]);
+  const { data: reportData, isFetching, error, isSuccess, refetch } =
+    useGetWeeklyEarningsQuery(queryArgs, { skip: !company });
 
-  // Auto-run with debounce when filters change
-  useEffect(() => {
-    if (!company) {
-      setData([]);
-      setHasRun(false);
-      return undefined;
-    }
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => { runReport(); }, 350);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [company, range, runReport]);
+  const data = useMemo(() => {
+    if (Array.isArray(reportData)) return reportData;
+    if (Array.isArray(reportData?.data)) return reportData.data;
+    return [];
+  }, [reportData]);
 
   const totals = useMemo(() => {
     const totalRevenue = data.reduce((s, r) => s + (Number(r.total) || 0), 0);
@@ -219,10 +176,7 @@ function WeeklyEarnings() {
   const handlePresetChange = (event) => {
     const key = event.target.value;
     setPreset(key);
-    if (key === 'custom') {
-      // Open the calendar for custom selection; keep current range
-      return;
-    }
+    if (key === 'custom') return;
     const next = rangeForPreset(key);
     if (next) setRange(next);
   };
@@ -297,9 +251,9 @@ function WeeklyEarnings() {
       );
     }
     if (error) {
-      return <Paper className={classes.errorBanner}>{error}</Paper>;
+      return <Paper className={classes.errorBanner}>{error.message || 'Failed to load report'}</Paper>;
     }
-    if (!loading && hasRun && data.length === 0) {
+    if (!isFetching && isSuccess && data.length === 0) {
       return (
         <div className={classes.emptyState}>
           <Typography variant="h6">No earnings in this range</Typography>
@@ -307,7 +261,7 @@ function WeeklyEarnings() {
         </div>
       );
     }
-    if (loading && data.length === 0) {
+    if (isFetching && data.length === 0) {
       return (
         <div className={classes.emptyState}>
           <CircularProgress size={28} />
@@ -432,7 +386,7 @@ function WeeklyEarnings() {
         </FormControl>
 
         <span className={classes.statusSlot}>
-          {loading && <CircularProgress size={18} />}
+          {isFetching && <CircularProgress size={18} />}
         </span>
 
         <div className={classes.spacer} />
@@ -441,8 +395,8 @@ function WeeklyEarnings() {
           <span>
             <IconButton
               className={classes.refresh}
-              onClick={runReport}
-              disabled={!company || loading}
+              onClick={() => refetch()}
+              disabled={!company || isFetching}
               aria-label="Refresh"
             >
               <RefreshIcon />

@@ -1,11 +1,15 @@
 import React, { useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import Grid from '@material-ui/core/Grid';
 import OilBarrelIcon from '@material-ui/icons/LocalShipping';
 import LocationIcon from '@material-ui/icons/Place';
 import DescriptionIcon from '@material-ui/icons/Description';
 import HourglassIcon from '@material-ui/icons/HourglassEmpty';
 import KpiCard from './KpiCard';
-import useDashboardData from './useDashboardData';
+import { useGetWellsQuery } from '../store/api/wellsApi';
+import { useGetDeliveriesQuery } from '../store/api/deliveriesApi';
+import { useGetShippingPapersQuery } from '../store/api/shippingPapersApi';
+import { selectDateRange, selectCompanyId } from '../store/slices/dashboardFiltersSlice';
 
 function withinRange(iso, start, end) {
   if (!iso) return false;
@@ -13,36 +17,27 @@ function withinRange(iso, start, end) {
   return t >= start.getTime() && t <= end.getTime();
 }
 
-export default function KpiRow({ dateRange, companyId, refreshNonce }) {
-  const companyQ = companyId ? `&company=${companyId}` : '';
+export default function KpiRow() {
+  const dateRange = useSelector(selectDateRange);
+  const companyId = useSelector(selectCompanyId);
 
-  const wells = useDashboardData(
-    `/api/wells?limit=1${companyQ}`,
-    [refreshNonce]
-  );
-  const deliveries = useDashboardData(
-    `/api/deliveries?limit=500${companyQ}`,
-    [refreshNonce]
-  );
-  const shippingPapers = useDashboardData(
-    `/api/shipping-papers?limit=500`,
-    [refreshNonce]
-  );
-  const pending = useDashboardData(
-    `/api/deliveries?active=0&limit=1${companyQ}`,
-    [refreshNonce]
-  );
+  const wells = useGetWellsQuery({ limit: 1, company: companyId || undefined });
+  const deliveries = useGetDeliveriesQuery({ limit: 500, company: companyId || undefined });
+  const shippingPapers = useGetShippingPapersQuery({ limit: 500 });
+  const pending = useGetDeliveriesQuery({ limit: 1, active: 0, company: companyId || undefined });
 
   const deliveriesInRange = useMemo(() => {
-    if (!deliveries.data?.data) return null;
-    return deliveries.data.data.filter((d) =>
+    const rows = deliveries.data?.data;
+    if (!rows) return null;
+    return rows.filter((d) =>
       withinRange(d.date, dateRange.startDate, dateRange.endDate)
     ).length;
   }, [deliveries.data, dateRange]);
 
   const shippingInRange = useMemo(() => {
-    if (!shippingPapers.data?.data) return null;
-    return shippingPapers.data.data.filter((s) =>
+    const rows = shippingPapers.data?.data;
+    if (!rows) return null;
+    return rows.filter((s) =>
       withinRange(s.date, dateRange.startDate, dateRange.endDate)
     ).length;
   }, [shippingPapers.data, dateRange]);
@@ -58,7 +53,7 @@ export default function KpiRow({ dateRange, companyId, refreshNonce }) {
           accent="#dbeafe"
           accentText="#1e40af"
           to="/locationmanagment"
-          loading={wells.loading}
+          loading={wells.isFetching}
           error={wells.error}
         />
       </Grid>
@@ -71,7 +66,7 @@ export default function KpiRow({ dateRange, companyId, refreshNonce }) {
           accent="#dcfce7"
           accentText="#166534"
           to="/delivery"
-          loading={deliveries.loading}
+          loading={deliveries.isFetching}
           error={deliveries.error}
         />
       </Grid>
@@ -84,7 +79,7 @@ export default function KpiRow({ dateRange, companyId, refreshNonce }) {
           accent="#ede9fe"
           accentText="#6d28d9"
           to="/shippingpapers"
-          loading={shippingPapers.loading}
+          loading={shippingPapers.isFetching}
           error={shippingPapers.error}
         />
       </Grid>
@@ -97,7 +92,7 @@ export default function KpiRow({ dateRange, companyId, refreshNonce }) {
           accent="#fee2e2"
           accentText="#b91c1c"
           to="/delivery"
-          loading={pending.loading}
+          loading={pending.isFetching}
           error={pending.error}
         />
       </Grid>

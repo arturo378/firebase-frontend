@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import MaterialTable from '../config/MaterialTable';
 import { useHistory } from "react-router-dom";
 import { Select, MenuItem } from "@material-ui/core";
@@ -12,7 +13,17 @@ import {
 import DateFnsUtils from '@date-io/date-fns';
 import moment from 'moment';
 import PageTitle from '../components/PageTitle';
-import api, { getCurrentUser } from '../config/api';
+import { selectCurrentUser } from '../store/slices/authSlice';
+import { showToast } from '../store/slices/uiSlice';
+import { useGetCompaniesQuery } from '../store/api/companiesApi';
+import { useGetLeasesQuery } from '../store/api/leasesApi';
+import { useGetWellsQuery } from '../store/api/wellsApi';
+import {
+  useGetDeliveriesQuery,
+  useAddDeliveryMutation,
+  useUpdateDeliveryMutation,
+  useDeleteDeliveryMutation,
+} from '../store/api/deliveriesApi';
 
 function getModalStyle() {
   return {
@@ -34,60 +45,49 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Delivery() {
-  const [companies, setCompanies] = useState([]);
-  const [leases, setLeases] = useState([]);
-  const [wells, setWells] = useState([]);
-  const [open, setOpen] = useState(false);
   const classes = useStyles();
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const currentUser = useSelector(selectCurrentUser);
+
+  const { data: companiesData } = useGetCompaniesQuery({ limit: 100 });
+  const { data: leasesData } = useGetLeasesQuery({ limit: 100 });
+  const { data: wellsData } = useGetWellsQuery({ limit: 100 });
+  const companies = companiesData?.data ?? [];
+  const leases = leasesData?.data ?? [];
+  const wells = wellsData?.data ?? [];
+
+  const { data, isFetching } = useGetDeliveriesQuery({ limit: 1000 });
+  const [addDelivery] = useAddDeliveryMutation();
+  const [updateDelivery] = useUpdateDeliveryMutation();
+  const [deleteDelivery] = useDeleteDeliveryMutation();
+
+  const rows = data?.data ?? [];
+
+  const [open, setOpen] = useState(false);
   const [modalStyle] = useState(getModalStyle);
   const [position, setPosition] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [selectedLeaseId, setSelectedLeaseId] = useState('');
-  const tableRef = useRef();
 
   const handleDateChange = (date) => setSelectedDate(date);
   const handleClose = () => setOpen(false);
 
   const mapStyles = { height: "400px", width: "100%" };
 
-  const fetchData = (query) => {
-    const page = query.page + 1;
-    const limit = query.pageSize;
-    return api.get(`/api/deliveries?page=${page}&limit=${limit}`)
-      .then((result) => ({
-        data: result.data,
-        page: query.page,
-        totalCount: result.totalItems,
-      }))
-      .catch((err) => {
-        console.error(err);
-        return { data: [], page: 0, totalCount: 0 };
-      });
-  };
-
-  useEffect(() => {
-    Promise.all([
-      api.get('/api/companies?limit=100'),
-      api.get('/api/leases?limit=100'),
-      api.get('/api/wells?limit=100'),
-    ]).then(([c, l, w]) => {
-      setCompanies(c.data);
-      setLeases(l.data);
-      setWells(w.data);
-    }).catch(console.error);
-  }, []);
-
   const getIdFromField = (val) => (val && typeof val === 'object') ? val.id : val;
 
-  const additem = async (incoming, resolve) => {
+  const additem = async (incoming) => {
     const companyId = getIdFromField(incoming.company);
     const leaseId = getIdFromField(incoming.lease);
     const wellId = getIdFromField(incoming.well);
-    if (!companyId || !leaseId || !wellId) { resolve(); return; }
-    const currentUser = getCurrentUser();
+    if (!companyId || !leaseId || !wellId) {
+      dispatch(showToast({ severity: 'warning', message: 'Select company, lease, and well' }));
+      return;
+    }
     try {
-      await api.post('/api/deliveries', {
+      await addDelivery({
         company: companyId,
         lease: leaseId,
         well: wellId,
@@ -97,19 +97,20 @@ function Delivery() {
         createdBy: currentUser?.id,
         invoicenum: incoming.invoicenum,
         active: 0,
-      });
+      }).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Delivery added' }));
     } catch (err) {
-      console.error(err);
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to add delivery' }));
     }
-    resolve();
   };
 
-  const updateitem = async (oldincoming, incoming, resolve) => {
+  const updateitem = async (oldData, incoming) => {
     const companyId = getIdFromField(incoming.company);
     const leaseId = getIdFromField(incoming.lease);
     const wellId = getIdFromField(incoming.well);
     try {
-      await api.put(`/api/deliveries/${oldincoming.id}`, {
+      await updateDelivery({
+        id: oldData.id,
         company: companyId,
         lease: leaseId,
         well: wellId,
@@ -118,20 +119,20 @@ function Delivery() {
         comments: incoming.comments,
         invoicenum: incoming.invoicenum,
         active: incoming.active,
-      });
+      }).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Delivery updated' }));
     } catch (err) {
-      console.error(err);
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to update delivery' }));
     }
-    resolve();
   };
 
-  const removeitem = async (incoming, resolve) => {
+  const removeitem = async (row) => {
     try {
-      await api.delete(`/api/deliveries/${incoming.id}`);
+      await deleteDelivery(row.id).unwrap();
+      dispatch(showToast({ severity: 'success', message: 'Delivery deleted' }));
     } catch (err) {
-      console.error(err);
+      dispatch(showToast({ severity: 'error', message: err?.message || 'Failed to delete delivery' }));
     }
-    resolve();
   };
 
   const openmap = (event, rowData) => {
@@ -141,10 +142,9 @@ function Delivery() {
     setOpen(true);
   };
 
-  const history = useHistory();
-  function goToChemicals(event, rowData) {
+  const goToChemicals = (event, rowData) => {
     history.push({ pathname: '/delivery/editdelivery', state: rowData });
-  }
+  };
 
   const body = (
     <div style={modalStyle} className={classes.paper}>
@@ -255,10 +255,10 @@ function Delivery() {
     <div>
       <PageTitle>Delivery</PageTitle>
       <MaterialTable
-        tableRef={tableRef}
         onRowClick={openmap}
         columns={columns}
-        data={fetchData}
+        data={rows}
+        isLoading={isFetching}
         options={{
           pageSize: 10,
           pageSizeOptions: [5, 10, 20],
@@ -266,9 +266,9 @@ function Delivery() {
           actionsColumnIndex: -1,
         }}
         editable={{
-          onRowAdd: (newData) => new Promise((resolve) => additem(newData, resolve)),
-          onRowUpdate: (newData, oldData) => new Promise((resolve) => updateitem(oldData, newData, resolve)),
-          onRowDelete: (oldData) => new Promise((resolve) => removeitem(oldData, resolve)),
+          onRowAdd: (newData) => additem(newData),
+          onRowUpdate: (newData, oldData) => updateitem(oldData, newData),
+          onRowDelete: (oldData) => removeitem(oldData),
         }}
         actions={[{
           icon: 'science',
