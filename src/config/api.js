@@ -65,8 +65,10 @@ async function request(method, path, body, _isRetry = false) {
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  // On 401, attempt a token refresh once, then retry the original request
-  if (res.status === 401 && !_isRetry) {
+  // On 401, attempt a token refresh once, then retry the original request.
+  // Skip when there was no prior token — a 401 then is just bad credentials
+  // (e.g. failed login), not an expired session, and should surface to the caller.
+  if (res.status === 401 && !_isRetry && token) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
       return request(method, path, body, true);
