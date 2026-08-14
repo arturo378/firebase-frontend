@@ -5,12 +5,14 @@ import { Select, MenuItem } from "@material-ui/core";
 import Button from '@material-ui/core/Button';
 import PageTitle from '../components/PageTitle';
 import api from '../config/api';
+import { useAuth } from '../config/AuthContext';
 
 function DeliveryEdit() {
   const location = useLocation();
   const [chemicals, setChemicals] = useState([]);
   const deliveryid = location.state.id;
   const tableRef = useRef();
+  const { isAdmin } = useAuth();
 
   const fetchData = (query) => {
     const page = query.page + 1;
@@ -118,11 +120,11 @@ function DeliveryEdit() {
           </div>
         ),
       }}
-      editable={{
+      editable={isAdmin ? {
         onRowAdd: (newData) => new Promise((resolve) => additem(newData, resolve)),
         onRowUpdate: (newData, oldData) => new Promise((resolve) => updateitem(oldData, newData, resolve)),
         onRowDelete: (oldData) => new Promise((resolve) => removeitem(oldData, resolve)),
-      }}
+      } : undefined}
     />
     </div>
   );

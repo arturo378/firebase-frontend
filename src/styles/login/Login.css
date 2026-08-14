@@ -96,6 +96,68 @@
   opacity: 0.65;
 }
 
+/* Password reset flow */
+.Login .login-subheading {
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.Login .login-error {
+  margin-bottom: 8px;
+  color: #b91c1c;
+  font-size: 0.88rem;
+}
+
+.Login .login-note {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 0.85rem;
+}
+
+.Login .login-success {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(22, 163, 74, 0.1);
+  border: 1px solid rgba(22, 163, 74, 0.35);
+  color: #15803d;
+  font-size: 0.88rem;
+}
+
+.Login .login-otp-input {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
+}
+
+.Login .login-link-button {
+  margin-top: 12px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: #4f46e5;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.Login .login-link-button:hover:enabled {
+  color: #4338ca;
+  text-decoration: underline;
+}
+
+.Login .login-link-button:disabled {
+  color: #94a3b8;
+  cursor: default;
+}
+
 /* Demo mode styles */
 .Login .demo-badge {
   display: inline-block;

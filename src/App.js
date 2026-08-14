@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import { isAuthenticated } from './config/api';
+import { AuthProvider } from './config/AuthContext';
 import Login from './Login'
 import Home from './Home'
 import { APP_TITLE } from './config/appInfo';
@@ -22,7 +23,7 @@ class App extends Component{
   render(){
     return (
       <div className="App">
-        {this.state.user ? (<Home/>) : (<Login/>)}
+        {this.state.user ? (<AuthProvider><Home/></AuthProvider>) : (<Login/>)}
       </div>
     );
   }

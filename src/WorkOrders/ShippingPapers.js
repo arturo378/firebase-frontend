@@ -12,6 +12,7 @@ import {
 import moment from 'moment';
 import PageTitle from '../components/PageTitle';
 import api, { getCurrentUser } from '../config/api';
+import { useAuth } from '../config/AuthContext';
 
 function getModalStyle() {
   return {
@@ -39,6 +40,7 @@ function ShippingPaper() {
   const [position, setPosition] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const tableRef = useRef();
+  const { isAdmin } = useAuth();
 
   const handleDateChange = (date) => setSelectedDate(date);
   const handleClose = () => setOpen(false);
@@ -181,11 +183,11 @@ function ShippingPaper() {
           search: false,
           actionsColumnIndex: -1,
         }}
-        editable={{
+        editable={isAdmin ? {
           onRowAdd: (newData) => new Promise((resolve) => additem(newData, resolve)),
           onRowUpdate: (newData, oldData) => new Promise((resolve) => updateitem(oldData, newData, resolve)),
           onRowDelete: (oldData) => new Promise((resolve) => removeitem(oldData, resolve)),
-        }}
+        } : undefined}
         actions={[{
           icon: 'science',
           tooltip: 'Manage Chemicals',

@@ -3,6 +3,7 @@ import { Button, FormGroup, FormControl, FormLabel } from "react-bootstrap";
 import api from "./config/api";
 import { APP_TITLE } from "./config/appInfo";
 import LogoMark from "./components/LogoMark";
+import ForgotPassword from "./ForgotPassword";
 
 import "./styles/login/Login.css";
 
@@ -10,6 +11,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showForgot, setShowForgot] = useState(false);
 
   function validateForm() {
     return email.length > 0 && password.length > 0;
@@ -28,6 +30,10 @@ export default function Login() {
     }
   }
 
+  if (showForgot) {
+    return <ForgotPassword onBackToLogin={() => setShowForgot(false)} />;
+  }
+
   return (
     <div className="Login">
       <div className="login-card">
@@ -40,7 +46,7 @@ export default function Login() {
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
-          {error && <p style={{ color: 'red', marginBottom: 8 }}>{error}</p>}
+          {error && <p className="login-error">{error}</p>}
           <FormGroup className="login-field" controlId="email">
             <FormLabel>Email</FormLabel>
             <FormControl
@@ -63,6 +69,9 @@ export default function Login() {
           <Button className="login-button" variant="primary" block size="lg" disabled={!validateForm()} type="submit">
             Login
           </Button>
+          <button type="button" className="login-link-button" onClick={() => setShowForgot(true)}>
+            Forgot password?
+          </button>
         </form>
       </div>
     </div>

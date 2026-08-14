@@ -33,6 +33,7 @@ import WarehouseChemical from './Admin/WarehouseChemical.js';
 import UserReport from './Reports/UserReport.js';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import LogoMark from './components/LogoMark';
+import AdminRoute from './components/AdminRoute';
 
 const PAGE_TITLES = [
   { match: (p) => p === '/', label: 'Dashboard' },
@@ -256,27 +257,27 @@ export default function Home() {
           <Route exact path="/">
             <Main></Main>
           </Route>
-          <Route exact path="/usermanagement">
+          <AdminRoute exact path="/usermanagement">
             <UserManagement></UserManagement>
-          </Route>
-          <Route exact path="/locationmanagment">
+          </AdminRoute>
+          <AdminRoute exact path="/locationmanagment">
             <LocationManagement></LocationManagement>
-          </Route>
-          <Route exact path="/locationmanagment/leasemanagment">
+          </AdminRoute>
+          <AdminRoute exact path="/locationmanagment/leasemanagment">
             <LeaseManagement></LeaseManagement>
-          </Route>
-          <Route exact path="/locationmanagment/leasemanagment/wellmanagment">
+          </AdminRoute>
+          <AdminRoute exact path="/locationmanagment/leasemanagment/wellmanagment">
             <WellManagement></WellManagement>
-          </Route>
-          <Route exact path="/warehousemanagement">
+          </AdminRoute>
+          <AdminRoute exact path="/warehousemanagement">
             <WarehouseManagement></WarehouseManagement>
-          </Route>
-          <Route exact path="/chemicalmanagement">
+          </AdminRoute>
+          <AdminRoute exact path="/chemicalmanagement">
             <ChemicalManagement></ChemicalManagement>
-          </Route>
-          <Route exact path="/pricing">
+          </AdminRoute>
+          <AdminRoute exact path="/pricing">
             <Pricing></Pricing>
-          </Route>
+          </AdminRoute>
           <Route exact path="/shippingpapers">
             <ShippingPaper></ShippingPaper>
           </Route>
@@ -295,9 +296,9 @@ export default function Home() {
           <Route exact path="/warehouseInventory">
             <WarehouseInventory></WarehouseInventory>
           </Route>
-          <Route exact path="/warehousechemical">
+          <AdminRoute exact path="/warehousechemical">
             <WarehouseChemical></WarehouseChemical>
-          </Route>
+          </AdminRoute>
           <Route exact path="/userReport">
             <UserReport></UserReport>
           </Route>

@@ -92,14 +92,15 @@ export default function UserManagement() {
           },
           {
             icon: 'lock_open',
-            tooltip: 'Reset Password',
+            tooltip: 'Email Password Reset Code',
             onClick: async (event, rowData) => {
-              if (window.confirm(`Send password reset for ${rowData.fullname}?`)) {
+              if (window.confirm(`Email a password reset code to ${rowData.fullname} at ${rowData.email}?`)) {
                 try {
                   await api.post(`/api/users/${rowData.id}/reset-password`);
-                  alert('Password reset initiated.');
+                  alert(`A 6-digit reset code has been emailed to ${rowData.email}. It expires in 10 minutes.`);
                 } catch (err) {
                   console.error(err);
+                  alert(`Could not send the reset code: ${err.message}`);
                 }
               }
             },
