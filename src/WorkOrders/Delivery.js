@@ -13,6 +13,7 @@ import {
 import DateFnsUtils from '@date-io/date-fns';
 import moment from 'moment';
 import PageTitle from '../components/PageTitle';
+import { useAuth } from '../config/AuthContext';
 import { selectCurrentUser } from '../store/slices/authSlice';
 import { showToast } from '../store/slices/uiSlice';
 import { useGetCompaniesQuery } from '../store/api/companiesApi';
@@ -45,6 +46,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Delivery() {
+  const { isAdmin } = useAuth();
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
@@ -265,11 +267,11 @@ function Delivery() {
           search: false,
           actionsColumnIndex: -1,
         }}
-        editable={{
+        editable={isAdmin ? {
           onRowAdd: (newData) => additem(newData),
           onRowUpdate: (newData, oldData) => updateitem(oldData, newData),
           onRowDelete: (oldData) => removeitem(oldData),
-        }}
+        } : undefined}
         actions={[{
           icon: 'science',
           tooltip: 'Manage Chemicals',

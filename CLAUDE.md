@@ -27,10 +27,24 @@ Chemical Management System (CMS) frontend — a Create React App project using R
 `src/config/api.js` is the centralized REST client. All requests use `fetch` with Bearer token from `localStorage('accessToken')` and `credentials: 'include'` for httpOnly refresh cookies. It normalizes Firebase `_id` → `id` for backward compatibility. Helper exports: `api.get/post/put/patch/delete`, `getCurrentUser()`, `isAuthenticated()`.
 
 ### Authentication
-Login POSTs to `/api/auth/login`, stores `accessToken` and `currentUser` in localStorage. Logout POSTs to `/api/auth/logout` and clears storage. No route guards — auth gating is a single check in `App.js`.
+Login POSTs to `/api/auth/login`, stores `accessToken` and `currentUser` in localStorage. Logout POSTs to `/api/auth/logout` and clears storage. Auth gating is a single check in `App.js`.
+
+### Authorization
+Two roles: `admin` and `user` (backend `User.role`). `src/config/permissions.js` is the only place that compares role strings — use `isAdminUser()`, never `user.role === 'admin'`.
+
+`src/config/AuthContext.js` (`AuthProvider` / `useAuth()`) seeds the role from cached localStorage for an instant first paint, then revalidates against `GET /api/auth/me` so a role change applies on reload without a re-login. On a network failure it keeps the cached user rather than locking an admin out.
+
+Enforcement has three layers:
+- **Nav** — sections in `Dashboard/listItems.js` marked `adminOnly: true` are filtered out for non-admins.
+- **Routes** — `components/AdminRoute.js` wraps the eight admin routes in `Home.js` and redirects non-admins to `/`. It must stay a direct child of `<Switch>` with `path`/`exact` forwarded, since React Router v5 reads `child.props.path` off the element.
+- **Tables** — Work Orders pages gate the `editable` prop on `isAdmin`, which is what renders material-table's add/edit/delete controls. Non-admins keep read access, the map modal, and the "Manage Chemicals" drill-down.
+
+These are UX only; the backend enforces the same rules with `authorize('admin')` on every write route.
 
 ### State Management
-No Redux or Context API. Each component manages its own state with `useState`/`useEffect`. Data fetching happens directly in `useEffect` hooks with manual refresh after mutations.
+Redux Toolkit (`src/store/`) holds shared client state: `authSlice` (login/logout thunks, token, cached user), `uiSlice` (sidebar, toasts), and `dashboardFiltersSlice`. Server data goes through RTK Query — `store/api/baseApi.js` plus one endpoint file per resource, all registered in `store/index.js`. Pages call the generated hooks (`useGetDeliveriesQuery`, `useAddDeliveryMutation`, …); RTK Query handles caching and tag invalidation, so there is no manual refetch after a mutation.
+
+React Context remains for the role check only: `AuthContext` layers `isAdmin` and `GET /api/auth/me` revalidation on top of the auth state. Purely local UI state stays in `useState`.
 
 ### Feature Folders
 - `src/Dashboard/` — Home dashboard, charts (Recharts), active wells map, sidebar nav (`listItems.js`)

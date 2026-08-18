@@ -32,7 +32,7 @@ async function refreshAccessToken() {
 
   refreshPromise = (async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/auth/refresh`, {
+      const res = await fetch(`${API_BASE}/api/auth/refresh-token`, {
         method: 'POST',
         credentials: 'include', // sends the httpOnly refresh token cookie
       });
@@ -65,8 +65,10 @@ async function request(method, path, body, _isRetry = false) {
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  // On 401, attempt a token refresh once, then retry the original request
-  if (res.status === 401 && !_isRetry) {
+  // On 401, attempt a token refresh once, then retry the original request.
+  // Skip when there was no prior token — a 401 then is just bad credentials
+  // (e.g. failed login), not an expired session, and should surface to the caller.
+  if (res.status === 401 && !_isRetry && token) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
       return request(method, path, body, true);
@@ -77,8 +79,12 @@ async function request(method, path, body, _isRetry = false) {
   }
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error(err.message || 'Request failed');
+    const err = await res.json().catch(() => ({}));
+    // express-validator rejections come back as { errors: [{ msg }] } with no
+    // top-level message, so fall through to the first rule that failed.
+    const validationMsg =
+      Array.isArray(err.errors) && err.errors.length && err.errors[0].msg;
+    throw new Error(err.message || validationMsg || res.statusText || 'Request failed');
   }
 
   const json = await res.json();

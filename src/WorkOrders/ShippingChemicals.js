@@ -5,6 +5,7 @@ import { useHistory, useLocation } from "react-router-dom";
 import { Select, MenuItem } from "@material-ui/core";
 import Button from '@material-ui/core/Button';
 import PageTitle from '../components/PageTitle';
+import { useAuth } from '../config/AuthContext';
 import { useGetChemicalsQuery } from '../store/api/chemicalsApi';
 import {
   useGetShippingChemicalsQuery,
@@ -15,6 +16,7 @@ import {
 import { showToast } from '../store/slices/uiSlice';
 
 function ShippingChemicals() {
+  const { isAdmin } = useAuth();
   const dispatch = useDispatch();
   const history = useHistory();
   const location = useLocation();
@@ -118,11 +120,11 @@ function ShippingChemicals() {
             </div>
           ),
         }}
-        editable={{
+        editable={isAdmin ? {
           onRowAdd: (newData) => additem(newData),
           onRowUpdate: (newData, oldData) => updateitem(oldData, newData),
           onRowDelete: (oldData) => removeitem(oldData),
-        }}
+        } : undefined}
       />
     </div>
   );

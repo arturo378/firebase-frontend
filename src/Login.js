@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Button, FormGroup, FormControl, FormLabel } from "react-bootstrap";
 import { APP_TITLE } from "./config/appInfo";
 import LogoMark from "./components/LogoMark";
+import ForgotPassword from "./ForgotPassword";
 import { login, selectAuthError, selectAuthStatus, clearAuthError } from "./store/slices/authSlice";
 
 import "./styles/login/Login.css";
@@ -13,6 +14,7 @@ export default function Login() {
   const authStatus = useSelector(selectAuthStatus);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showForgot, setShowForgot] = useState(false);
 
   function validateForm() {
     return email.length > 0 && password.length > 0;
@@ -22,6 +24,10 @@ export default function Login() {
     event.preventDefault();
     dispatch(clearAuthError());
     dispatch(login({ email, password }));
+  }
+
+  if (showForgot) {
+    return <ForgotPassword onBackToLogin={() => setShowForgot(false)} />;
   }
 
   return (
@@ -36,7 +42,7 @@ export default function Login() {
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
-          {authError && <p style={{ color: 'red', marginBottom: 8 }}>{authError}</p>}
+          {authError && <p className="login-error">{authError}</p>}
           <FormGroup className="login-field" controlId="email">
             <FormLabel>Email</FormLabel>
             <FormControl
@@ -66,6 +72,9 @@ export default function Login() {
           >
             {authStatus === 'loading' ? 'Signing in…' : 'Login'}
           </Button>
+          <button type="button" className="login-link-button" onClick={() => setShowForgot(true)}>
+            Forgot password?
+          </button>
         </form>
       </div>
     </div>

@@ -17,6 +17,7 @@ import AssignmentIndIcon from '@material-ui/icons/AssignmentInd';
 import StorageIcon from '@material-ui/icons/Storage';
 import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+import { useAuth } from '../config/AuthContext';
 
 const useStyles = makeStyles(() => ({
   section: {
@@ -85,6 +86,7 @@ const menuSections = [
   },
   {
     header: 'Admin',
+    adminOnly: true,
     items: [
       { label: 'User Management', to: '/usermanagement', icon: PeopleIcon },
       { label: 'Manage Location', to: '/locationmanagment', icon: RoomIcon },
@@ -159,10 +161,13 @@ function SidebarItem({ item, isCollapsed, isSelected }) {
 export function MainListItems({ isCollapsed }) {
   const location = useLocation();
   const classes = useStyles();
+  const { isAdmin } = useAuth();
+
+  const visibleSections = menuSections.filter((section) => !section.adminOnly || isAdmin);
 
   return (
     <div>
-      {menuSections.map((section) => (
+      {visibleSections.map((section) => (
         <div key={section.header || 'main'} className={classes.section}>
           {!isCollapsed && section.header && (
             <ListSubheader disableSticky className={classes.sectionHeader}>
