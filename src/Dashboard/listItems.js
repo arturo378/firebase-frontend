@@ -15,6 +15,7 @@ import LocalShippingIcon from '@material-ui/icons/LocalShipping';
 import ShowChartIcon from '@material-ui/icons/ShowChart';
 import AssignmentIndIcon from '@material-ui/icons/AssignmentInd';
 import StorageIcon from '@material-ui/icons/Storage';
+import DomainIcon from '@material-ui/icons/Domain';
 import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../config/AuthContext';
@@ -109,6 +110,13 @@ const menuSections = [
       { label: 'Inventory Levels', to: '/warehouseInventory', icon: StorageIcon },
     ],
   },
+  {
+    header: 'Platform',
+    superadminOnly: true,
+    items: [
+      { label: 'Clients', to: '/clientmanagement', icon: DomainIcon },
+    ],
+  },
 ];
 
 function SidebarItem({ item, isCollapsed, isSelected }) {
@@ -161,9 +169,11 @@ function SidebarItem({ item, isCollapsed, isSelected }) {
 export function MainListItems({ isCollapsed }) {
   const location = useLocation();
   const classes = useStyles();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isSuperAdmin } = useAuth();
 
-  const visibleSections = menuSections.filter((section) => !section.adminOnly || isAdmin);
+  const visibleSections = menuSections.filter(
+    (section) => (!section.adminOnly || isAdmin) && (!section.superadminOnly || isSuperAdmin)
+  );
 
   return (
     <div>

@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import api, { getCurrentUser } from './api';
-import { isAdminUser } from './permissions';
+import { isAdminUser, isSuperAdminUser } from './permissions';
+import { clearActiveClientId } from './clientContext';
 
-const AuthContext = createContext({ user: null, isAdmin: false, ready: false });
+const AuthContext = createContext({ user: null, isAdmin: false, isSuperAdmin: false, ready: false });
 
 export function AuthProvider({ children }) {
   // Seed synchronously from the cached login response so the first paint
@@ -19,6 +20,10 @@ export function AuthProvider({ children }) {
     api.get('/api/auth/me')
       .then((res) => {
         if (cancelled || !res?.user) return;
+        // A stale "acting as client X" override from a prior superadmin
+        // session (or a role downgrade) would otherwise keep sending
+        // X-Client-Id and get rejected with FORBIDDEN_CLIENT_HEADER.
+        if (!isSuperAdminUser(res.user)) clearActiveClientId();
         localStorage.setItem('currentUser', JSON.stringify(res.user));
         setUser(res.user);
       })
@@ -35,7 +40,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAdmin: isAdminUser(user), ready }}>
+    <AuthContext.Provider value={{ user, isAdmin: isAdminUser(user), isSuperAdmin: isSuperAdminUser(user), ready }}>
       {children}
     </AuthContext.Provider>
   );

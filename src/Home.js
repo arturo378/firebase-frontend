@@ -22,6 +22,7 @@ import WellManagement from './Admin/WellManagement.js';
 import WarehouseManagement from './Admin/WarehouseManagement.js';
 import ChemicalManagement from './Admin/ChemicalManagement.js';
 import Pricing from './Admin/Pricing.js';
+import ClientManagement from './Admin/ClientManagement.js';
 import ShippingPaper from './WorkOrders/ShippingPapers.js';
 import ShippingChemicals from './WorkOrders/ShippingChemicals.js';
 import Delivery from './WorkOrders/Delivery.js';
@@ -35,6 +36,8 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import LogoMark from './components/LogoMark';
 import ToastProvider from './components/ToastProvider';
 import AdminRoute from './components/AdminRoute';
+import SuperAdminRoute from './components/SuperAdminRoute';
+import ClientSwitcher from './components/ClientSwitcher';
 import { logout } from './store/slices/authSlice';
 import { selectSidebarOpen, setSidebar } from './store/slices/uiSlice';
 
@@ -48,6 +51,7 @@ const PAGE_TITLES = [
   { match: (p) => p.startsWith('/warehousechemical'), label: 'Warehouse Chemicals' },
   { match: (p) => p.startsWith('/chemicalmanagement'), label: 'Product Management' },
   { match: (p) => p.startsWith('/pricing'), label: 'Pricing' },
+  { match: (p) => p.startsWith('/clientmanagement'), label: 'Client Management' },
   { match: (p) => p.startsWith('/shippingpapers'), label: 'Shipping Papers' },
   { match: (p) => p.startsWith('/shippingchemicals'), label: 'Shipping Chemicals' },
   { match: (p) => p.startsWith('/delivery/editdelivery'), label: 'Edit Delivery' },
@@ -213,6 +217,7 @@ export default function Home() {
             <MenuIcon />
           </IconButton>
           <PageTitle className={classes.title} />
+          <ClientSwitcher />
           <Button onClick={handleLogout} variant="contained" color="secondary" className={classes.signOutButton}>
             SignOut
           </Button>
@@ -270,6 +275,9 @@ export default function Home() {
           <AdminRoute exact path="/pricing">
             <Pricing></Pricing>
           </AdminRoute>
+          <SuperAdminRoute exact path="/clientmanagement">
+            <ClientManagement></ClientManagement>
+          </SuperAdminRoute>
           <Route exact path="/shippingpapers">
             <ShippingPaper></ShippingPaper>
           </Route>

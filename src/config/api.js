@@ -2,6 +2,8 @@
 // Reads/writes access token from localStorage.
 // Refresh token is stored in an httpOnly cookie by the backend automatically.
 
+import { getActiveClientId, clearActiveClientId } from './clientContext';
+
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
 // Recursively maps _id → id on response objects so existing code using .id keeps working
@@ -21,6 +23,7 @@ function normalizeIds(data) {
 function forceLogout() {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('currentUser');
+  clearActiveClientId();
   window.location.reload();
 }
 
@@ -57,6 +60,8 @@ async function request(method, path, body, _isRetry = false) {
   const headers = { 'Content-Type': 'application/json' };
   const token = localStorage.getItem('accessToken');
   if (token) headers['Authorization'] = `Bearer ${token}`;
+  const clientOverride = getActiveClientId();
+  if (clientOverride) headers['X-Client-Id'] = clientOverride;
 
   const res = await fetch(`${API_BASE}${path}`, {
     method,
@@ -65,26 +70,61 @@ async function request(method, path, body, _isRetry = false) {
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  // On 401, attempt a token refresh once, then retry the original request.
-  // Skip when there was no prior token — a 401 then is just bad credentials
-  // (e.g. failed login), not an expired session, and should surface to the caller.
-  if (res.status === 401 && !_isRetry && token) {
-    const refreshed = await refreshAccessToken();
-    if (refreshed) {
-      return request(method, path, body, true);
-    }
-    // Refresh failed — force user back to login
-    forceLogout();
-    return; // forceLogout reloads the page; this line is just a safeguard
-  }
-
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
+    const code = err.code;
+
+    // The user moved clients on a live token — a refresh would just reissue
+    // the same stale claim, so there's nothing to retry. Sign in again.
+    if (code === 'TENANT_CLAIM_STALE') {
+      forceLogout();
+      return;
+    }
+
+    // CLIENT_INACTIVE means one of three things: (1) a superadmin's
+    // X-Client-Id target is inactive — a bad selection, not a dead session;
+    // (2) the caller's own client went inactive mid-session (there's a token
+    // for it); or (3) the account's home client is inactive and this was a
+    // login attempt itself (no token yet) — that must surface as a normal
+    // error so it doesn't just blank the login form via a forced reload.
+    if (code === 'CLIENT_INACTIVE') {
+      if (clientOverride) {
+        clearActiveClientId();
+      } else if (token) {
+        forceLogout();
+        return;
+      }
+    }
+
+    // A non-superadmin header made it out somehow (stale localStorage, role
+    // just downgraded) — drop it so the next request goes back to normal.
+    if (code === 'FORBIDDEN_CLIENT_HEADER') {
+      clearActiveClientId();
+    }
+
+    // On 401, attempt a token refresh once, then retry the original request.
+    // This also covers TENANT_CLAIM_MISSING (a token that predates
+    // multi-tenancy) since a refresh reissues one with the claim. Skip when
+    // there was no prior token — a 401 then is just bad credentials (e.g.
+    // failed login), not an expired session, and should surface to the caller.
+    if (res.status === 401 && !_isRetry && token) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) {
+        return request(method, path, body, true);
+      }
+      // Refresh failed — force user back to login
+      forceLogout();
+      return; // forceLogout reloads the page; this line is just a safeguard
+    }
+
     // express-validator rejections come back as { errors: [{ msg }] } with no
     // top-level message, so fall through to the first rule that failed.
     const validationMsg =
       Array.isArray(err.errors) && err.errors.length && err.errors[0].msg;
-    throw new Error(err.message || validationMsg || res.statusText || 'Request failed');
+    const apiError = new Error(err.message || validationMsg || res.statusText || 'Request failed');
+    apiError.status = res.status;
+    apiError.code = code;
+    throw apiError;
   }
 
   const json = await res.json();

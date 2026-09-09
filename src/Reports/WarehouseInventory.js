@@ -10,26 +10,14 @@ import Typography from '@material-ui/core/Typography';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
-import TablePagination from '@material-ui/core/TablePagination';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import StorageIcon from '@material-ui/icons/Storage';
-import MaterialTable from 'material-table';
+import MaterialTable from '../config/MaterialTable';
 import PageTitle from '../components/PageTitle';
 import { useGetWarehousesQuery } from '../store/api/warehousesApi';
 import { useGetWarehouseInventoryReportQuery } from '../store/api/reportsApi';
 import { exportAoaToXlsx } from '../config/excelExport';
-
-function PatchedPagination(props) {
-  const { onChangePage, onChangeRowsPerPage, ...rest } = props;
-  return (
-    <TablePagination
-      {...rest}
-      onPageChange={onChangePage}
-      onRowsPerPageChange={onChangeRowsPerPage}
-    />
-  );
-}
 
 const useStyles = makeStyles((theme) => ({
   root: { flexGrow: 1 },
@@ -201,7 +189,6 @@ function WarehouseInventory() {
             title=""
             columns={columns}
             data={data}
-            components={{ Pagination: PatchedPagination }}
             actions={[
               {
                 icon: () => <GetAppIcon />,

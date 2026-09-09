@@ -4,6 +4,7 @@ import { Button, FormGroup, FormControl, FormLabel } from "react-bootstrap";
 import { APP_TITLE } from "./config/appInfo";
 import LogoMark from "./components/LogoMark";
 import ForgotPassword from "./ForgotPassword";
+import Register from "./Register";
 import { login, selectAuthError, selectAuthStatus, clearAuthError } from "./store/slices/authSlice";
 
 import "./styles/login/Login.css";
@@ -15,6 +16,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showForgot, setShowForgot] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
 
   function validateForm() {
     return email.length > 0 && password.length > 0;
@@ -28,6 +30,10 @@ export default function Login() {
 
   if (showForgot) {
     return <ForgotPassword onBackToLogin={() => setShowForgot(false)} />;
+  }
+
+  if (showRegister) {
+    return <Register onBackToLogin={() => setShowRegister(false)} />;
   }
 
   return (
@@ -74,6 +80,9 @@ export default function Login() {
           </Button>
           <button type="button" className="login-link-button" onClick={() => setShowForgot(true)}>
             Forgot password?
+          </button>
+          <button type="button" className="login-link-button" onClick={() => setShowRegister(true)}>
+            Create an account
           </button>
         </form>
       </div>

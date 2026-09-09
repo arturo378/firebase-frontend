@@ -15,29 +15,18 @@ import Typography from '@material-ui/core/Typography';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
-import TablePagination from '@material-ui/core/TablePagination';
 import DateRangeIcon from '@material-ui/icons/DateRange';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import PersonIcon from '@material-ui/icons/Person';
-import MaterialTable from 'material-table';
+import MaterialTable from '../config/MaterialTable';
 import moment from 'moment';
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from 'date-fns';
 import PageTitle from '../components/PageTitle';
+import { useAuth } from '../config/AuthContext';
 import { useGetUsersQuery } from '../store/api/usersApi';
 import { useGetUserActivityQuery } from '../store/api/reportsApi';
 import { exportAoaToXlsx } from '../config/excelExport';
-
-function PatchedPagination(props) {
-  const { onChangePage, onChangeRowsPerPage, ...rest } = props;
-  return (
-    <TablePagination
-      {...rest}
-      onPageChange={onChangePage}
-      onRowsPerPageChange={onChangeRowsPerPage}
-    />
-  );
-}
 
 const PRESETS = {
   last7: 'Last 7 days',
@@ -146,12 +135,15 @@ function mergeActivity(result) {
 
 function UserReport() {
   const classes = useStyles();
-  const [userId, setUserId] = useState('');
+  const { user: currentUser, isAdmin } = useAuth();
+  // A plain user can only ever pull their own activity — the backend 403s
+  // (FORBIDDEN_USER_SCOPE) any other userId, so don't even offer the picker.
+  const [userId, setUserId] = useState(() => (isAdmin ? '' : currentUser?.id ?? ''));
   const [preset, setPreset] = useState('last7');
   const [range, setRange] = useState(() => rangeForPreset('last7'));
   const [anchorEl, setAnchorEl] = useState(null);
 
-  const { data: usersData } = useGetUsersQuery({ limit: 100 });
+  const { data: usersData } = useGetUsersQuery({ limit: 100 }, { skip: !isAdmin });
   const users = usersData?.data ?? [];
 
   const queryArgs = userId
@@ -290,7 +282,6 @@ function UserReport() {
             title=""
             columns={columns}
             data={data}
-            components={{ Pagination: PatchedPagination }}
             actions={[
               {
                 icon: () => <GetAppIcon />,
@@ -358,20 +349,22 @@ function UserReport() {
           </div>
         </Popover>
 
-        <FormControl variant="outlined" size="small" className={classes.userSelect}>
-          <InputLabel id="user-label">User</InputLabel>
-          <Select
-            labelId="user-label"
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-            label="User"
-          >
-            <MenuItem value="" style={{ display: 'none' }} />
-            {users.map(info => (
-              <MenuItem key={info.id} value={info.id}>{info.email}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        {isAdmin && (
+          <FormControl variant="outlined" size="small" className={classes.userSelect}>
+            <InputLabel id="user-label">User</InputLabel>
+            <Select
+              labelId="user-label"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              label="User"
+            >
+              <MenuItem value="" style={{ display: 'none' }} />
+              {users.map(info => (
+                <MenuItem key={info.id} value={info.id}>{info.email}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
 
         <span className={classes.statusSlot}>
           {isFetching && <CircularProgress size={18} />}

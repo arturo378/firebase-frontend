@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../config/api';
+import { clearActiveClientId } from '../../config/clientContext';
 
 function readUserFromStorage() {
   try {
@@ -31,6 +32,20 @@ export const login = createAsyncThunk(
   }
 );
 
+export const register = createAsyncThunk(
+  'auth/register',
+  async ({ name, username, fullname, email, password, clientCode }, { rejectWithValue }) => {
+    try {
+      const res = await api.post('/api/auth/register', { name, username, fullname, email, password, clientCode });
+      localStorage.setItem('accessToken', res.accessToken);
+      localStorage.setItem('currentUser', JSON.stringify(res.user));
+      return { accessToken: res.accessToken, user: res.user };
+    } catch (err) {
+      return rejectWithValue(err?.message || 'Registration failed');
+    }
+  }
+);
+
 export const logout = createAsyncThunk('auth/logout', async () => {
   try {
     await api.post('/api/auth/logout');
@@ -39,6 +54,9 @@ export const logout = createAsyncThunk('auth/logout', async () => {
   }
   localStorage.removeItem('accessToken');
   localStorage.removeItem('currentUser');
+  // Otherwise a superadmin's "acting as" override survives into the next
+  // login on this browser, silently scoping a different account's session.
+  clearActiveClientId();
 });
 
 const authSlice = createSlice({
@@ -64,6 +82,20 @@ const authSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.status = 'error';
         state.error = action.payload || 'Login failed';
+      })
+      .addCase(register.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(register.fulfilled, (state, action) => {
+        state.status = 'idle';
+        state.user = action.payload.user;
+        state.accessToken = action.payload.accessToken;
+        state.error = null;
+      })
+      .addCase(register.rejected, (state, action) => {
+        state.status = 'error';
+        state.error = action.payload || 'Registration failed';
       })
       .addCase(logout.fulfilled, (state) => {
         state.user = null;

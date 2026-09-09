@@ -15,12 +15,11 @@ import Typography from '@material-ui/core/Typography';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
-import TablePagination from '@material-ui/core/TablePagination';
 import DateRangeIcon from '@material-ui/icons/DateRange';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import BusinessIcon from '@material-ui/icons/Business';
-import MaterialTable from 'material-table';
+import MaterialTable from '../config/MaterialTable';
 import moment from 'moment';
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from 'date-fns';
 import PageTitle from '../components/PageTitle';
@@ -32,17 +31,6 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
 });
-
-function PatchedPagination(props) {
-  const { onChangePage, onChangeRowsPerPage, ...rest } = props;
-  return (
-    <TablePagination
-      {...rest}
-      onPageChange={onChangePage}
-      onRowsPerPageChange={onChangeRowsPerPage}
-    />
-  );
-}
 
 const PRESETS = {
   last7: 'Last 7 days',
@@ -302,7 +290,6 @@ function WeeklyEarnings() {
             title=""
             columns={columns}
             data={data}
-            components={{ Pagination: PatchedPagination }}
             actions={[
               {
                 icon: () => <GetAppIcon />,

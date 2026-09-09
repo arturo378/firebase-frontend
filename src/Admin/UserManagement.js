@@ -7,7 +7,13 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import TextField from '@material-ui/core/TextField';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
 import PageTitle from '../components/PageTitle';
+import { useAuth } from '../config/AuthContext';
+import { ROLES, assignableRoles } from '../config/permissions';
 import {
   useGetUsersQuery,
   useAddUserMutation,
@@ -17,15 +23,10 @@ import {
 } from '../store/api/usersApi';
 import { showToast } from '../store/slices/uiSlice';
 
-const columns = [
-  { title: 'id', field: 'id', hidden: true },
-  { title: 'Username', field: 'username' },
-  { title: 'Full Name', field: 'fullname' },
-  { title: 'Email', field: 'email', editable: 'never' },
-];
-
 export default function UserManagement() {
   const dispatch = useDispatch();
+  const { user: currentUser } = useAuth();
+  const roleOptions = assignableRoles(currentUser?.role);
   const { data, isFetching } = useGetUsersQuery({ limit: 1000 });
   const [addUser] = useAddUserMutation();
   const [updateUser] = useUpdateUserMutation();
@@ -38,8 +39,21 @@ export default function UserManagement() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState(ROLES.USER);
 
   const rows = data?.data ?? [];
+
+  const columns = [
+    { title: 'id', field: 'id', hidden: true },
+    { title: 'Username', field: 'username' },
+    { title: 'Full Name', field: 'fullname' },
+    { title: 'Email', field: 'email', editable: 'never' },
+    {
+      title: 'Role',
+      field: 'role',
+      lookup: Object.fromEntries(roleOptions.map((r) => [r, r])),
+    },
+  ];
 
   const resetCreateForm = () => {
     setUsername('');
@@ -47,6 +61,7 @@ export default function UserManagement() {
     setEmail('');
     setPassword('');
     setConfirmPassword('');
+    setRole(ROLES.USER);
   };
 
   const handleCreateUser = async () => {
@@ -55,7 +70,7 @@ export default function UserManagement() {
       return;
     }
     try {
-      await addUser({ username, fullname, name: fullname, email, password }).unwrap();
+      await addUser({ username, fullname, name: fullname, email, password, role }).unwrap();
       setCreateDialogOpen(false);
       resetCreateForm();
       dispatch(showToast({ severity: 'success', message: 'User created' }));
@@ -129,6 +144,7 @@ export default function UserManagement() {
                 id: oldData.id,
                 username: newData.username,
                 fullname: newData.fullname,
+                role: newData.role,
               }).unwrap();
               dispatch(showToast({ severity: 'success', message: 'User updated' }));
             } catch (err) {
@@ -146,6 +162,14 @@ export default function UserManagement() {
           <TextField label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} fullWidth margin="dense" />
           <TextField label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} fullWidth margin="dense" />
           <TextField label="Confirm Password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} fullWidth margin="dense" />
+          <FormControl fullWidth margin="dense">
+            <InputLabel id="new-user-role-label">Role</InputLabel>
+            <Select labelId="new-user-role-label" value={role} onChange={(e) => setRole(e.target.value)}>
+              {roleOptions.map((r) => (
+                <MenuItem key={r} value={r}>{r}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>

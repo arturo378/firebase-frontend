@@ -18,7 +18,7 @@ const apiBaseQuery = async ({ url, method = 'GET', body }) => {
       error: {
         status: error?.status ?? 'CUSTOM_ERROR',
         message: error?.message || 'Request failed',
-        data: error?.data,
+        data: { code: error?.code, message: error?.message },
       },
     };
   }
@@ -42,6 +42,7 @@ export const baseApi = createApi({
     'Pricing',
     'Dashboard',
     'Report',
+    'Client',
   ],
   endpoints: () => ({}),
 });
